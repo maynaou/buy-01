@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.product_service.dto.UserDTO;
 
-@FeignClient(name = "USER-SERVICE")
+@FeignClient(name = "user-service")
 public interface UserRestClient {
     @GetMapping("/api/users") 
     PagedModel<UserDTO> getAllUsers();

@@ -12,3 +12,7 @@ spring:
               uri: lb://PRODUCT-SERVICE
               predicates:
                 Path=/api/products/**
+            - id: r3
+              uri: lb://MEDIA-SERVICE
+              predicates:
+                Path=/api/medias/**
