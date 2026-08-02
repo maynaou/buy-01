@@ -6,10 +6,12 @@ import java.util.stream.Stream;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 
 import com.example.user_service.entities.User;
 import com.example.user_service.enums.Role;
+import com.example.user_service.events.UserCreatedEvent;
 import com.example.user_service.repository.UserRepository;
 
 @SpringBootApplication
@@ -20,7 +22,7 @@ public class UserServiceApplication {
 	}
 
     @Bean
-	CommandLineRunner commandLineRunner(UserRepository userRepository) {
+	CommandLineRunner commandLineRunner(UserRepository userRepository, StreamBridge streamBridge) {
 		return args -> {
                Stream.of("maynaou","achraf","yahya", "hafid").forEach(name -> {
 				        User user = User.builder()
@@ -32,6 +34,8 @@ public class UserServiceApplication {
 								   .avatar(name)
 					               .build();
 					    userRepository.save(user);
+						streamBridge.send("userProducer-out-0", new UserCreatedEvent(user.getId(), user.getName(), user.getRole())	
+						);
 			   });
 		};
 	}

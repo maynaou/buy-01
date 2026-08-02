@@ -22,7 +22,7 @@ public class MediaServiceApplication {
 		SpringApplication.run(MediaServiceApplication.class, args);
 	}
     
-	@Bean
+	// @Bean
 	CommandLineRunner commandLineRunner(MediaRepository mediaRepository , ProductRestClient productRestClient) {
           return args -> {
                       PagedModel<ProductDTO> products = productRestClient.getAllProducts();
@@ -31,8 +31,8 @@ public class MediaServiceApplication {
 					  products.forEach(prod -> {
 						    Media media = Media.builder()
 							              .id(UUID.randomUUID().toString())
-										  .imagePath(prod + "_" + UUID.randomUUID().toString())
-										  .productId(prod.getId())
+										  .imagePath(prod.getName() + "_" + UUID.randomUUID().toString())
+										  .productId(prod.getProductId())
 							              .build();
 						   mediaRepository.save(media);
 					  });

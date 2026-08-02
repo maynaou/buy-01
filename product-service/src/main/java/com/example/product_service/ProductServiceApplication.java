@@ -1,14 +1,10 @@
 package com.example.product_service;
 
-import java.util.Collection;
 import java.util.UUID;
-import java.util.stream.Stream;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Bean;
 
 import com.example.product_service.dto.UserDTO;
 import com.example.product_service.entities.Product;
@@ -24,7 +20,7 @@ public class ProductServiceApplication {
 		SpringApplication.run(ProductServiceApplication.class, args);
 	}
     
-	@Bean
+	// @Bean
 	CommandLineRunner commandLineRunner(ProductRepository productRepository,UserRestClient userRestClient) {
 		return args ->  {
 			    PagedModel<UserDTO> users = userRestClient.getAllUsers();
@@ -36,7 +32,7 @@ public class ProductServiceApplication {
 						                  .description("djaja lamli7 saffy")
 										  .price(10000 + Math.random()*90000)
                                           .quantity(20)
-										  .userId(user.getId())
+										  .userId(user.getUserId())
 						                  .build();
 						productRepository.save(product);
 				 });
