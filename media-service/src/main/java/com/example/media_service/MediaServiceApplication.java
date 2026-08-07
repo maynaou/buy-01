@@ -1,41 +1,41 @@
-package com.example.media_service;
+// package com.example.media_service;
 
-import java.util.UUID;
+// import java.util.UUID;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.hateoas.PagedModel;
+// import org.springframework.boot.CommandLineRunner;
+// import org.springframework.boot.SpringApplication;
+// import org.springframework.boot.autoconfigure.SpringBootApplication;
+// import org.springframework.cloud.openfeign.EnableFeignClients;
+// import org.springframework.hateoas.PagedModel;
 
-import com.example.media_service.dto.ProductDTO;
-import com.example.media_service.entities.Media;
-import com.example.media_service.feign.ProductRestClient;
-import com.example.media_service.repository.MediaRepository;
+// import com.example.media_service.dto.ProductDTO;
+// import com.example.media_service.entities.Media;
+// import com.example.media_service.feign.ProductRestClient;
+// import com.example.media_service.repository.MediaRepository;
 
-@SpringBootApplication
-@EnableFeignClients
-public class MediaServiceApplication {
+// @SpringBootApplication
+// @EnableFeignClients
+// public class MediaServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MediaServiceApplication.class, args);
-	}
+// 	public static void main(String[] args) {
+// 		SpringApplication.run(MediaServiceApplication.class, args);
+// 	}
     
-	// @Bean
-	CommandLineRunner commandLineRunner(MediaRepository mediaRepository , ProductRestClient productRestClient) {
-          return args -> {
-                      PagedModel<ProductDTO> products = productRestClient.getAllProducts();
-					  System.out.println(products);
+// 	// @Bean
+// 	CommandLineRunner commandLineRunner(MediaRepository mediaRepository , ProductRestClient productRestClient) {
+//           return args -> {
+//                       PagedModel<ProductDTO> products = productRestClient.getAllProducts();
+// 					  System.out.println(products);
 
-					  products.forEach(prod -> {
-						    Media media = Media.builder()
-							              .id(UUID.randomUUID().toString())
-										  .imagePath(prod.getName() + "_" + UUID.randomUUID().toString())
-										  .productId(prod.getProductId())
-							              .build();
-						   mediaRepository.save(media);
-					  });
-		  };
-	}
+// 					  products.forEach(prod -> {
+// 						    Media media = Media.builder()
+// 							              .id(UUID.randomUUID().toString())
+// 										  .imagePath(prod.getName() + "_" + UUID.randomUUID().toString())
+// 										  .productId(prod.getProductId())
+// 							              .build();
+// 						   mediaRepository.save(media);
+// 					  });
+// 		  };
+// 	}
 
-}
+// }
