@@ -26,7 +26,7 @@ public class UserDetailService implements UserDetailsService{
                             "Username or password incorrect"));
           UserDetails userDetails = User.withUsername(user.getUsername())
                     .password(user.getPassword())
-                    .roles(user.getRole().name())
+                    .authorities(user.getRole().name())
                     .build();
 
           return userDetails;

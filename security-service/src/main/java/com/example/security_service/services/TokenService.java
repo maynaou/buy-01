@@ -35,7 +35,7 @@ public class TokenService {
             return token;
      }
 
-     public RefreshToken createRefreshToken(String subject, String scopes) {
+     public RefreshToken createRefreshToken(String subject) {
             RefreshToken refreshToken = RefreshToken.builder()
                                     .username(subject)
                                     .token(UUID.randomUUID().toString())

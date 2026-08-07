@@ -34,7 +34,7 @@ public class AuthController {
     }
     
     @PostMapping("/refresh/{id}")
-    public void refresh(@PathVariable String id) {
-         authService.refresh(id);
+    public Map<String,String> refresh(@PathVariable String id) {
+          return authService.refresh(id);
     }
 }

@@ -24,7 +24,6 @@ public class AuthService {
     AuthRepository authRepository;
     PasswordEncoder passwordEncoder;
     AuthenticationManager authenticationManager;
-
     TokenService tokenService;
 
     public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder,AuthenticationManager authenticationManager, TokenService tokenService) {
