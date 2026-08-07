@@ -19,7 +19,7 @@ public class UserServiceApplication {
 		SpringApplication.run(UserServiceApplication.class, args);
 	}
 
-    @Bean
+    // @Bean
 	CommandLineRunner commandLineRunner(UserRepository userRepository) {
 		return args -> {
                Stream.of("maynaou","achraf","yahya", "hafid").forEach(name -> {

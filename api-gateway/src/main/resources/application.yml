@@ -5,7 +5,7 @@ spring:
         webflux:
           routes:
             - id: user-auth
-              uri: lb://USER-SERVICE
+              uri: lb://SECURITY-SERVICE
               predicates:
                 Path=/api/auth/**
             - id: r1
