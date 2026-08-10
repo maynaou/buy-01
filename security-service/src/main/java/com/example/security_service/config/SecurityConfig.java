@@ -36,12 +36,15 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(RsaKeysConfig rsaKeysConfig, PasswordEncoder passwordEncoder) {
+    private final UserDetailService userDetailService;
+
+    public SecurityConfig(RsaKeysConfig rsaKeysConfig, PasswordEncoder passwordEncoder, UserDetailService userDetailService) {
         this.rsaKeysConfig = rsaKeysConfig;
         this.passwordEncoder = passwordEncoder;
+        this.userDetailService = userDetailService;
     }
 
-    @Bean
+    // @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -73,6 +76,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 // .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
+                .userDetailsService(userDetailService)
                 // .httpBasic(Customizer.withDefaults())
                 .build();
     }
