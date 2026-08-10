@@ -1,4 +1,4 @@
-package com.example.media_service;
+package com.example.media_service.service;
 
 import com.cloudinary.Cloudinary;
 import com.example.media_service.repository.MediaRepository;
@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.media_service.dto.MediaResponse;
 import com.example.media_service.entity.Media;
 import java.time.Instant;
 import java.util.Map;
@@ -36,27 +37,45 @@ public class MediaService {
         }
     }
 
-    public Media uploadImage(MultipartFile file, String sellerId) {
-
+    public MediaResponse uploadImage(MultipartFile file, String sellerId) {
         validateImage(file);
-
         try {
-            
-            Map result = cloudinary.uploader().upload( file.getBytes(), ObjectUtils.asMap("resource_type", "image"));
 
-            Media media = Media.builder()
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "image"));
+
+            Media savedMedia = mediaRepository.save(Media.builder()
                     .sellerId(sellerId)
                     .url((String) result.get("secure_url"))
                     .publicId((String) result.get("public_id"))
                     .contentType(file.getContentType())
                     .size(file.getSize())
                     .createdAt(Instant.now())
-                    .build();
+                    .build());
 
-            return mediaRepository.save(media);
+            return MediaResponse.builder()
+                    .id(savedMedia.getId())
+                    .url(savedMedia.getUrl())
+                    .contentType(savedMedia.getContentType())
+                    .size(savedMedia.getSize())
+                    .createdAt(savedMedia.getCreatedAt())
+                    .build();
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload image", e);
         }
     }
+
+    public MediaResponse getImageById(String id) {
+        Media media = mediaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
+        return MediaResponse.builder()
+                .id(media.getId())
+                .url(media.getUrl())
+                .contentType(media.getContentType())
+                .size(media.getSize())
+                .createdAt(media.getCreatedAt())
+                .build();
+    }
+
 }
