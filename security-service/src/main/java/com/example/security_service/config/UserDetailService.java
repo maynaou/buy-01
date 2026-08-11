@@ -9,7 +9,7 @@ import com.example.security_service.entities.Auth;
 import com.example.security_service.repository.AuthRepository;
 
 @Component
-public class UserDetailService implements UserDetailsService{
+public class UserDetailService implements UserDetailsService {
     
     private AuthRepository authRepository;
 
@@ -28,6 +28,12 @@ public class UserDetailService implements UserDetailsService{
                     .password(user.getPassword())
                     .authorities(user.getRole().name())
                     .build();
+
+                        System.out.println(
+        "USER DETAILS AUTHORITIES = "
+        + userDetails.getAuthorities()
+    );
+
 
           return userDetails;
     }
