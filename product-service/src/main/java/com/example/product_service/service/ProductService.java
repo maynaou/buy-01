@@ -2,11 +2,14 @@ package com.example.product_service.service;
 
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
 
+@Service
 public class ProductService {
     
     ProductRepository productRepository;

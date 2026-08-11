@@ -15,7 +15,7 @@ public class RemoveHeadersFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
            ServerHttpRequest request = exchange.getRequest().mutate().headers(header -> {
-                     header.remove("X-Username");
+                     header.remove("X-User-Id");
                      header.remove("X-User-Role");
            }).build();
            return chain.filter(exchange.mutate().request(request).build());

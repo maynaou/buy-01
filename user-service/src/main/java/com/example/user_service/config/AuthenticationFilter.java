@@ -20,7 +20,7 @@ public class AuthenticationFilter  extends OncePerRequestFilter {
      
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
-        String userId = req.getHeader("X-Username");
+        String userId = req.getHeader("X-User-Id");
         String role = req.getHeader("X-User-Role");
 
         System.out.println("userId : " + userId + " role : " + role);

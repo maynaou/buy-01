@@ -11,9 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestRestController {
         
     @GetMapping("/test")
-    @PreAuthorize("hasAuthority('CLIENT')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public void test(Authentication authentication) {
         System.out.println("*************" + authentication.getAuthorities());
+    }
+    @GetMapping("/test2")
+    public void test2(Authentication authentication) {
+                System.out.println("*************" + authentication.getAuthorities());
+
     }
 
 

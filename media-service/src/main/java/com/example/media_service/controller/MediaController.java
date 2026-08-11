@@ -25,6 +25,6 @@ public class MediaController {
     }
     @DeleteMapping("/{id}")
     public void deleteImage(@PathVariable String id) {
-        mediaService.deleteImage(id);
+        // mediaService.deleteImage(id);
     }
 }
