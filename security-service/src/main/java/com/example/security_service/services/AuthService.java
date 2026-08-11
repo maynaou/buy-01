@@ -57,12 +57,10 @@ public class AuthService {
 
     public Map<String,String> login(LoginRequest loginRequest) {
           Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-          System.out.println("AUTHENTICATION AUTHORITIES = "
-        + authentication.getAuthorities());
-          String scopes = authentication.getAuthorities().stream().map(auth-> {
-                 System.out.println(auth.getAuthority());
-                 return  auth.getAuthority();
-          }).collect(Collectors.joining(" "));
+          String scopes = authentication.getAuthorities().stream().map(auth-> auth.getAuthority())
+                                        .filter(authority -> !authority.startsWith("FACTOR_"))
+                                        .collect(Collectors.joining(" "));
+
           String subject = authentication.getName();
           Map<String,String> idToken = new HashMap<>();
           String acces_Token = tokenService.generateToken(subject, scopes);
