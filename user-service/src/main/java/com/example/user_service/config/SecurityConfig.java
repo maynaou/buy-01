@@ -1,8 +1,5 @@
 package com.example.user_service.config;
 
-import java.net.http.HttpRequest;
-
-import org.springdoc.core.properties.SwaggerUiConfigProperties.Csrf;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
