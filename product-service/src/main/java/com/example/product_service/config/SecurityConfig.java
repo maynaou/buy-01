@@ -22,7 +22,7 @@ public class SecurityConfig {
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
              //    .httpBasic(basic -> basic.disable())
-               .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**",   "/v3/api-docs/**",
+               .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**","/api/products/**",   "/v3/api-docs/**",
                             "/swagger-ui/**").permitAll()
                .anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
