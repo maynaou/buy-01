@@ -1,4 +1,4 @@
-package com.example.product_service.config;
+package com.example.media_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    
+
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationFilter authentication) { 
 
@@ -22,7 +23,7 @@ public class SecurityConfig {
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
              //    .httpBasic(basic -> basic.disable())
-               .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**","/api/products/**",   "/v3/api-docs/**",
+               .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**",   "/v3/api-docs/**",
                             "/swagger-ui/**").permitAll()
                .anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
@@ -30,4 +31,5 @@ public class SecurityConfig {
                .build();
 
     }
+    
 }

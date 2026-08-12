@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.security_service.config.CustomUserDetails;
 import com.example.security_service.dto.LoginRequest;
 import com.example.security_service.dto.RegisterRequest;
 import com.example.security_service.entities.Auth;
@@ -57,14 +58,14 @@ public class AuthService {
 
     public Map<String,String> login(LoginRequest loginRequest) {
           Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-          String scopes = authentication.getAuthorities().stream().map(auth-> auth.getAuthority())
-                                        .filter(authority -> !authority.startsWith("FACTOR_"))
-                                        .collect(Collectors.joining(" "));
 
-          String subject = authentication.getName();
+          CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+          String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
+          System.out.println("scopes : " + scopes);
+        //   String subject = authentication.getName();
           Map<String,String> idToken = new HashMap<>();
-          String acces_Token = tokenService.generateToken(subject, scopes);
-          RefreshToken refresh_Token = tokenService.createRefreshToken(subject);
+          String acces_Token = tokenService.generateToken(user.getId(), scopes);
+          RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
           idToken.put("acces_Token", acces_Token);
           idToken.put("refresh_Token", refresh_Token.getToken());
           return idToken;
@@ -72,10 +73,10 @@ public class AuthService {
 
     public Map<String,String> refresh(String refreshToken) {
         RefreshToken token = tokenService.verifyToken(refreshToken);
-          Auth user = authRepository.findByUsername(token.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+          Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
           String scopes = user.getRole().toString();
-          String access_token = tokenService.generateToken(token.getUsername(), scopes);
-          RefreshToken refresh_token = tokenService.createRefreshToken(user.getUsername());
+          String access_token = tokenService.generateToken(token.getUserId(), scopes);
+          RefreshToken refresh_token = tokenService.createRefreshToken(user.getId());
           refreshTokenRepository.deleteById(token.getId());
           Map<String,String> idToken = new HashMap<>();
           idToken.put("access_token", access_token);

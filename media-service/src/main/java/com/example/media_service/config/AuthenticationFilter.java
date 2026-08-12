@@ -1,4 +1,4 @@
-package com.example.user_service.config;
+package com.example.media_service.config;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,7 +13,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 
 @Component
 public class AuthenticationFilter  extends OncePerRequestFilter {

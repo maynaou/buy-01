@@ -1,6 +1,5 @@
-package com.example.security_service.entities;
+package com.example.media_service.entity;
 
-import java.time.Instant;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,11 +14,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RefreshToken {
+public class ProductReference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String userId;
-    private String token;
-    private Instant expiryDate; 
+     private Long id;
+     private String productId;
+     private String userId;
 }

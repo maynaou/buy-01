@@ -1,19 +1,27 @@
 package com.example.product_service.service;
 
+import java.util.List;
 import java.util.UUID;
+
+import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.stereotype.Service;
 
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
+import com.example.product_service.events.ProductCreatedEvent;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
 
+@Service
 public class ProductService {
     
     ProductRepository productRepository;
     ProductMapper productMapper;
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper) {
+    StreamBridge streamBridge;
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper,StreamBridge streamBridge) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
+        this.streamBridge = streamBridge;
     }
 
     public ProductDTO createProduct(ProductDTO productRequest, String userId) {
@@ -27,6 +35,27 @@ public class ProductService {
                                          .build();
                 productRepository.save(product);
 
-                return productMapper.fromProdcut(product);
+                streamBridge.send("productProducer-out-0", new ProductCreatedEvent(product.getId(),product.getUserId()));
+
+                return productMapper.fromProduct(product);
+    }
+
+    public ProductDTO getProductById(String id) {
+          Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Produc not found"));
+          return productMapper.fromProduct(product);
+    }
+
+    public List<ProductDTO>  getProducts() {
+          List<Product> products = productRepository.findAll();
+          return productMapper.fromProduct(products);
+    }
+
+    public ProductDTO updateProduct(String id, ProductDTO productDTO) {
+           Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("product not found"));
+           product.setName(productDTO.getName());
+           product.setDescription(productDTO.getDescription());
+           product.setPrice(productDTO.getPrice());
+           product.setQuantity(productDTO.getQuantity());
+           return productMapper.fromProduct(productRepository.save(product));
     }
 }

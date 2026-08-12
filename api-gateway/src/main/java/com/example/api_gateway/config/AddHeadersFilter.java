@@ -20,9 +20,10 @@ public class AddHeadersFilter implements GlobalFilter, Ordered {
                        .cast(JwtAuthenticationToken.class)
                        .map(auth -> {
                             Jwt jwt = auth.getToken();
+                            System.out.println("user : " + jwt.getSubject());
                             ServerHttpRequest mRequest = exchange.getRequest()
                                                                  .mutate()
-                                                                 .header("X-Username", jwt.getSubject())
+                                                                 .header("X-User-Id", jwt.getSubject())
                                                                  .header("X-User-Role", jwt.getClaimAsString("scope"))
                                                                  .build();
                             return exchange.mutate().request(mRequest).build();

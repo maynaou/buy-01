@@ -37,7 +37,7 @@ public class TokenService {
 
      public RefreshToken createRefreshToken(String subject) {
             RefreshToken refreshToken = RefreshToken.builder()
-                                    .username(subject)
+                                    .userId(subject)
                                     .token(UUID.randomUUID().toString())
                                     .expiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60))
                                     .build();
@@ -58,8 +58,8 @@ public class TokenService {
         return refreshToken;
     }
 
-    public void deleteByUserId(String username) {
-        refreshTokenRepository.deleteByUsername(username);
-    }
+    // public void deleteByUserId(String username) {
+    //     refreshTokenRepository.deleteByUsername(username);
+    // }
 
 }

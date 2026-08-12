@@ -24,17 +24,8 @@ public class UserDetailService implements UserDetailsService {
             .orElseThrow(() ->
                     new RuntimeException(
                             "Username or password incorrect"));
-          UserDetails userDetails = User.withUsername(user.getUsername())
-                    .password(user.getPassword())
-                    .authorities(user.getRole().name())
-                    .build();
-
-                        System.out.println(
-        "USER DETAILS AUTHORITIES = "
-        + userDetails.getAuthorities()
-    );
 
 
-          return userDetails;
+          return new CustomUserDetails(user);
     }
 }
