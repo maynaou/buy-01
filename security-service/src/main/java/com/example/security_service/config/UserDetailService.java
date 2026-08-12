@@ -1,6 +1,5 @@
 package com.example.security_service.config;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,6 @@ public class UserDetailService implements UserDetailsService {
             .orElseThrow(() ->
                     new RuntimeException(
                             "Username or password incorrect"));
-
-
           return new CustomUserDetails(user);
     }
 }

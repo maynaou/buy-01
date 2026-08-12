@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.security_service.config.CustomUserDetails;
+import com.example.security_service.dto.AuthResponse;
 import com.example.security_service.dto.LoginRequest;
 import com.example.security_service.dto.RegisterRequest;
 import com.example.security_service.entities.Auth;
@@ -56,19 +57,18 @@ public class AuthService {
         streamBridge.send("authProducer-out-0", new UserCreatedEvent(authRegister.getId(),authRegister.getUsername(),authRegister.getEmail(),authRegister.getRole()));
     }
 
-    public Map<String,String> login(LoginRequest loginRequest) {
+    public AuthResponse login(LoginRequest loginRequest) {
           Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-
+          
           CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
           String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
-          System.out.println("scopes : " + scopes);
-        //   String subject = authentication.getName();
-          Map<String,String> idToken = new HashMap<>();
           String acces_Token = tokenService.generateToken(user.getId(), scopes);
           RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
-          idToken.put("acces_Token", acces_Token);
-          idToken.put("refresh_Token", refresh_Token.getToken());
-          return idToken;
+
+          return AuthResponse.builder()
+                             .acces_Token(acces_Token)
+                             .refresh_Token(refresh_Token.getToken())
+                             .build();
     }
 
     public Map<String,String> refresh(String refreshToken) {

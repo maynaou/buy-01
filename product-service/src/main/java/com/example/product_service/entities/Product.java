@@ -1,5 +1,7 @@
 package com.example.product_service.entities;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -20,4 +22,5 @@ public class Product {
      private Double price;
      private Integer quantity;
      private String userId;
+     private List<String> url;
 }
