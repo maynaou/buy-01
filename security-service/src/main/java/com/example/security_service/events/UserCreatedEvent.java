@@ -1,5 +1,6 @@
 package com.example.security_service.events;
 
+import com.example.security_service.enums.EventType;
 import com.example.security_service.enums.Role;
 
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UserCreatedEvent {
+     private EventType eventType;
      private String id;
      private String username;
      private String email;

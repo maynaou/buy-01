@@ -19,6 +19,7 @@ import com.example.security_service.dto.LoginRequest;
 import com.example.security_service.dto.RegisterRequest;
 import com.example.security_service.entities.Auth;
 import com.example.security_service.entities.RefreshToken;
+import com.example.security_service.enums.EventType;
 import com.example.security_service.events.UserCreatedEvent;
 import com.example.security_service.repository.AuthRepository;
 import com.example.security_service.repository.RefreshTokenRepository;
@@ -54,7 +55,7 @@ public class AuthService {
 
         authRepository.save(authRegister);
 
-        streamBridge.send("authProducer-out-0", new UserCreatedEvent(authRegister.getId(),authRegister.getUsername(),authRegister.getEmail(),authRegister.getRole()));
+        streamBridge.send("authProducer-out-0", new UserCreatedEvent(EventType.USER,authRegister.getId(),authRegister.getUsername(),authRegister.getEmail(),authRegister.getRole()));
     }
 
     public AuthResponse login(LoginRequest loginRequest) {

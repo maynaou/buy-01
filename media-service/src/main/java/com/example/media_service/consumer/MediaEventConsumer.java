@@ -9,7 +9,6 @@ import com.example.media_service.dto.ProductReferenceDTO;
 import com.example.media_service.entity.ProductReference;
 import com.example.media_service.repository.MediaRepository;
 import com.example.media_service.repository.ProductReferenceRepository;
-import com.example.media_service.entity.Media;
 
 
 @Configuration

@@ -22,5 +22,5 @@ public class Product {
      private Double price;
      private Integer quantity;
      private String userId;
-     private List<String> url;
+     private List<String> imagePaths;
 }
