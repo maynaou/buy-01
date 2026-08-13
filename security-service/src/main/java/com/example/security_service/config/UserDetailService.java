@@ -18,11 +18,13 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String identifier) {
+          System.out.println(identifier);
           Auth user = authRepository.findByEmail(identifier)
             .or(() -> authRepository.findByUsername(identifier))
             .orElseThrow(() ->
                     new RuntimeException(
                             "Username or password incorrect"));
+        System.out.println("--------------------------");
           return new CustomUserDetails(user);
     }
 }

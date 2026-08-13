@@ -16,7 +16,9 @@ public class UserEventConsumer {
       public Consumer<UserConsumerDTO> userConsumer(UserRepository userRepository) {
         return event -> {
           switch (event.getEventType()) {
+            
             case USER -> {
+              System.out.println("------------------------");
                       User users = User.builder()
                             .id(event.getId())
                             .name(event.getUsername())

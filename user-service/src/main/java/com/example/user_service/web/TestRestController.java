@@ -21,7 +21,6 @@ public class TestRestController {
 
     }
 
-
     @GetMapping("/test1") 
     @PreAuthorize("hasAuthority('SELLER')")
     public void test1() {
