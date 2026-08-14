@@ -25,5 +25,4 @@ public class Auth {
      private String email;
      private String password;
      private Role role;
-     private String avatar;
 }

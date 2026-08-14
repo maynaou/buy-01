@@ -1,9 +1,11 @@
 package com.example.user_service.service;
 
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import com.example.user_service.dto.UserDTO;
 import com.example.user_service.entities.User;
+import com.example.user_service.events.UserCreatedEvent;
 import com.example.user_service.mappers.UserMapper;
 import com.example.user_service.repository.UserRepository;
 
@@ -11,12 +13,13 @@ import com.example.user_service.repository.UserRepository;
 public class UserService {
        
     UserRepository userRepository;
-
     UserMapper userMapper;
+    StreamBridge streamBridge;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper,StreamBridge streamBridge) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.streamBridge = streamBridge;
     }
 
     public UserDTO getProfle(String userId) {
@@ -31,6 +34,9 @@ public class UserService {
           user.setEmail(userDTO.getEmail());
           user.setRole(userDTO.getRole());
           userRepository.save(user);
+
+          streamBridge.send("userProducer-out-0", new UserCreatedEvent(user.getName(),user.getEmail(),user.getRole()));
+
          return userMapper.fromUser(user);
     }
 }

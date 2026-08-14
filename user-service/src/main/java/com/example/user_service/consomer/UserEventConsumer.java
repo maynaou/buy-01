@@ -18,12 +18,12 @@ public class UserEventConsumer {
           switch (event.getEventType()) {
             
             case USER -> {
-              System.out.println("------------------------");
                       User users = User.builder()
                             .id(event.getId())
                             .name(event.getUsername())
                             .email(event.getEmail())
                             .role(event.getRole())
+                            .avatar("")
                             .build();
                          userRepository.save(users);
                        break;
