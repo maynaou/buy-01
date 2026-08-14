@@ -19,14 +19,13 @@ public class AuthenticationFilter  extends OncePerRequestFilter {
      
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
-        String userId = req.getHeader("X-User-Id");
+        String sellerId = req.getHeader("X-Seller-Id");
         String role = req.getHeader("X-User-Role");
 
-        System.out.println("userId : " + userId + " role : " + role);
-        if (userId != null && role != null) {
+        // System.out.println("sellerId : " + sellerId + " role : " + role);
+        if (sellerId != null && role != null) {
             SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userId, null,
-                    List.of(new SimpleGrantedAuthority(role))));
+                new UsernamePasswordAuthenticationToken(sellerId, null, List.of(new SimpleGrantedAuthority(role))));
         }
         chain.doFilter(req, res);
     }

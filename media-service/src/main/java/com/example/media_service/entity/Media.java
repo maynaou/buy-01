@@ -1,34 +1,36 @@
-// package com.example.media_service.entity;
+package com.example.media_service.entity;
 
-// import lombok.AllArgsConstructor;
-// import lombok.Builder;
-// import lombok.Data;
-// import lombok.NoArgsConstructor;
-// import org.springframework.data.annotation.Id;
-// // import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+// import org.springframework.data.mongodb.core.mapping.Document;
 
-// import jakarta.persistence.Entity;
+import jakarta.persistence.Entity;
 
-// import java.time.Instant;
+import java.time.Instant;
 
-// @Entity
-// @Data
-// @Builder
-// @NoArgsConstructor
-// @AllArgsConstructor
-// public class Media {
-//     // @Id
-//     private String id;
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Media {
+    @Id
+    private String id;
 
-//     private String sellerId;
+    private String sellerId;
 
-//     private String url;
+    private String productId;
 
-//     private String publicId;
+    private String url;
 
-//     private String contentType;
+    private String publicId;
 
-//     private Long size;
+    private String contentType;
 
-//     private Instant createdAt;
-// // }
+    private Long size;
+
+    private Instant createdAt;
+}
