@@ -15,6 +15,7 @@ public class AuthEventConsumer {
     @Bean 
     public Consumer<AuthConsumerDTO> authConsumer(AuthRepository authRepository) {
         return event -> {
+            System.out.println("-------------------------------------------hnaaaa");
                Auth auth = Auth.builder()
                                 .username(event.getUsername())
                                 .email(event.getEmail())

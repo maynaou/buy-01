@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 
 @Document
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Auth {
      @Id
      private String id;

@@ -28,7 +28,7 @@ public class UserContoller {
     }
 
     @PutMapping("/me")
-    public void updateProfile(Authentication authentication , @RequestBody UserDTO userDTO) {
-         userService.updateProfile(authentication.getName(),userDTO);
+    public ResponseEntity<UserDTO> updateProfile(Authentication authentication , @RequestBody UserDTO userDTO) {
+        return  ResponseEntity.ok(userService.updateProfile(authentication.getName(),userDTO));
     }
 }
