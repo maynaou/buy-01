@@ -23,7 +23,7 @@ public class UserServiceApplication {
                Stream.of("maynaou","achraf","yahya", "hafid").forEach(name -> {
 				        User user = User.builder()
 						           .id(UUID.randomUUID().toString())
-					               .name(name)
+					               .username(name)
 								   .email(name+"123@gmail.com")
 								   .role(Role.CLIENT)
 								//    .avatar(name)

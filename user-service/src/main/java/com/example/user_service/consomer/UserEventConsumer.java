@@ -20,7 +20,7 @@ public class UserEventConsumer {
             case USER -> {
                       User users = User.builder()
                             .id(event.getId())
-                            .name(event.getUsername())
+                            .username(event.getUsername())
                             .email(event.getEmail())
                             .role(event.getRole())
                             .avatar("")

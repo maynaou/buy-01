@@ -16,12 +16,15 @@ public class AuthEventConsumer {
     public Consumer<AuthConsumerDTO> authConsumer(AuthRepository authRepository) {
         return event -> {
             System.out.println("-------------------------------------------hnaaaa");
-               Auth auth = Auth.builder()
-                                .username(event.getUsername())
-                                .email(event.getEmail())
-                                .role(event.getRole())
-                                .build();
-                authRepository.save(auth);
+        Auth auth = authRepository.findByUsername(event.getUsername())
+                .orElseGet(() -> Auth.builder()
+                        .username(event.getUsername())
+                        .build());
+
+        auth.setEmail(event.getEmail());
+        auth.setRole(event.getRole());
+
+        authRepository.save(auth);
                            
         };
     }

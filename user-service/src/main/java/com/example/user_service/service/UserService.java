@@ -30,12 +30,12 @@ public class UserService {
 
     public UserDTO updateProfile(String userId,UserDTO userDTO) { 
           User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-          user.setName(userDTO.getName());
+          user.setUsername(userDTO.getUsername());
           user.setEmail(userDTO.getEmail());
           user.setRole(userDTO.getRole());
           userRepository.save(user);
 
-          streamBridge.send("userProducer-out-0", new UserCreatedEvent(user.getName(),user.getEmail(),user.getRole()));
+          streamBridge.send("userProducer-out-0", new UserCreatedEvent(user.getUsername(),user.getEmail(),user.getRole()));
 
          return userMapper.fromUser(user);
     }
