@@ -1,5 +1,6 @@
 package com.example.product_service.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ public class ProductService {
                                          .price(productRequest.getPrice())
                                          .quantity(productRequest.getQuantity())
                                          .userId(userId)
+                                         .imagePaths(new ArrayList<>())
                                          .build();
                 productRepository.save(product);
 
