@@ -1,13 +1,15 @@
 package com.example.product_service.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import java.util.List;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Document
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -20,4 +22,5 @@ public class Product {
      private Double price;
      private Integer quantity;
      private String userId;
+     private List<String> imagePaths;
 }

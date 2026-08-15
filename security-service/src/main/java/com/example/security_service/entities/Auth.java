@@ -1,17 +1,17 @@
 package com.example.security_service.entities;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.example.security_service.enums.Role;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Document
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,10 +19,10 @@ import lombok.NoArgsConstructor;
 public class Auth {
      @Id
      private String id;
+     @Indexed(unique = true)
      private String username;
+     @Indexed(unique = true)
      private String email;
      private String password;
-     @Enumerated(EnumType.STRING)
      private Role role;
-     // private String avatar;
 }

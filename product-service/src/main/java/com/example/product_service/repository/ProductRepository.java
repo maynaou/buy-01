@@ -1,11 +1,13 @@
 package com.example.product_service.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import java.util.Optional;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import com.example.product_service.entities.Product;
 
-@RepositoryRestResource
-public interface ProductRepository extends JpaRepository<Product,String> {
-    
+@Repository
+public interface ProductRepository extends MongoRepository<Product,String> {
+         Optional<Product> findById(String productId);
 }

@@ -7,20 +7,40 @@ import org.springframework.context.annotation.Configuration;
 
 import com.example.media_service.dto.ProductReferenceDTO;
 import com.example.media_service.entity.ProductReference;
+import com.example.media_service.repository.MediaRepository;
 import com.example.media_service.repository.ProductReferenceRepository;
+
 
 @Configuration
 public class MediaEventConsumer {
     
     @Bean
-    public Consumer<ProductReferenceDTO> mediaConsumer(ProductReferenceRepository productReferenceRepository) {
-        return product -> {
-                System.out.println("productId : " + product.getProductId());
-                ProductReference productReference = ProductReference.builder()
-                                                                    .productId(product.getProductId())
-                                                                    .userId(product.getUserId())
-                                                                    .build();
+    public Consumer<ProductReferenceDTO> mediaConsumer(ProductReferenceRepository productReferenceRepository, MediaRepository mediaRepository ) {
+      return event -> {
+
+        switch (event.getEventType()) {
+
+            case CREATED -> {
+                ProductReference productReference =
+                        ProductReference.builder()
+                                .productId(event.getProductId())
+                                .userId(event.getUserId())
+                                .build();
+
                 productReferenceRepository.save(productReference);
-        };
+            }
+
+            case DELETED -> {
+                // Media media = mediaRepository.findByProducId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
+                // mediaRepository.delete(media);
+            }
+
+            default -> {
+                System.out.println(
+                        "Unknown event type: " + event.getEventType()
+                );
+            }
+        }
+    };
     }
 }

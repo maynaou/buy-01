@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
+import com.example.product_service.enums.EventType;
 import com.example.product_service.events.ProductCreatedEvent;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
@@ -35,7 +36,7 @@ public class ProductService {
                                          .build();
                 productRepository.save(product);
 
-                streamBridge.send("productProducer-out-0", new ProductCreatedEvent(product.getId(),product.getUserId()));
+                streamBridge.send("productProducer-out-0", new ProductCreatedEvent(EventType.CREATED, product.getId(),product.getUserId()));
 
                 return productMapper.fromProduct(product);
     }
@@ -57,5 +58,11 @@ public class ProductService {
            product.setPrice(productDTO.getPrice());
            product.setQuantity(productDTO.getQuantity());
            return productMapper.fromProduct(productRepository.save(product));
+    }
+
+    public void deleteProduct(String id) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("product not found"));
+        streamBridge.send("productProducer-out-0", new ProductCreatedEvent(EventType.DELETED,product.getId(),product.getUserId()));
+        productRepository.delete(product);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class ProductController {
     }
     
     @PostMapping("/product")
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productRequest, Authentication authentication) {
            return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
     }
@@ -48,4 +49,12 @@ public class ProductController {
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody ProductDTO productDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id,productDTO));
     }
+
+    @DeleteMapping("/product/{id}")
+    @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
+              productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();  
+    }
+
 }
