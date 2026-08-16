@@ -11,6 +11,7 @@ import com.example.media_service.dto.MediaResponse;
 import com.example.media_service.entity.Media;
 import java.time.Instant;
 import java.util.Map;
+import com.example.media_service.mapper.MediaMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +20,9 @@ public class MediaService {
     private final Cloudinary cloudinary;
     private final MediaRepository mediaRepository;
     private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+    private final MediaMapper mediaMapper;
 
+    // Validate the image file
     private void validateImage(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
@@ -37,6 +40,8 @@ public class MediaService {
         }
     }
 
+
+    // Upload image to Cloudinary and save metadata to the database
     public MediaResponse uploadImage(MultipartFile file, String sellerId, String productId) {
         validateImage(file);
         try {
@@ -55,29 +60,29 @@ public class MediaService {
                     .createdAt(Instant.now())
                     .build());
 
-            return MediaResponse.builder()
-                    .id(savedMedia.getId())
-                    .url(savedMedia.getUrl())
-                    .contentType(savedMedia.getContentType())
-                    .size(savedMedia.getSize())
-                    .createdAt(savedMedia.getCreatedAt())
-                    .build();
+            return mediaMapper.fromMedia(savedMedia);
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload image", e);
         }
     }
 
+    // get image by id
     public MediaResponse getImageById(String id) {
         Media media = mediaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
-        return MediaResponse.builder()
-                .id(media.getId())
-                .url(media.getUrl())
-                .contentType(media.getContentType())
-                .size(media.getSize())
-                .createdAt(media.getCreatedAt())
-                .build();
+        return mediaMapper.fromMedia(media);
     }
 
+    public void deleteImage(String id) {
+        Media media = mediaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
+
+        try {
+            cloudinary.uploader().destroy(media.getPublicId(), ObjectUtils.emptyMap());
+            mediaRepository.delete(media);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image", e);
+        }
+    }
 }

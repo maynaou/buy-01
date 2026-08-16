@@ -5,14 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-// import org.springframework.data.mongodb.core.mapping.Document;
-
-import jakarta.persistence.Entity;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-@Entity
-@Data
+@Document(collection = "media")@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

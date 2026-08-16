@@ -18,13 +18,13 @@ public class MediaController {
         return mediaService.uploadImage(file, userId, productId);
     }
 
-    // @GetMapping("/{id}")
-    // public MediaResponse getImageById(@PathVariable String id) {
-    //     return mediaService.getImageById(id);
-    // }
+    @GetMapping("/{id}")
+    public MediaResponse getImageById(@PathVariable String id) {
+        return mediaService.getImageById(id);
+    }
 
-    // @DeleteMapping("/{id}")
-    // public void deleteImage(@PathVariable String id) {
-    //     mediaService.deleteImage(id);
-    // }
+    @DeleteMapping("/{id}")
+    public void deleteImage(@PathVariable String id) {
+        mediaService.deleteImage(id);
+    }
 }
