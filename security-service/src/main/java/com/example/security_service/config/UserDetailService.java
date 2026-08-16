@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.example.security_service.entities.Auth;
+import com.example.security_service.exception.UserNotFoundException;
 import com.example.security_service.repository.AuthRepository;
 
 @Component
@@ -18,13 +19,11 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String identifier) {
-          System.out.println(identifier);
           Auth user = authRepository.findByEmail(identifier)
             .or(() -> authRepository.findByUsername(identifier))
             .orElseThrow(() ->
-                    new RuntimeException(
+                    new UserNotFoundException(
                             "Username or password incorrect"));
-        System.out.println("--------------------------");
           return new CustomUserDetails(user);
     }
 }

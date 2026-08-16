@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import com.example.user_service.dto.UserDTO;
 import com.example.user_service.entities.User;
 import com.example.user_service.events.UserCreatedEvent;
+import com.example.user_service.exception.UserNotFoundException;
 import com.example.user_service.mappers.UserMapper;
 import com.example.user_service.repository.UserRepository;
 
 @Service
+@SuppressWarnings("null")
 public class UserService {
        
     UserRepository userRepository;
@@ -23,14 +25,13 @@ public class UserService {
     }
 
     public UserDTO getProfle(String userId) {
-        System.out.println("username : " + userId);
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         return userMapper.fromUser(user);
     }
 
     public UserDTO updateProfile(String userId,UserDTO userDTO) { 
         System.out.println("role : " + userDTO.getRole());
-          User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+          User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
           user.setUsername(userDTO.getUsername());
           user.setEmail(userDTO.getEmail());
           user.setRole(userDTO.getRole());

@@ -10,6 +10,7 @@ import com.example.user_service.entities.User;
 import com.example.user_service.repository.UserRepository;
 
 @Configuration
+@SuppressWarnings("null")
 public class UserEventConsumer {
      
       @Bean 

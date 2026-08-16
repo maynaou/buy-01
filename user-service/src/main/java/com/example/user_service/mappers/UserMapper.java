@@ -7,10 +7,11 @@ import com.example.user_service.dto.UserDTO;
 import com.example.user_service.entities.User;
 
 @Component
+@SuppressWarnings("null")
 public class UserMapper {
-    public UserDTO fromUser(User user) {
+    public UserDTO fromUser( User user) {
         UserDTO userResponseDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userResponseDTO);
+            BeanUtils.copyProperties(user, userResponseDTO);
         return userResponseDTO;
     }
 }

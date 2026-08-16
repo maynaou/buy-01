@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.user_service.dto.UserDTO;
 import com.example.user_service.service.UserService;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,7 +30,7 @@ public class UserContoller {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserDTO> updateProfile(Authentication authentication , @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateProfile(Authentication authentication , @RequestBody @Valid UserDTO userDTO) {
         return  ResponseEntity.ok(userService.updateProfile(authentication.getName(),userDTO));
     }
 }

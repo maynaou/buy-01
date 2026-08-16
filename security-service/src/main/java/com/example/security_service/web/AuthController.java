@@ -12,6 +12,8 @@ import com.example.security_service.dto.LoginRequest;
 import com.example.security_service.dto.RegisterRequest;
 import com.example.security_service.services.AuthService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -23,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> register(@RequestBody @Valid RegisterRequest registerRequest) {
             authService.register(registerRequest);
      return ResponseEntity
             .status(HttpStatus.CREATED)
@@ -31,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/login") 
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
          return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginRequest));
     }
     

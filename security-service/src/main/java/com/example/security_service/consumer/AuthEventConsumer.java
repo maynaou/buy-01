@@ -15,7 +15,6 @@ public class AuthEventConsumer {
     @Bean 
     public Consumer<AuthConsumerDTO> authConsumer(AuthRepository authRepository) {
         return event -> {
-            System.out.println("-------------------------------------------hnaaaa");
         Auth auth = authRepository.findByUsername(event.getUsername())
                 .orElseGet(() -> Auth.builder()
                         .username(event.getUsername())

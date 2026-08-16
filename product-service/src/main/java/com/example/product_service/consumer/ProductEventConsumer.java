@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.product_service.dto.ProductConsumerDTO;
-import com.example.product_service.entities.Product;
 import com.example.product_service.repository.ProductRepository;
 
 @Configuration
@@ -17,10 +16,10 @@ public class ProductEventConsumer {
         return event -> {
             switch (event.getEventType()) {
                 case CREATED -> {
-                    Product product = productRepository.findById(event.getProductId())
-                            .orElseThrow(() -> new RuntimeException("product not found"));
-                    product.getImagePaths().add(event.getImagePaths());
-                    productRepository.save(product);
+                    // Product product = productRepository.findById(event.getProductId())
+                    //         .orElseThrow(() -> new RuntimeException("product not found"));
+                    // product.getImagePaths().add(event.getImagePaths());
+                    // productRepository.save(product);
                     break;
                 }
 

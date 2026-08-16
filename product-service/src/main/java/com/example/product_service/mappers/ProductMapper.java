@@ -8,6 +8,7 @@ import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
 
 @Component
+@SuppressWarnings("null")
 public class ProductMapper {
       
     public ProductDTO fromProduct(Product product) {

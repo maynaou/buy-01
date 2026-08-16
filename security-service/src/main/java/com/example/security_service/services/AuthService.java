@@ -1,6 +1,5 @@
 package com.example.security_service.services;
 
-
 import java.util.stream.Collectors;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,10 +15,13 @@ import com.example.security_service.entities.Auth;
 import com.example.security_service.entities.RefreshToken;
 import com.example.security_service.enums.EventType;
 import com.example.security_service.events.UserCreatedEvent;
+import com.example.security_service.exception.UserAlreadyExistsException;
+import com.example.security_service.exception.UserNotFoundException;
 import com.example.security_service.repository.AuthRepository;
 import com.example.security_service.repository.RefreshTokenRepository;
 
 @Service
+@SuppressWarnings("null")
 public class AuthService {
 
     AuthRepository authRepository;
@@ -29,8 +31,9 @@ public class AuthService {
     RefreshTokenRepository refreshTokenRepository;
     StreamBridge streamBridge;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder,AuthenticationManager authenticationManager,
-         TokenService tokenService,RefreshTokenRepository refreshTokenRepository, StreamBridge streamBridge) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            TokenService tokenService, RefreshTokenRepository refreshTokenRepository, StreamBridge streamBridge) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -40,6 +43,14 @@ public class AuthService {
     }
 
     public void register(RegisterRequest registerRequest) {
+        if (authRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new UserAlreadyExistsException("Username already exists");
+        }
+
+        if (authRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new UserAlreadyExistsException("Email already exists");
+        }
+
         Auth authRegister = Auth.builder()
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
@@ -47,8 +58,9 @@ public class AuthService {
                 .role(registerRequest.getRole())
                 .build();
 
-                authRepository.save(authRegister);
-                 streamBridge.send("authProducer-out-0", new UserCreatedEvent(EventType.USER,authRegister.getId(),authRegister.getUsername(),authRegister.getEmail(),authRegister.getRole()));
+        Auth savedAuth = authRepository.save(authRegister);
+        streamBridge.send("authProducer-out-0", new UserCreatedEvent(EventType.USER, savedAuth.getId(),
+                savedAuth.getUsername(), savedAuth.getEmail(), savedAuth.getRole()));
     }
 
     public AuthResponse login(LoginRequest loginRequest) {

@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 
 @Component
+@SuppressWarnings("null")
 public class AuthenticationFilter  extends OncePerRequestFilter {
      
     @Override

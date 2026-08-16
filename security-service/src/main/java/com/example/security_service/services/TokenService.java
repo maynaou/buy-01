@@ -9,9 +9,11 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.example.security_service.entities.RefreshToken;
+import com.example.security_service.exception.InvalidRefreshTokenException;
 import com.example.security_service.repository.RefreshTokenRepository;
 
 @Service
+@SuppressWarnings("null")
 public class TokenService {
 
      JwtEncoder jwtEncoder;
@@ -48,11 +50,11 @@ public class TokenService {
     public RefreshToken verifyToken(String token) {
 
        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
 
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new InvalidRefreshTokenException("Refresh token expired");
         }
 
         return refreshToken;
