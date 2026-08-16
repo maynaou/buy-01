@@ -1,81 +1,88 @@
-// package com.example.media_service.service;
+package com.example.media_service.service;
 
-// import com.cloudinary.Cloudinary;
-// import com.example.media_service.repository.MediaRepository;
-// import lombok.RequiredArgsConstructor;
-// import java.io.IOException;
-// import org.springframework.stereotype.Service;
-// import org.springframework.web.multipart.MultipartFile;
-// import com.cloudinary.utils.ObjectUtils;
-// import com.example.media_service.dto.MediaResponse;
-// import com.example.media_service.entity.Media;
-// import java.time.Instant;
-// import java.util.Map;
+import com.cloudinary.Cloudinary;
+import lombok.RequiredArgsConstructor;
+import com.example.media_service.repository.MediaRepository;
+import java.io.IOException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import com.cloudinary.utils.ObjectUtils;
+import com.example.media_service.dto.MediaResponse;
+import com.example.media_service.entity.Media;
+import java.time.Instant;
+import java.util.Map;
+import com.example.media_service.mapper.MediaMapper;
 
-// // @Service
-// // @RequiredArgsConstructor
-// public class MediaService {
+@Service
+@RequiredArgsConstructor
+public class MediaService {
 
-//     private final Cloudinary cloudinary;
-//     private final MediaRepository mediaRepository;
-//     private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+    private final Cloudinary cloudinary;
+    private final MediaRepository mediaRepository;
+    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+    private final MediaMapper mediaMapper;
 
-//     private void validateImage(MultipartFile file) {
+    // Validate the image file
+    private void validateImage(MultipartFile file) {
 
-//         if (file == null || file.isEmpty()) {
-//             throw new IllegalArgumentException("Image file is required");
-//         }
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Image file is required");
+        }
 
-//         if (file.getSize() > MAX_FILE_SIZE) {
-//             throw new IllegalArgumentException("Image size must not exceed 2 MB");
-//         }
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("Image size must not exceed 2 MB");
+        }
 
-//         String contentType = file.getContentType();
+        String contentType = file.getContentType();
 
-//         if (contentType == null || !contentType.startsWith("image/")) {
-//             throw new IllegalArgumentException("Only image files are allowed");
-//         }
-//     }
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+    }
 
-//     public MediaResponse uploadImage(MultipartFile file, String sellerId) {
-//         validateImage(file);
-//         try {
 
-//             @SuppressWarnings("unchecked")
-//             Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "image"));
+    // Upload image to Cloudinary and save metadata to the database
+    public MediaResponse uploadImage(MultipartFile file, String sellerId, String productId) {
+        validateImage(file);
+        try {
 
-//             Media savedMedia = mediaRepository.save(Media.builder()
-//                     .sellerId(sellerId)
-//                     .url((String) result.get("secure_url"))
-//                     .publicId((String) result.get("public_id"))
-//                     .contentType(file.getContentType())
-//                     .size(file.getSize())
-//                     .createdAt(Instant.now())
-//                     .build());
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap("resource_type", "image"));
 
-//             return MediaResponse.builder()
-//                     .id(savedMedia.getId())
-//                     .url(savedMedia.getUrl())
-//                     .contentType(savedMedia.getContentType())
-//                     .size(savedMedia.getSize())
-//                     .createdAt(savedMedia.getCreatedAt())
-//                     .build();
+            Media savedMedia = mediaRepository.save(Media.builder()
+                    .sellerId(sellerId)
+                    .productId(productId)
+                    .url((String) result.get("secure_url"))
+                    .publicId((String) result.get("public_id"))
+                    .contentType(file.getContentType())
+                    .size(file.getSize())
+                    .createdAt(Instant.now())
+                    .build());
 
-//         } catch (IOException e) {
-//             throw new RuntimeException("Failed to upload image", e);
-//         }
-//     }
+            return mediaMapper.fromMedia(savedMedia);
 
-//     public MediaResponse getImageById(String id) {
-//         Media media = mediaRepository.findById(id)
-//                 .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
-//         return MediaResponse.builder()
-//                 .id(media.getId())
-//                 .url(media.getUrl())
-//                 .contentType(media.getContentType())
-//                 .size(media.getSize())
-//                 .createdAt(media.getCreatedAt())
-//                 .build();
-//     }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload image", e);
+        }
+    }
 
-// }
+    // get image by id
+    public MediaResponse getImageById(String id) {
+        Media media = mediaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
+        return mediaMapper.fromMedia(media);
+    }
+
+    public void deleteImage(String id) {
+        Media media = mediaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
+
+        try {
+            cloudinary.uploader().destroy(media.getPublicId(), ObjectUtils.emptyMap());
+            mediaRepository.delete(media);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image", e);
+        }
+    }
+}

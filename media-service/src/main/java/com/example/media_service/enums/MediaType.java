@@ -1,7 +1,6 @@
 package com.example.media_service.enums;
 
-public enum EventType {
-    CREATED,
-    DELETED,
+public enum MediaType {
+    PRODUCT_IMAGE,
     AVATAR
 }
