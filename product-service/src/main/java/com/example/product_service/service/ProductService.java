@@ -1,73 +1,66 @@
 package com.example.product_service.service;
 
-import java.util.UUID;
-
-// import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.stereotype.Service;
+import java.util.ArrayList;
 import java.util.List;
-
-import com.example.product_service.dto.ProductRequest;
-import com.example.product_service.dto.ProductResponse;
-import com.example.product_service.entity.Product;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import com.example.product_service.dto.ProductDTO;
+import com.example.product_service.entities.Product;
+import com.example.product_service.exception.ProductNotFoundException;
+import com.example.product_service.feign.MediaRestClient;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
 
 @Service
+@SuppressWarnings("null")
 public class ProductService {
-
+    
     ProductRepository productRepository;
     ProductMapper productMapper;
-    // StreamBridge streamBridge;
-
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper) {
+    MediaRestClient mediaRestClient;
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper,MediaRestClient mediaRestClient) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
-        // this.streamBridge = streamBridge;
+        this.mediaRestClient = mediaRestClient;
     }
 
-    public ProductResponse createProduct(ProductRequest productRequest, String userId) {
-        Product product = Product.builder()
-                .id(UUID.randomUUID().toString())
-                .name(productRequest.getName())
-                .description(productRequest.getDescription())
-                .price(productRequest.getPrice())
-                .quantity(productRequest.getQuantity())
-                .sellerId(userId)
-                .build();
+    public ProductDTO createProduct(ProductDTO productRequest, String userId) {
+                Product product = Product.builder()
+                                         .id(UUID.randomUUID().toString())
+                                         .name(productRequest.getName())
+                                         .description(productRequest.getDescription())
+                                         .price(productRequest.getPrice())
+                                         .quantity(productRequest.getQuantity())
+                                         .userId(userId)
+                                         .imagePaths(new ArrayList<>())
+                                         .build();
 
-        productRepository.save(product);
-
-        // streamBridge.send("productProducer-out-0", new ProductCreatedEvent(product.getId(), product.getSellerId()));
-
-        return productMapper.fromProduct(product);
+                        productRepository.save(product);
+              
+                return productMapper.fromProduct(product);
     }
 
-    public ProductResponse getProductById(String id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Produc not found"));
-        return productMapper.fromProduct(product);
+    public ProductDTO getProductById(String id) {
+          Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Produc not found"));
+          return productMapper.fromProduct(product);
     }
 
-    public List<ProductResponse> getProducts() {
-        List<Product> products = productRepository.findAll();
-        return productMapper.fromProduct(products);
+    public List<ProductDTO>  getProducts() {
+          List<Product> products = productRepository.findAll();
+          return productMapper.fromProduct(products);
     }
 
-    public ProductResponse updateProduct(String id, ProductRequest productDTO) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("product not found"));
-        product.setName(productDTO.getName());
-        product.setDescription(productDTO.getDescription());
-        product.setPrice(productDTO.getPrice());
-        product.setQuantity(productDTO.getQuantity());
-        return productMapper.fromProduct(productRepository.save(product));
+    public ProductDTO updateProduct(String id, ProductDTO productDTO) {
+           Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("product not found"));
+           product.setName(productDTO.getName());
+           product.setDescription(productDTO.getDescription());
+           product.setPrice(productDTO.getPrice());
+           product.setQuantity(productDTO.getQuantity());
+           return productMapper.fromProduct(productRepository.save(product));
     }
 
-    public ProductResponse addImage(String productId, List<String> imageUrl) {
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        product.getImageUrls().addAll(imageUrl);
-
-        return productMapper.fromProduct(productRepository.save(product));
+    public void deleteProduct(String id) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("product not found"));
+        productRepository.delete(product);
     }
 }

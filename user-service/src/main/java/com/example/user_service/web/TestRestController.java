@@ -16,14 +16,14 @@ public class TestRestController {
         System.out.println("*************" + authentication.getAuthorities());
     }
     @GetMapping("/test2")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public void test2(Authentication authentication) {
                 System.out.println("*************" + authentication.getAuthorities());
 
     }
 
-
     @GetMapping("/test1") 
-    @PreAuthorize("hasAuthority('SELLER')")
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
     public void test1() {
         System.out.println("------------------");
     }

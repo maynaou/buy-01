@@ -3,11 +3,16 @@ package com.example.user_service.web;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.user_service.dto.UserResponseDTO;
+import com.example.user_service.dto.UserDTO;
 import com.example.user_service.service.UserService;
+
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -20,7 +25,12 @@ public class UserContoller {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getProfile(Authentication authentication) {
+    public ResponseEntity<UserDTO> getProfile(Authentication authentication) {
         return ResponseEntity.ok(userService.getProfle(authentication.getName()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserDTO> updateProfile(Authentication authentication , @RequestBody @Valid UserDTO userDTO) {
+        return  ResponseEntity.ok(userService.updateProfile(authentication.getName(),userDTO));
     }
 }

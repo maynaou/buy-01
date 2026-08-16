@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.example.product_service.repository.ProductRepository;
 
 @Service("productSecurity")
+@SuppressWarnings("null")
 public class ProductSecurityService {
      
     ProductRepository productRepository;
