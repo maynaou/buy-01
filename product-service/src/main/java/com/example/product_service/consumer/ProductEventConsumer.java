@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.product_service.dto.ProductConsumerDTO;
-import com.example.product_service.entities.Product;
 import com.example.product_service.repository.ProductRepository;
 
 @Configuration
