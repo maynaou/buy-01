@@ -51,7 +51,6 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
-        System.out.println("-----------------------------");
 
         Auth authRegister = Auth.builder()
                 .username(registerRequest.getUsername())

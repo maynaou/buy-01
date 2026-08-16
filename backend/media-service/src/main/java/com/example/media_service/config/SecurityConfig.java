@@ -17,19 +17,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationFilter authentication) { 
-
         return http
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-             //    .httpBasic(basic -> basic.disable())
-               .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**",   "/v3/api-docs/**",
-                            "/swagger-ui/**").permitAll()
-               .anyRequest().authenticated())
+               .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
-            //    .formLogin(form -> form.disable()) 
                .build();
-
     }
     
 }
