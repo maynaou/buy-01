@@ -31,9 +31,9 @@ public class UserEventConsumer {
             }
 
             case AVATAR -> {
-                     User users = userRepository.findById(event.getId()).orElseThrow(()-> new RuntimeException("user not found"));
-                     users.setAvatar(event.getAvatar());
-                     userRepository.save(users);
+                    //  User users = userRepository.findById(event.getId()).orElseThrow(()-> new RuntimeException("user not found"));
+                    //  users.setAvatar(event.getAvatar());
+                    //  userRepository.save(users);
             }
 
 

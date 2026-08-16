@@ -51,6 +51,8 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
+        System.out.println("-----------------------------");
+
         Auth authRegister = Auth.builder()
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
@@ -70,7 +72,6 @@ public class AuthService {
           CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
           String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
 
-          System.out.println("scopes : " + scopes);
           String acces_Token = tokenService.generateToken(user.getId(), scopes);
           RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
 
@@ -82,9 +83,8 @@ public class AuthService {
 
     public AuthResponse refresh(String refreshToken) {
           RefreshToken token = tokenService.verifyToken(refreshToken);
-          Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+          Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
           String scopes = "ROLE_" + user.getRole().toString();
-          System.out.println("scopes_1 : " + scopes);
           String acces_Token = tokenService.generateToken(token.getUserId(), scopes);
           RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
           refreshTokenRepository.deleteById(token.getId());
