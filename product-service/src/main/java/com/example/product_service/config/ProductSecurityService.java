@@ -15,7 +15,7 @@ public class ProductSecurityService {
     }
 
     public boolean isOwner(String productId, String currentId) {
-        return productRepository.findById(productId).map(product -> product.getUserId().equals(currentId)).orElse(false); 
+        return productRepository.findById(productId).map(product -> product.getSellerId().equals(currentId)).orElse(false); 
     } 
     
 }
