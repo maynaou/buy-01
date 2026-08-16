@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.service.ProductService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -30,7 +32,7 @@ public class ProductController {
     
     @PostMapping("/product")
     @PreAuthorize("hasAuthority('SELLER')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productRequest, Authentication authentication) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest, Authentication authentication) {
            return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
     }
 
@@ -46,7 +48,7 @@ public class ProductController {
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody @Valid ProductDTO productDTO) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id,productDTO));
     }
 

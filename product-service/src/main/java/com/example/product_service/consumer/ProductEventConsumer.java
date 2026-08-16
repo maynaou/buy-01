@@ -17,10 +17,10 @@ public class ProductEventConsumer {
         return event -> {
             switch (event.getEventType()) {
                 case CREATED -> {
-                    Product product = productRepository.findById(event.getProductId())
-                            .orElseThrow(() -> new RuntimeException("product not found"));
-                    product.getImagePaths().add(event.getImagePaths());
-                    productRepository.save(product);
+                    // Product product = productRepository.findById(event.getProductId())
+                    //         .orElseThrow(() -> new RuntimeException("product not found"));
+                    // product.getImagePaths().add(event.getImagePaths());
+                    // productRepository.save(product);
                     break;
                 }
 
