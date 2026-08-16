@@ -12,7 +12,6 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MediaResponse {
-
     private String id;
     private String url;
     private String contentType;
