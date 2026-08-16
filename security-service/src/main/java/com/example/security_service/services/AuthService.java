@@ -64,31 +64,34 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority())
-                .collect(Collectors.joining(" "));
-        String acces_Token = tokenService.generateToken(user.getId(), scopes);
-        RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
-        return AuthResponse.builder()
-                .acces_Token(acces_Token)
-                .refresh_Token(refresh_Token.getToken())
-                .build();
+          Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
+
+          System.out.println(authentication);
+          CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+          String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
+
+          System.out.println("scopes : " + scopes);
+          String acces_Token = tokenService.generateToken(user.getId(), scopes);
+          RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
+
+          return AuthResponse.builder()
+                             .acces_Token(acces_Token)
+                             .refresh_Token(refresh_Token.getToken())
+                             .build();
     }
 
     public AuthResponse refresh(String refreshToken) {
-        RefreshToken token = tokenService.verifyToken(refreshToken);
-        Auth user = authRepository.findById(token.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        String scopes = user.getRole().toString();
-        String acces_Token = tokenService.generateToken(token.getUserId(), scopes);
-        RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
-        refreshTokenRepository.deleteById(token.getId());
-        return AuthResponse.builder()
-                .acces_Token(acces_Token)
-                .refresh_Token(refresh_Token.getToken())
-                .build();
+          RefreshToken token = tokenService.verifyToken(refreshToken);
+          Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+          String scopes = "ROLE_" + user.getRole().toString();
+          System.out.println("scopes_1 : " + scopes);
+          String acces_Token = tokenService.generateToken(token.getUserId(), scopes);
+          RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
+          refreshTokenRepository.deleteById(token.getId());
+          return AuthResponse.builder()
+                             .acces_Token(acces_Token)
+                             .refresh_Token(refresh_Token.getToken())
+                             .build();
     }
 
 }

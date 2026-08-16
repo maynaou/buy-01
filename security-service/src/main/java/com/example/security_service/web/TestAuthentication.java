@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestAuthentication {
     
     @GetMapping("/test")
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_CLIENT')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public String test(Authentication authentication) {
          System.out.println("++++++++++++++++++++ " + authentication.getName() + authentication.getAuthorities());
          return "hello world";
