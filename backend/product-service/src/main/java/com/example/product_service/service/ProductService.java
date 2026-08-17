@@ -3,11 +3,14 @@ package com.example.product_service.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
+import com.example.product_service.enums.EventType;
+import com.example.product_service.events.ProductCreatedEvent;
 import com.example.product_service.exception.ProductNotFoundException;
-import com.example.product_service.feign.MediaRestClient;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
 
@@ -17,11 +20,11 @@ public class ProductService {
     
     ProductRepository productRepository;
     ProductMapper productMapper;
-    MediaRestClient mediaRestClient;
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper,MediaRestClient mediaRestClient) {
+    StreamBridge streamBridge;
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper , StreamBridge streamBridge) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
-        this.mediaRestClient = mediaRestClient;
+        this.streamBridge = streamBridge;
     }
 
     public ProductDTO createProduct(ProductDTO productRequest, String userId) {
@@ -36,12 +39,14 @@ public class ProductService {
                                          .build();
 
                         productRepository.save(product);
+
+                streamBridge.send("productProducer-out-0", new ProductCreatedEvent(EventType.CREATED, product.getId(), product.getUserId()));
               
                 return productMapper.fromProduct(product);
     }
 
     public ProductDTO getProductById(String id) {
-          Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Produc not found"));
+         Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Produc not found"));
           return productMapper.fromProduct(product);
     }
 
@@ -62,5 +67,7 @@ public class ProductService {
     public void deleteProduct(String id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("product not found"));
         productRepository.delete(product);
+
+        streamBridge.send("productProducer-out-0", new ProductCreatedEvent(EventType.DELETED,id,""));
     }
 }

@@ -25,5 +25,5 @@ public class Product {
      private Double price;
      private Integer quantity;
      private String userId;
-     private List<MediaDTO> imagePaths;
+     private List<String> imagePaths;
 }

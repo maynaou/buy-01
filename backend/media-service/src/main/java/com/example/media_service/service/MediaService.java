@@ -1,81 +1,83 @@
-// package com.example.media_service.service;
+package com.example.media_service.service;
 
-// import com.cloudinary.Cloudinary;
-// import com.example.media_service.repository.MediaRepository;
-// import lombok.RequiredArgsConstructor;
-// import java.io.IOException;
-// import org.springframework.stereotype.Service;
-// import org.springframework.web.multipart.MultipartFile;
-// import com.cloudinary.utils.ObjectUtils;
-// import com.example.media_service.dto.MediaResponse;
-// import com.example.media_service.entity.Media;
-// import java.time.Instant;
-// import java.util.Map;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-// // @Service
-// // @RequiredArgsConstructor
-// public class MediaService {
+import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-//     private final Cloudinary cloudinary;
-//     private final MediaRepository mediaRepository;
-//     private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.example.media_service.entities.Media;
+import com.example.media_service.entities.ProductReference;
+import com.example.media_service.enums.EventType;
+import com.example.media_service.events.MediaCreatedEvent;
+import com.example.media_service.repository.MediaRepository;
+import com.example.media_service.repository.ProductReferenceRepository;
 
-//     private void validateImage(MultipartFile file) {
+@Service
+public class MediaService {
 
-//         if (file == null || file.isEmpty()) {
-//             throw new IllegalArgumentException("Image file is required");
-//         }
+    MediaRepository mediaRepository;
 
-//         if (file.getSize() > MAX_FILE_SIZE) {
-//             throw new IllegalArgumentException("Image size must not exceed 2 MB");
-//         }
+    ProductReferenceRepository productReferenceRepository;
 
-//         String contentType = file.getContentType();
+    private Cloudinary cloudinary;
 
-//         if (contentType == null || !contentType.startsWith("image/")) {
-//             throw new IllegalArgumentException("Only image files are allowed");
-//         }
-//     }
+    StreamBridge streamBridge;
 
-//     public MediaResponse uploadImage(MultipartFile file, String sellerId) {
-//         validateImage(file);
-//         try {
+    public MediaService(MediaRepository mediaRepository, Cloudinary cloudinary,
+            ProductReferenceRepository productReferenceRepository, StreamBridge streamBridge) {
+        this.mediaRepository = mediaRepository;
+        this.cloudinary = cloudinary;
+        this.productReferenceRepository = productReferenceRepository;
+        this.streamBridge = streamBridge;
+    }
 
-//             @SuppressWarnings("unchecked")
-//             Map<String, Object> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "image"));
+    public void uploadImage(MultipartFile[] imgUrls, String productId) {
+        ProductReference productReference = productReferenceRepository.findByProductId(productId);
 
-//             Media savedMedia = mediaRepository.save(Media.builder()
-//                     .sellerId(sellerId)
-//                     .url((String) result.get("secure_url"))
-//                     .publicId((String) result.get("public_id"))
-//                     .contentType(file.getContentType())
-//                     .size(file.getSize())
-//                     .createdAt(Instant.now())
-//                     .build());
+        if (!productReference.getProductId().equals(productId)) {
+            throw new RuntimeException("product pas cree");
+        }
 
-//             return MediaResponse.builder()
-//                     .id(savedMedia.getId())
-//                     .url(savedMedia.getUrl())
-//                     .contentType(savedMedia.getContentType())
-//                     .size(savedMedia.getSize())
-//                     .createdAt(savedMedia.getCreatedAt())
-//                     .build();
+        for (MultipartFile file : imgUrls) {
+            if (file.isEmpty()) {
+                continue;
+            }
 
-//         } catch (IOException e) {
-//             throw new RuntimeException("Failed to upload image", e);
-//         }
-//     }
+            try {
+                var pic = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("folder", "media"));
 
-//     public MediaResponse getImageById(String id) {
-//         Media media = mediaRepository.findById(id)
-//                 .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + id));
-//         return MediaResponse.builder()
-//                 .id(media.getId())
-//                 .url(media.getUrl())
-//                 .contentType(media.getContentType())
-//                 .size(media.getSize())
-//                 .createdAt(media.getCreatedAt())
-//                 .build();
-//     }
+                Media newMedia = new Media();
+                newMedia.setProductId(productId);
+                newMedia.setImagePath(pic.get("secure_url").toString());
 
-// }
+                this.mediaRepository.save(newMedia);
+
+                streamBridge.send("mediaProducer-out-0",
+                        new MediaCreatedEvent(EventType.CREATED, productId, newMedia.getImagePath()));
+
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                        "Failed to upload file: " + file.getOriginalFilename());
+            }
+        }
+
+    }
+
+    public void deleteImage(String id) {
+        Media media = mediaRepository.findById(id).orElseThrow(() -> new RuntimeException("image not found"));
+        mediaRepository.delete(media);
+        streamBridge.send("mediaProducer-out-0",
+                new MediaCreatedEvent(EventType.DELETED, media.getProductId(), media.getImagePath()));
+    }
+
+}

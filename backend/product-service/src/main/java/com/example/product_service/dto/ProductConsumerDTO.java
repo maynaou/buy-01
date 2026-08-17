@@ -1,5 +1,6 @@
 package com.example.product_service.dto;
 
+
 import com.example.product_service.enums.EventType;
 
 import lombok.Data;
@@ -8,5 +9,5 @@ import lombok.Data;
 public class ProductConsumerDTO {
        private EventType eventType;
        private String productId;
-       private String imagePaths;
+       private String imagePath;
 }

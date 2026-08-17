@@ -5,17 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MediaResponse {
-
+public class MediaDTO {
     private String id;
-    private String url;
-    private String contentType;
-    private long size;
-    private Instant createdAt;
+    private String imagePath;
+    private String productId;
 }
