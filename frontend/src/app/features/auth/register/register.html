@@ -1,0 +1,104 @@
+<div class="register-container">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+    <h1>Create Account</h1>
+
+    <!-- Username -->
+    <div class="form-group">
+      <label for="username">Username</label>
+
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+      />
+
+      @if (registerForm.controls.username.touched &&
+            registerForm.controls.username.invalid) {
+
+        <div class="error">
+          @if (registerForm.controls.username.hasError('required')) {
+            <span>Username is required.</span>
+          }
+
+          @if (registerForm.controls.username.hasError('minlength')) {
+            <span>Username must be at least 3 characters.</span>
+          }
+
+          @if (registerForm.controls.username.hasError('maxlength')) {
+            <span>Username must not exceed 20 characters.</span>
+          }
+
+          @if (registerForm.controls.username.hasError('pattern')) {
+            <span>Only letters, numbers and underscore are allowed.</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email</label>
+
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+      />
+
+      @if (registerForm.controls.email.touched &&
+            registerForm.controls.email.invalid) {
+
+        <div class="error">
+          @if (registerForm.controls.email.hasError('required')) {
+            <span>Email is required.</span>
+          }
+
+          @if (registerForm.controls.email.hasError('email')) {
+            <span>Please enter a valid email.</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label for="password">Password</label>
+
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+      />
+
+      @if (registerForm.controls.password.touched &&
+            registerForm.controls.password.invalid) {
+
+        <div class="error">
+          @if (registerForm.controls.password.hasError('required')) {
+            <span>Password is required.</span>
+          }
+
+          @if (registerForm.controls.password.hasError('minlength')) {
+            <span>Password must be at least 6 characters.</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Role -->
+    <div class="form-group">
+      <label for="role">Account type</label>
+
+      <select id="role" formControlName="role">
+        <option value="CLIENT">Client</option>
+        <option value="SELLER">Seller</option>
+      </select>
+    </div>
+
+    <button type="submit" [disabled]="registerForm.invalid">
+      Register
+    </button>
+
+  </form>
+</div>

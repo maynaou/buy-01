@@ -4,3 +4,5 @@ public enum MediaType {
     PRODUCT,
     AVATAR
 }
+
+

@@ -24,7 +24,6 @@ public class SecurityConfig {
                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
                .build();
-
     }
     
 }
