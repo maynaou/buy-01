@@ -60,7 +60,7 @@ public class AuthService {
                 .build();
 
         Auth savedAuth = authRepository.save(authRegister);
-        streamBridge.send("authProducer-out-0", new UserCreatedEvent(EventType.USER, savedAuth.getId(),
+        streamBridge.send("authProducer-out-0", new UserCreatedEvent(savedAuth.getId(),
                 savedAuth.getUsername(), savedAuth.getEmail(), savedAuth.getRole()));
     }
 

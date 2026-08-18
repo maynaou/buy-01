@@ -1,46 +1,51 @@
-// package com.example.media_service.consumer;
+package com.example.media_service.consumer;
 
-// import java.util.function.Consumer;
+import java.util.List;
+import java.util.function.Consumer;
 
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-// import com.example.media_service.dto.ProductReferenceDTO;
-// import com.example.media_service.entity.ProductReference;
-// import com.example.media_service.repository.MediaRepository;
-// import com.example.media_service.repository.ProductReferenceRepository;
+import com.example.media_service.dto.ProductReferenceDTO;
+import com.example.media_service.entities.Media;
+import com.example.media_service.entities.ProductReference;
+import com.example.media_service.repository.MediaRepository;
+import com.example.media_service.repository.ProductReferenceRepository;
 
 
-// @Configuration
-// public class MediaEventConsumer {
+@Configuration
+public class MediaEventConsumer {
     
-//     @Bean
-//     public Consumer<ProductReferenceDTO> mediaConsumer(ProductReferenceRepository productReferenceRepository, MediaRepository mediaRepository ) {
-//       return event -> {
+    @Bean
+    public Consumer<ProductReferenceDTO> mediaConsumer(ProductReferenceRepository productReferenceRepository, MediaRepository mediaRepository ) {
+      return event -> {
 
-//         switch (event.getEventType()) {
+        switch (event.getEventType()) {
+             
+            case CREATED -> {
+                ProductReference productReference =
+                        ProductReference.builder()
+                                .productId(event.getProductId())
+                                .userId(event.getUserId())
+                                .build();
 
-//             case CREATED -> {
-//                 ProductReference productReference =
-//                         ProductReference.builder()
-//                                 .productId(event.getProductId())
-//                                 .userId(event.getUserId())
-//                                 .build();
+                productReferenceRepository.save(productReference);
+                break;
+            }
 
-//                 productReferenceRepository.save(productReference);
-//             }
+            case DELETED -> {
+                List<Media> media = mediaRepository.findByEntityId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
+                mediaRepository.deleteAll(media);
+                break;
+            }
 
-//             case DELETED -> {
-//                 // Media media = mediaRepository.findByProducId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
-//                 // mediaRepository.delete(media);
-//             }
-
-//             default -> {
-//                 System.out.println(
-//                         "Unknown event type: " + event.getEventType()
-//                 );
-//             }
-//         }
-//     };
-//     }
-// }
+            default -> {
+                System.out.println(
+                        "Unknown event type: " + event.getEventType()
+                );
+                break;
+            }
+        }
+    };
+    }
+}

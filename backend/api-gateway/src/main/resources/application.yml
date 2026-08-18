@@ -19,4 +19,4 @@ spring:
             - id: r3
               uri: lb://MEDIA-SERVICE
               predicates:
-                Path=/api/medias/**
+                Path=/api/media/**

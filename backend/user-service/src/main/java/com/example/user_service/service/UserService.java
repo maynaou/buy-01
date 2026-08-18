@@ -30,7 +30,6 @@ public class UserService {
     }
 
     public UserDTO updateProfile(String userId,UserDTO userDTO) { 
-        System.out.println("role : " + userDTO.getRole());
           User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
           user.setUsername(userDTO.getUsername());
           user.setEmail(userDTO.getEmail());
