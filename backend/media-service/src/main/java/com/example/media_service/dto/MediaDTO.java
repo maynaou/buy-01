@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class MediaDTO {
     private String id;
     private String imagePath;
-    private String productId;
+    private String entityId;
 }

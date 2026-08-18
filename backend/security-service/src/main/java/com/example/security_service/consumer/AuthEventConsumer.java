@@ -23,8 +23,7 @@ public class AuthEventConsumer {
         auth.setEmail(event.getEmail());
         auth.setRole(event.getRole());
 
-        authRepository.save(auth);
-                           
+        authRepository.save(auth);     
         };
     }
 }

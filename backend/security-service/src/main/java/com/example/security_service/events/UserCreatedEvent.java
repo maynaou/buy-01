@@ -9,7 +9,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UserCreatedEvent {
-     private EventType eventType;
      private String id;
      private String username;
      private String email;

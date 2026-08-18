@@ -30,17 +30,20 @@ public class MediaEventConsumer {
                                 .build();
 
                 productReferenceRepository.save(productReference);
+                break;
             }
 
             case DELETED -> {
-                List<Media> media = mediaRepository.findByProductId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
+                List<Media> media = mediaRepository.findByEntityId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
                 mediaRepository.deleteAll(media);
+                break;
             }
 
             default -> {
                 System.out.println(
                         "Unknown event type: " + event.getEventType()
                 );
+                break;
             }
         }
     };

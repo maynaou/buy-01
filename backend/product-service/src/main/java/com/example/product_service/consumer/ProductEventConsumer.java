@@ -15,10 +15,12 @@ public class ProductEventConsumer {
     @Bean
     public Consumer<ProductConsumerDTO> productConsumer(ProductRepository productRepository) {
         return event -> {
+            if (!"PRODUCT".equals(event.getMediaType())) {
+                return;
+            }
             switch (event.getEventType()) {
                 case CREATED -> {
 
-                    System.out.println("--------------------------" + event.getImagePath());
                     Product product = productRepository.findById(event.getProductId())
                             .orElseThrow(() -> new RuntimeException("product not found"));
                     product.getImagePaths().add(event.getImagePath());

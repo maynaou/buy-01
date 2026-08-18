@@ -17,12 +17,12 @@ public class MediaServiceApplication {
         SpringApplication.run(MediaServiceApplication.class, args);
     }
 
-    @Bean
+    // @Bean
     CommandLineRunner commandLineRunner(MediaRepository mediaRepository) {
         return args -> {
                   Media media = Media.builder()
                                      .imagePath(UUID.randomUUID().toString())
-                                     .productId("prod123")
+                                     .entityId("prod123")
                                      .build();
 
                   mediaRepository.save(media);

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai",
+  "provider": {
+    "openai-compatible": {
+      "name": "Tabitoken",
+      "options": {
+        "baseURL": "https://tabitoken.com",
+        "apiKey": "sk-z7fnuqZZhRn4rLcY7ckybzc07XunYHqmcTiNsD5SEscHP2Y4"
+      }
+    }
+  }
+}

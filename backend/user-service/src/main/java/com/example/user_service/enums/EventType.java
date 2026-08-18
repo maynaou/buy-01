@@ -1,6 +1,6 @@
 package com.example.user_service.enums;
 
 public enum EventType {
-    USER,
-    AVATAR
+    CREATED,
+    DELETED
 }

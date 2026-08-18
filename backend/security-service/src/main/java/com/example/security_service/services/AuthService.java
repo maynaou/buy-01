@@ -16,7 +16,6 @@ import com.example.security_service.entities.RefreshToken;
 import com.example.security_service.enums.EventType;
 import com.example.security_service.events.UserCreatedEvent;
 import com.example.security_service.exception.UserAlreadyExistsException;
-import com.example.security_service.exception.UserNotFoundException;
 import com.example.security_service.repository.AuthRepository;
 import com.example.security_service.repository.RefreshTokenRepository;
 
@@ -59,7 +58,7 @@ public class AuthService {
                 .build();
 
         Auth savedAuth = authRepository.save(authRegister);
-        streamBridge.send("authProducer-out-0", new UserCreatedEvent(EventType.USER, savedAuth.getId(),
+        streamBridge.send("authProducer-out-0", new UserCreatedEvent(savedAuth.getId(),
                 savedAuth.getUsername(), savedAuth.getEmail(), savedAuth.getRole()));
     }
 

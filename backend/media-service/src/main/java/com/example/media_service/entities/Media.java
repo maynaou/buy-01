@@ -3,6 +3,8 @@ package com.example.media_service.entities;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.example.media_service.enums.MediaType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +19,6 @@ public class Media {
     @Id
     private String id;
     private String imagePath;
-    private String productId;
+    private String entityId; 
+    private MediaType type;
 }
