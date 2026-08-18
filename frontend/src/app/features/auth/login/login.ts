@@ -38,6 +38,7 @@ export class Login {
           response.acces_Token,
           response.refresh_Token
         );
+        this.authService.setAuthenticated();
         console.log('Login successful:', response);
       },
       error: (error) => {

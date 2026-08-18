@@ -18,9 +18,7 @@ export class AuthService {
 
   private readonly authUrl = `${environment.apiUrl}/auth`;
 
-  private authenticatedSignal = signal(
-    this.tokenService.isAuthenticated()
-  );
+  private authenticatedSignal = signal(this.tokenService.isAuthenticated());
 
   readonly isAuthenticated = this.authenticatedSignal.asReadonly();
 
@@ -41,5 +39,9 @@ export class AuthService {
   logout(): void {
     this.tokenService.clearTokens();
     this.authenticatedSignal.set(false);
+  }
+
+  setAuthenticated(): void {
+    this.authenticatedSignal.set(true);
   }
 } 
