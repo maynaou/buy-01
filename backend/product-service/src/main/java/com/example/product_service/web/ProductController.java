@@ -32,7 +32,7 @@ public class ProductController {
     
     @PostMapping("/product")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productRequest, Authentication authentication) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest, Authentication authentication) {
            return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
     }
 
