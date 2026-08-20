@@ -13,7 +13,6 @@ import com.example.security_service.dto.LoginRequest;
 import com.example.security_service.dto.RegisterRequest;
 import com.example.security_service.entities.Auth;
 import com.example.security_service.entities.RefreshToken;
-import com.example.security_service.enums.EventType;
 import com.example.security_service.events.UserCreatedEvent;
 import com.example.security_service.exception.UserAlreadyExistsException;
 import com.example.security_service.exception.UserNotFoundException;

@@ -13,6 +13,6 @@ import com.example.media_service.enums.MediaType;
 @Repository
 public interface MediaRepository extends MongoRepository<Media, String> {
      Optional<List<Media>> findByEntityId(String product);
-     Optional<Media> findByEntityIdAndType(String entityId, MediaType type);
-     Optional<List<Media>> findAllByEntityIdAndType(String entityId, MediaType type);
+     Optional<Media> findByEntityIdAndMediaType(String entityId, MediaType mediaType);
+     Optional<List<Media>> findAllByEntityIdAndMediaType(String entityId, MediaType mediaType);
 }

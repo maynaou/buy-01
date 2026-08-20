@@ -46,7 +46,7 @@ public class MediaService {
 
     public List<MediaDTO> uploadImage(MultipartFile[] imgUrls, String productId) {
 
-        Optional<List<Media>> existing = mediaRepository.findAllByEntityIdAndType(productId, MediaType.PRODUCT);
+        Optional<List<Media>> existing = mediaRepository.findAllByEntityIdAndMediaType(productId, MediaType.PRODUCT);
         List<Media> existingList = existing.orElseGet(ArrayList::new);
         List<Media> saved = new ArrayList<>();
         int index = 0;
@@ -71,7 +71,7 @@ public class MediaService {
                     Media newMedia = new Media();
                     newMedia.setEntityId(productId);
                     newMedia.setImagePath(imagePath);
-                    newMedia.setType(MediaType.PRODUCT);
+                    newMedia.setMediaType(MediaType.PRODUCT);
 
                     saved.add(this.mediaRepository.save(newMedia));
                 }
@@ -107,7 +107,7 @@ public class MediaService {
 
             String imagePath = pic.get("secure_url").toString();
 
-            Optional<Media> existing = mediaRepository.findByEntityIdAndType(userId, MediaType.AVATAR);
+            Optional<Media> existing = mediaRepository.findByEntityIdAndMediaType(userId, MediaType.AVATAR);
 
             Media saved;
             if (existing.isPresent()) {
@@ -117,7 +117,7 @@ public class MediaService {
                 Media newMedia = new Media();
                 newMedia.setEntityId(userId);
                 newMedia.setImagePath(imagePath);
-                newMedia.setType(MediaType.AVATAR);
+                newMedia.setMediaType(MediaType.AVATAR);
 
                 saved = this.mediaRepository.save(newMedia);
             }
@@ -137,7 +137,7 @@ public class MediaService {
         Media media = mediaRepository.findById(id).orElseThrow(() -> new MediaNotFoundException("image not found"));
         mediaRepository.delete(media);
         streamBridge.send("mediaProducer-out-0",
-                new MediaCreatedEvent(EventType.DELETED, media.getEntityId(), media.getImagePath(), media.getType()));
+                new MediaCreatedEvent(EventType.DELETED, media.getEntityId(), media.getImagePath(), media.getMediaType()));
     }
 
 }
