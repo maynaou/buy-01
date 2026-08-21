@@ -21,6 +21,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import java.time.LocalDateTime;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -54,7 +57,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
-                .userDetailsService(userDetailService)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
+                // .userDetailsService(userDetailService)
                 .build();
     }
 
@@ -70,5 +74,20 @@ public class SecurityConfig {
     @Bean
     JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, ex) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                    "status": 401,
+                    "message": "Authentication required",
+                    "timestamp": "%s"
+                }
+                """.formatted(LocalDateTime.now()));
+        };
     }
 }

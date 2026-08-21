@@ -12,6 +12,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import reactor.core.publisher.Mono;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
 
 
 @Configuration
@@ -31,13 +36,33 @@ public class SecurityConfig {
               .csrf(csrf-> csrf.disable())
               .authorizeExchange(authorize -> authorize.pathMatchers("/api/auth/**").permitAll())
               .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
-              .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder())))
+              .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder()))
+                                                    .authenticationEntryPoint(customAuthenticationEntryPoint()))
               .build();
     }
 
     @Bean
     ReactiveJwtDecoder jwtDecoder() {
         return NimbusReactiveJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
+    }
+
+    @Bean
+    public ServerAuthenticationEntryPoint customAuthenticationEntryPoint() {
+        System.out.println("+++++++++++++++++++++++++++++++++++++");
+        return (exchange, ex) -> {
+            var response = exchange.getResponse();
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            
+            String body = String.format(
+                "{\"status\": 401, \"error\": \"Unauthorized\", \"message\": \"%s\", \"path\": \"%s\"}",
+                "Token JWT invalide ou expiré",
+                exchange.getRequest().getPath().value()
+            );
+            
+            var buffer = response.bufferFactory().wrap(body.getBytes());
+            return response.writeWith(Mono.just(buffer));
+        };
     }
 
 
