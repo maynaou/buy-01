@@ -79,6 +79,14 @@ services:
       - mongodb
       - kafka
       - discovery-service
+    
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery-service
 
 volumes:
   mongodb_data:

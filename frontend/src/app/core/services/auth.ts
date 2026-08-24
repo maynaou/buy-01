@@ -16,7 +16,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private tokenService = inject(TokenService);
 
-  private readonly authUrl = `${environment.apiUrl}/auth`;
+  private readonly authUrl = `${environment.apiUrl}/api/auth`;
 
   private authenticatedSignal = signal(this.tokenService.isAuthenticated());
 
