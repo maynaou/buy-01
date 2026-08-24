@@ -8,7 +8,8 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
@@ -27,6 +28,57 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
      - mongodb_data:/data/db
+  
+  discovery-service:
+    build:
+      context: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+
+  security-service:
+    build:
+      context: ./security-service
+    container_name: security-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mongodb
+      - kafka
+      - discovery-service
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+      - kafka
+      - discovery-service
+  
+  product-service:
+    build:
+      context: ./product-service
+    container_name: product-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+      - kafka
+      - discovery-service
+  
+  media-service:
+    build:
+      context: ./media-service
+    container_name: media-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongodb
+      - kafka
+      - discovery-service
 
 volumes:
   mongodb_data:
