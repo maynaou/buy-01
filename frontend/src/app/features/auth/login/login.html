@@ -1,8 +1,7 @@
-<div class="login-container">
-
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-    <h1>Login</h1>
+<div class="auth-page">
+  <form class="auth-card" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to keep shopping your gear.</p>
 
     <div class="form-group">
       <label for="identifier">Username or Email</label>
@@ -10,16 +9,13 @@
       <input
         id="identifier"
         type="text"
+        placeholder="you@sportmarket.com"
+        autocomplete="username"
         formControlName="identifier"
       />
 
-      @if (
-        loginForm.controls.identifier.touched &&
-        loginForm.controls.identifier.invalid
-      ) {
-        <div class="error">
-          Username or email is required.
-        </div>
+      @if (loginForm.controls.identifier.touched && loginForm.controls.identifier.invalid) {
+        <div class="error">Username or email is required.</div>
       }
     </div>
 
@@ -29,26 +25,18 @@
       <input
         id="password"
         type="password"
+        placeholder="••••••••"
+        autocomplete="current-password"
         formControlName="password"
       />
 
-      @if (
-        loginForm.controls.password.touched &&
-        loginForm.controls.password.invalid
-      ) {
-        <div class="error">
-          Password is required.
-        </div>
+      @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+        <div class="error">Password is required.</div>
       }
     </div>
 
-    <button
-      type="submit"
-      [disabled]="loginForm.invalid"
-    >
-      Login
-    </button>
+    <button type="submit" [disabled]="loginForm.invalid">Login</button>
 
+    <p class="auth-footer">New to SportMarket? <a routerLink="/register">Create an account</a></p>
   </form>
-
 </div>

@@ -3,16 +3,14 @@ import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../environments/environment';
 import { RegisterRequest } from '../../features/auth/models/register-request';
-import { LoginRequest } from '../../features/auth/models/login-request'
-import { AuthResponse } from '../../features/auth/models/auth-response'
+import { LoginRequest } from '../../features/auth/models/login-request';
+import { AuthResponse } from '../../features/auth/models/auth-response';
 import { TokenService } from './token';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class AuthService {
-
   private http = inject(HttpClient);
   private tokenService = inject(TokenService);
 
@@ -23,17 +21,11 @@ export class AuthService {
   readonly isAuthenticated = this.authenticatedSignal.asReadonly();
 
   register(request: RegisterRequest) {
-    return this.http.post(`${this.authUrl}/register`, request,
-      { responseType: 'text' }
-    );
+    return this.http.post(`${this.authUrl}/register`, request, { responseType: 'text' });
   }
 
-
   login(request: LoginRequest) {
-    return this.http.post<AuthResponse>(
-      `${this.authUrl}/login`,
-      request
-    );
+    return this.http.post<AuthResponse>(`${this.authUrl}/login`, request);
   }
 
   logout(): void {
@@ -44,4 +36,17 @@ export class AuthService {
   setAuthenticated(): void {
     this.authenticatedSignal.set(true);
   }
-} 
+
+  /**
+   * Exchanges a refresh token for a new token pair.
+   *
+   * The backend takes the refresh token as a path variable and rotates it:
+   * the old token is deleted, so only one call per token can ever succeed.
+   */
+  refresh(refreshToken: string) {
+    return this.http.post<AuthResponse>(
+      `${this.authUrl}/refresh/${encodeURIComponent(refreshToken)}`,
+      null,
+    );
+  }
+}

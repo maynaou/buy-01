@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+/* SportMarket — global styles and design tokens */
+
+:root {
+  /* Brand */
+  --sm-accent: #ff4d2d;
+  --sm-accent-dark: #e03d1f;
+  --sm-ink: #0f172a;
+  --sm-ink-soft: #475569;
+  --sm-muted: #94a3b8;
+
+  /* Surfaces */
+  --sm-bg: #f4f6fa;
+  --sm-surface: #ffffff;
+  --sm-border: #e2e8f0;
+  --sm-danger: #d92d20;
+
+  /* Shape & motion */
+  --sm-radius: 10px;
+  --sm-radius-lg: 16px;
+  --sm-shadow: 0 12px 32px rgb(15 23 42 / 8%);
+  --sm-transition: 0.18s ease;
+
+  /* Layout */
+  --sm-navbar-h: 55px;
+
+  --sm-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--sm-bg);
+  color: var(--sm-ink);
+  font-family: var(--sm-font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--sm-accent);
+  text-decoration: none;
+  transition: color var(--sm-transition);
+}
+
+a:hover {
+  color: var(--sm-accent-dark);
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sm-accent);
+  outline-offset: 2px;
+}
+
+/* Readable by screen readers, invisible on screen. */
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

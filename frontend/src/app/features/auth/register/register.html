@@ -1,7 +1,7 @@
-<div class="register-container">
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-
-    <h1>Create Account</h1>
+<div class="auth-page">
+  <form class="auth-card" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <h1 class="auth-title">Create account</h1>
+    <p class="auth-subtitle">Join SportMarket to buy or sell sports gear.</p>
 
     <!-- Username -->
     <div class="form-group">
@@ -10,12 +10,12 @@
       <input
         id="username"
         type="text"
+        placeholder="your_username"
+        autocomplete="username"
         formControlName="username"
       />
 
-      @if (registerForm.controls.username.touched &&
-            registerForm.controls.username.invalid) {
-
+      @if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
         <div class="error">
           @if (registerForm.controls.username.hasError('required')) {
             <span>Username is required.</span>
@@ -43,12 +43,12 @@
       <input
         id="email"
         type="email"
+        placeholder="you@sportmarket.com"
+        autocomplete="email"
         formControlName="email"
       />
 
-      @if (registerForm.controls.email.touched &&
-            registerForm.controls.email.invalid) {
-
+      @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
         <div class="error">
           @if (registerForm.controls.email.hasError('required')) {
             <span>Email is required.</span>
@@ -68,12 +68,12 @@
       <input
         id="password"
         type="password"
+        placeholder="••••••••"
+        autocomplete="new-password"
         formControlName="password"
       />
 
-      @if (registerForm.controls.password.touched &&
-            registerForm.controls.password.invalid) {
-
+      @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
         <div class="error">
           @if (registerForm.controls.password.hasError('required')) {
             <span>Password is required.</span>
@@ -96,9 +96,8 @@
       </select>
     </div>
 
-    <button type="submit" [disabled]="registerForm.invalid">
-      Register
-    </button>
+    <button type="submit" [disabled]="registerForm.invalid">Register</button>
 
+    <p class="auth-footer">Already have an account? <a routerLink="/login">Sign in</a></p>
   </form>
 </div>

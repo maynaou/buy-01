@@ -1,0 +1,66 @@
+<section class="home">
+  <header class="home__hero">
+    <h1 class="home__title">Gear up for game day</h1>
+    <p class="home__subtitle">Everything our sellers have in stock, all in one place.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="home__status">Loading products…</p>
+  } @else if (errorMessage()) {
+    <div class="home__status home__status--error">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="home__btn" (click)="loadProducts()">Retry</button>
+    </div>
+  } @else if (products().length === 0) {
+    <p class="home__status">No products yet — check back soon.</p>
+  } @else {
+    <p class="home__count">{{ products().length }} product(s)</p>
+
+    <!-- Tracked by index: the backend DTO does not expose a product id. -->
+    <ul class="product-grid">
+      @for (product of products(); track $index) {
+        <li class="product-card">
+          <div class="product-card__media">
+            @if (coverImage(product)) {
+              <img class="product-card__image" [src]="coverImage(product)" [alt]="product.name" />
+            } @else {
+              <div class="product-card__image product-card__image--empty" aria-hidden="true">
+                &#9917;
+              </div>
+            }
+
+            @if (imageCount(product) > 1) {
+              <span class="product-card__badge">
+                <span aria-hidden="true">&#128247;</span> {{ imageCount(product) }}
+              </span>
+            }
+          </div>
+
+          <div class="product-card__body">
+            <h3 class="product-card__name">{{ product.name }}</h3>
+            <p class="product-card__description">{{ product.description }}</p>
+
+            <div class="product-card__footer">
+              <span class="product-card__price">{{ product.price | currency }}</span>
+
+              @if (product.quantity > 0) {
+                <span class="product-card__stock">{{ product.quantity }} in stock</span>
+              } @else {
+                <span class="product-card__stock product-card__stock--out">Out of stock</span>
+              }
+            </div>
+          </div>
+
+          <!-- Stretched over the whole card so the card itself is the button. -->
+          <button type="button" class="product-card__open" (click)="openGallery(product)">
+            <span class="visually-hidden">View images of {{ product.name }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (selectedProduct(); as product) {
+  <app-product-gallery [product]="product" (close)="closeGallery()" />
+}

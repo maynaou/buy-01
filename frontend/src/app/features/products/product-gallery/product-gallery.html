@@ -1,0 +1,82 @@
+<!-- Backdrop: clicking outside the dialog closes it. -->
+<div class="gallery" role="presentation" (click)="close.emit()">
+  <div
+    class="gallery__dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="product().name"
+    (click)="$event.stopPropagation()"
+  >
+    <button type="button" class="gallery__close" (click)="close.emit()" aria-label="Close">
+      &#10005;
+    </button>
+
+    <!-- Stage -->
+    <div class="gallery__stage">
+      @if (currentImage(); as image) {
+        <img class="gallery__image" [src]="image" [alt]="product().name" />
+      } @else {
+        <div class="gallery__image gallery__image--empty">
+          <span aria-hidden="true">&#9917;</span>
+          <p>No images for this product.</p>
+        </div>
+      }
+
+      @if (hasMultiple()) {
+        <button
+          type="button"
+          class="gallery__nav gallery__nav--prev"
+          (click)="previous()"
+          aria-label="Previous image"
+        >
+          &#8249;
+        </button>
+
+        <button
+          type="button"
+          class="gallery__nav gallery__nav--next"
+          (click)="next()"
+          aria-label="Next image"
+        >
+          &#8250;
+        </button>
+
+        <span class="gallery__counter">{{ currentIndex() + 1 }} / {{ images().length }}</span>
+      }
+    </div>
+
+    <!-- Details + thumbnails -->
+    <div class="gallery__info">
+      <h2 class="gallery__name">{{ product().name }}</h2>
+      <p class="gallery__description">{{ product().description }}</p>
+
+      <div class="gallery__meta">
+        <span class="gallery__price">{{ product().price | currency }}</span>
+
+        @if (product().quantity > 0) {
+          <span class="gallery__stock">{{ product().quantity }} in stock</span>
+        } @else {
+          <span class="gallery__stock gallery__stock--out">Out of stock</span>
+        }
+      </div>
+
+      @if (hasMultiple()) {
+        <ul class="gallery__thumbs">
+          @for (image of images(); track image; let i = $index) {
+            <li>
+              <button
+                type="button"
+                class="gallery__thumb"
+                [class.gallery__thumb--active]="i === currentIndex()"
+                [attr.aria-current]="i === currentIndex()"
+                (click)="select(i)"
+              >
+                <img [src]="image" [alt]="'View image ' + (i + 1)" />
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+</div>
