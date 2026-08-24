@@ -2,6 +2,7 @@ package com.example.product_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -11,7 +12,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.time.LocalDateTime;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -24,8 +24,8 @@ public class SecurityConfig {
         return http
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).permitAll() 
-               .anyRequest().authenticated())
+               .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).permitAll()
+                                                  .anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler()))
                .build();

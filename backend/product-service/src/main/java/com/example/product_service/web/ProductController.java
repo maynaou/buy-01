@@ -43,6 +43,7 @@ public class ProductController {
 
     @GetMapping("/product")
     public ResponseEntity<List<ProductDTO>> getProducts() {
+        System.out.println("------------------------------------");
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }
 

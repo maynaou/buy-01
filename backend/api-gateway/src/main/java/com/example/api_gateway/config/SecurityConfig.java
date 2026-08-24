@@ -14,6 +14,8 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import reactor.core.publisher.Mono;
+
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -34,7 +36,8 @@ public class SecurityConfig {
         return http
               .cors(cors -> cors.configurationSource(corsConfigurationSource()))
               .csrf(csrf-> csrf.disable())
-              .authorizeExchange(authorize -> authorize.pathMatchers("/api/auth/**").permitAll())
+              .authorizeExchange(authorize -> authorize.pathMatchers("/api/auth/**").permitAll()
+                                                       .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll())
               .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
               .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder()))
                                                     .authenticationEntryPoint(customAuthenticationEntryPoint()))
