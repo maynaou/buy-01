@@ -29,14 +29,23 @@ export class TokenService {
     return this.getAccessToken() !== null;
   }
 
-  /**
-   * The access token's `sub` claim — the user id the backend authorises
-   * against (`authentication.getName()`). Needed for the avatar upload URL,
-   * since the profile response does not carry the id.
-   *
-   * Reads the payload only; the signature is verified by the gateway.
-   */
   getUserId(): string | null {
+    const payload = this.readPayload();
+    const sub = payload?.['sub'];
+    return typeof sub === 'string' ? sub : null;
+  }
+
+  getRoles(): string[] {
+    const payload = this.readPayload();
+    const scope = payload?.['scope'];
+    return typeof scope === 'string' ? scope.split(/\s+/).filter(Boolean) : [];
+  }
+
+  isSeller(): boolean {
+    return this.getRoles().includes('ROLE_SELLER');
+  }
+
+  private readPayload(): Record<string, unknown> | null {
     const token = this.getAccessToken();
     if (!token) {
       return null;
@@ -52,12 +61,9 @@ export class TokenService {
       const padding = (4 - (base64.length % 4)) % 4;
       const payload: unknown = JSON.parse(atob(base64 + '='.repeat(padding)));
 
-      if (payload && typeof payload === 'object' && 'sub' in payload) {
-        const sub = (payload as { sub: unknown }).sub;
-        return typeof sub === 'string' ? sub : null;
-      }
-
-      return null;
+      return payload && typeof payload === 'object'
+        ? (payload as Record<string, unknown>)
+        : null;
     } catch {
       return null;
     }

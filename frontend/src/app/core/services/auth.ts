@@ -37,12 +37,6 @@ export class AuthService {
     this.authenticatedSignal.set(true);
   }
 
-  /**
-   * Exchanges a refresh token for a new token pair.
-   *
-   * The backend takes the refresh token as a path variable and rotates it:
-   * the old token is deleted, so only one call per token can ever succeed.
-   */
   refresh(refreshToken: string) {
     return this.http.post<AuthResponse>(
       `${this.authUrl}/refresh/${encodeURIComponent(refreshToken)}`,

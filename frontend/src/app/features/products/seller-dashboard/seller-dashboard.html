@@ -1,0 +1,271 @@
+<section class="dashboard">
+  <header class="dashboard__head">
+    <div>
+      <h1 class="dashboard__title">Your products</h1>
+      <p class="dashboard__subtitle">Create, update and remove the items you sell.</p>
+    </div>
+
+    @if (!formOpen()) {
+      <button type="button" class="dashboard__btn" (click)="startCreate()">New product</button>
+    }
+  </header>
+
+  @if (formOpen()) {
+    <!-- Create and edit share one form; `editingId` decides which. -->
+    <form class="dashboard__card panel" [formGroup]="productForm" (ngSubmit)="onSubmit()">
+      <h2 class="panel__title">{{ isEditing() ? 'Edit product' : 'New product' }}</h2>
+
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input id="name" type="text" formControlName="name" autocomplete="off" />
+
+        @if (productForm.controls.name.touched && productForm.controls.name.invalid) {
+          <div class="error">
+            @if (productForm.controls.name.hasError('required')) {
+              <span>Name is required.</span>
+            }
+            @if (
+              productForm.controls.name.hasError('minlength') ||
+              productForm.controls.name.hasError('maxlength')
+            ) {
+              <span>Name must be between 2 and 100 characters.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" rows="4" formControlName="description"></textarea>
+
+        @if (productForm.controls.description.touched && productForm.controls.description.invalid) {
+          <div class="error">
+            @if (productForm.controls.description.hasError('required')) {
+              <span>Description is required.</span>
+            }
+            @if (
+              productForm.controls.description.hasError('minlength') ||
+              productForm.controls.description.hasError('maxlength')
+            ) {
+              <span>Description must be between 10 and 500 characters.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="panel__row">
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input id="price" type="number" step="0.01" min="0" formControlName="price" />
+
+          @if (productForm.controls.price.touched && productForm.controls.price.invalid) {
+            <div class="error">
+              @if (productForm.controls.price.hasError('required')) {
+                <span>Price is required.</span>
+              }
+              @if (productForm.controls.price.hasError('greaterThanZero')) {
+                <span>Price must be greater than 0.</span>
+              }
+              @if (productForm.controls.price.hasError('max')) {
+                <span>Price must be less than 999999.99.</span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Quantity</label>
+          <input id="quantity" type="number" step="1" min="0" formControlName="quantity" />
+
+          @if (productForm.controls.quantity.touched && productForm.controls.quantity.invalid) {
+            <div class="error">
+              @if (productForm.controls.quantity.hasError('required')) {
+                <span>Quantity is required.</span>
+              }
+              @if (productForm.controls.quantity.hasError('min')) {
+                <span>Quantity cannot be negative.</span>
+              }
+              @if (productForm.controls.quantity.hasError('wholeNumber')) {
+                <span>Quantity must be a whole number.</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="images">
+        <p class="images__label">Images</p>
+
+        @if (isEditing() && editingImages().length > 0) {
+          <div class="images__current">
+            <p class="form-hint">
+              This product has {{ editingImages().length }} image(s). Uploading a new selection
+              replaces all of them.
+            </p>
+
+            <ul class="thumbs thumbs--current">
+              @for (image of editingImages(); track image) {
+                <li class="thumbs__item">
+                  <img class="thumbs__image" [src]="image" alt="" />
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <label class="images__pick">
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            class="visually-hidden"
+            (change)="onFilesSelected($event)"
+          />
+          <span>Choose images</span>
+        </label>
+
+        <p class="form-hint">PNG or JPG, up to {{ maxImageKb }} KB each.</p>
+
+        @if (pendingImages().length > 0) {
+          <ul class="thumbs">
+            @for (image of pendingImages(); track image.previewUrl; let i = $index) {
+              <li class="thumbs__item">
+                <img class="thumbs__image" [src]="image.previewUrl" [alt]="image.file.name" />
+
+                <button
+                  type="button"
+                  class="thumbs__remove"
+                  (click)="removeImage(i)"
+                  [attr.aria-label]="'Remove ' + image.file.name"
+                >
+                  &#10005;
+                </button>
+
+                <span class="thumbs__name">{{ image.file.name }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (imageErrors().length > 0) {
+          <div class="error">
+            @for (message of imageErrors(); track message) {
+              <span>{{ message }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (formError()) {
+        <p class="dashboard__note dashboard__note--error">{{ formError() }}</p>
+      }
+
+      <div class="panel__actions">
+        <button
+          type="button"
+          class="dashboard__btn dashboard__btn--ghost"
+          [disabled]="saving()"
+          (click)="closeForm()"
+        >
+          Cancel
+        </button>
+
+        <button type="submit" class="dashboard__btn" [disabled]="saving() || productForm.invalid">
+          @if (saving()) {
+            Saving…
+          } @else {
+            {{ isEditing() ? 'Save changes' : 'Create product' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (notice()) {
+    <p class="dashboard__note dashboard__note--ok">{{ notice() }}</p>
+  }
+  @if (noticeError()) {
+    <p class="dashboard__note dashboard__note--error">{{ noticeError() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="dashboard__status">Loading your products…</p>
+  } @else if (loadError()) {
+    <div class="dashboard__status dashboard__status--error">
+      <p>{{ loadError() }}</p>
+      <button type="button" class="dashboard__btn" (click)="loadProducts()">Retry</button>
+    </div>
+  } @else if (products().length === 0) {
+    <p class="dashboard__status">No products yet — create your first one.</p>
+  } @else {
+    <ul class="rows">
+      @for (product of products(); track product.id) {
+        <li class="row">
+          <div class="row__media">
+            @if (coverImage(product)) {
+              <img class="row__image" [src]="coverImage(product)" [alt]="product.name" />
+            } @else {
+              <div class="row__image row__image--empty" aria-hidden="true">&#9917;</div>
+            }
+          </div>
+
+          <div class="row__body">
+            <h3 class="row__name">{{ product.name }}</h3>
+            <p class="row__description">{{ product.description }}</p>
+
+            <div class="row__meta">
+              <span class="row__price">{{ product.price | currency }}</span>
+
+              @if (product.quantity > 0) {
+                <span class="row__stock">{{ product.quantity }} in stock</span>
+              } @else {
+                <span class="row__stock row__stock--out">Out of stock</span>
+              }
+
+              <span class="row__images">{{ imageCount(product) }} image(s)</span>
+            </div>
+          </div>
+
+          <div class="row__actions">
+            @if (deleteTarget() === product.id) {
+              <!-- Inline confirmation keeps the styled flow of the page. -->
+              <p class="row__confirm">Delete this product?</p>
+              <button
+                type="button"
+                class="dashboard__btn dashboard__btn--danger"
+                [disabled]="deleting() === product.id"
+                (click)="confirmDelete(product)"
+              >
+                {{ deleting() === product.id ? 'Deleting…' : 'Yes, delete' }}
+              </button>
+              <button
+                type="button"
+                class="dashboard__btn dashboard__btn--ghost"
+                [disabled]="deleting() === product.id"
+                (click)="cancelDelete()"
+              >
+                Keep
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="dashboard__btn dashboard__btn--ghost"
+                (click)="startEdit(product)"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                class="dashboard__btn dashboard__btn--danger"
+                (click)="askDelete(product)"
+              >
+                Delete
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

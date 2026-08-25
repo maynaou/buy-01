@@ -10,6 +10,7 @@ import { Product } from '../products/models/product';
 const PRODUCTS_URL = `${environment.apiUrl}/api/products/product`;
 
 const PRODUCT: Product = {
+  id: 'product-1',
   name: 'Match ball',
   description: 'Size 5 training ball.',
   price: 24.99,
@@ -99,7 +100,11 @@ describe('Home gallery', () => {
     httpTesting
       .expectOne(PRODUCTS_URL)
       .flush([
-        { ...PRODUCT, imagePaths: ['https://cdn.test/a.jpg', 'https://cdn.test/b.jpg'] },
+        {
+          ...PRODUCT,
+          id: 'product-2',
+          imagePaths: ['https://cdn.test/a.jpg', 'https://cdn.test/b.jpg'],
+        },
         PRODUCT,
       ]);
     await fixture.whenStable();

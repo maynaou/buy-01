@@ -16,9 +16,8 @@
   } @else {
     <p class="home__count">{{ products().length }} product(s)</p>
 
-    <!-- Tracked by index: the backend DTO does not expose a product id. -->
     <ul class="product-grid">
-      @for (product of products(); track $index) {
+      @for (product of products(); track product.id) {
         <li class="product-card">
           <div class="product-card__media">
             @if (coverImage(product)) {

@@ -39,10 +39,8 @@ export class Profile {
 
   private pendingFile: File | null = null;
 
-  /** Only sellers manage an avatar. */
   readonly isSeller = computed(() => this.profile()?.role === 'SELLER');
 
-  // Mirrors the backend UserDTO constraints.
   profileForm = this.fb.group({
     username: [
       '',
@@ -72,7 +70,6 @@ export class Profile {
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
 
-        // A 401 here means the interceptor could not refresh the session.
         if (error.status === 401) {
           this.router.navigate(['/login']);
           return;
@@ -163,8 +160,6 @@ export class Profile {
 
     this.mediaService.uploadAvatar(userId, file).subscribe({
       next: (response) => {
-        // Use the returned URL right away: the user service picks the change up
-        // asynchronously through the avatar event.
         this.avatarUrl.set(response.imagePath);
         this.uploading.set(false);
         this.pendingFile = null;

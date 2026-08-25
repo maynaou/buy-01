@@ -21,11 +21,9 @@ export class Home {
   readonly loading = signal(false);
   readonly errorMessage = signal('');
 
-  /** Product whose images are open in the gallery, or null when closed. */
   readonly selectedProduct = signal<Product | null>(null);
 
   constructor() {
-    // Products are public: load them for everyone, signed in or not.
     this.loadProducts();
   }
 

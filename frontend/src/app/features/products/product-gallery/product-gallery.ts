@@ -3,12 +3,6 @@ import { CurrencyPipe } from '@angular/common';
 
 import { Product } from '../models/product';
 
-/**
- * Full-screen image gallery for a single product.
- *
- * The product list response already carries every `imagePaths` entry, so the
- * gallery needs no extra request — it just pages through what it was given.
- */
 @Component({
   selector: 'app-product-gallery',
   imports: [CurrencyPipe],

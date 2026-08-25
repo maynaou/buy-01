@@ -47,6 +47,16 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }
 
+    /**
+     * The caller's own products. Scoped to authentication.name so the public
+     * catalogue never has to carry a seller id.
+     */
+    @GetMapping("/my-products")
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    public ResponseEntity<List<ProductDTO>> getMyProducts(Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getMyProducts(authentication.getName()));
+    }
+
     @PutMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody @Valid ProductDTO productDTO) {

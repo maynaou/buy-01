@@ -11,18 +11,7 @@ export class TokenRefreshService {
   private authService = inject(AuthService);
   private tokenService = inject(TokenService);
 
-  /** The refresh currently in progress, shared by every waiting request. */
   private inFlight: Observable<string> | null = null;
-
-  /**
-   * Refreshes the access token and returns the new one.
-   *
-   * Concurrent callers share a single request on purpose: the backend rotates
-   * the refresh token and deletes the old one, so a second parallel call would
-   * be rejected as invalid.
-   *
-   * On failure the session is cleared and the error is rethrown.
-   */
   refresh(): Observable<string> {
     if (this.inFlight) {
       return this.inFlight;

@@ -7,6 +7,11 @@
 
     <nav class="navbar__actions" aria-label="Account">
       @if (isAuthenticated()) {
+        @if (isSeller()) {
+          <a class="navbar__link" routerLink="/dashboard" routerLinkActive="navbar__link--active">
+            Dashboard
+          </a>
+        }
         <a class="navbar__link" routerLink="/profile" routerLinkActive="navbar__link--active">
           Profile
         </a>

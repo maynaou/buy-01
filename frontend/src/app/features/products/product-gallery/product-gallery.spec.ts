@@ -4,6 +4,7 @@ import { ProductGallery } from './product-gallery';
 import { Product } from '../models/product';
 
 const PRODUCT: Product = {
+  id: 'product-1',
   name: 'Match ball',
   description: 'Size 5 training ball.',
   price: 24.99,
