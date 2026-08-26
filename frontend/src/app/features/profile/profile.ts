@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { MediaService } from '../../core/services/media';
 import { TokenService } from '../../core/services/token';
 import { UserService } from '../../core/services/user';
 import { UserProfile } from './models/user-profile';
+import { NotificationError } from '../../core/services/notification-error';
 
 /** Spring Boot's default `spring.servlet.multipart.max-file-size`. */
 const MAX_AVATAR_BYTES = 1024 * 1024;
@@ -30,14 +31,18 @@ export class Profile {
   readonly loadError = signal('');
   readonly saveError = signal('');
   readonly savedMessage = signal('');
+  private notificationError = inject(NotificationError);
+
 
   readonly avatarUrl = signal<string | null>(null);
+  readonly pendingPreviewUrl = signal<string | null>(null);
   readonly uploading = signal(false);
-  readonly avatarError = signal('');
-  readonly avatarMessage = signal('');
+  // readonly avatarError = signal('');
+  // readonly avatarMessage = signal('');
   readonly pendingFileName = signal('');
 
   private pendingFile: File | null = null;
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isSeller = computed(() => this.profile()?.role === 'SELLER');
 
@@ -55,6 +60,7 @@ export class Profile {
   });
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.clearPendingPreview());
     this.loadProfile();
   }
 
@@ -119,27 +125,31 @@ export class Profile {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
-    this.avatarError.set('');
-    this.avatarMessage.set('');
+    // this.avatarError.set('');
+    // this.avatarMessage.set('');
     this.pendingFile = null;
     this.pendingFileName.set('');
+    this.clearPendingPreview();
 
     if (!file) {
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      this.avatarError.set('Please choose an image file.');
+      // this.avatarError.set('Please choose an image file.');
+      this.notificationError.show('Please choose an image file.')
       return;
     }
 
     if (file.size > MAX_AVATAR_BYTES) {
-      this.avatarError.set('Image is larger than 1 MB. Please choose a smaller one.');
+      // this.avatarError.set('Image is larger than 1 MB. Please choose a smaller one.');
+       this.notificationError.show('Image is larger than 1 MB. Please choose a smaller one..');
       return;
     }
 
     this.pendingFile = file;
     this.pendingFileName.set(file.name);
+    this.pendingPreviewUrl.set(URL.createObjectURL(file));
   }
 
   uploadAvatar(): void {
@@ -150,13 +160,14 @@ export class Profile {
 
     const userId = this.tokenService.getUserId();
     if (!userId) {
-      this.avatarError.set('Could not identify your account. Please sign in again.');
+      // this.avatarError.set('Could not identify your account. Please sign in again.');
+      this.notificationError.show('Could not identify your account. Please sign in again.')
       return;
     }
 
     this.uploading.set(true);
-    this.avatarError.set('');
-    this.avatarMessage.set('');
+    // this.avatarError.set('');
+    // this.avatarMessage.set('');
 
     this.mediaService.uploadAvatar(userId, file).subscribe({
       next: (response) => {
@@ -164,15 +175,21 @@ export class Profile {
         this.uploading.set(false);
         this.pendingFile = null;
         this.pendingFileName.set('');
-        this.avatarMessage.set('Avatar updated.');
+        this.clearPendingPreview();
+        // this.avatarMessage.set('Avatar updated.');
+        this.notificationError.show('Avatar updated.','green')
       },
       error: (error: HttpErrorResponse) => {
         this.uploading.set(false);
-        this.avatarError.set(
-          error.status === 403
+        const message = error.status === 403
             ? 'You are not allowed to change this avatar.'
-            : 'Upload failed. Please try again.',
-        );
+            : 'Upload failed. Please try again.'
+        this.notificationError.show(message, 'red')
+        // this.avatarError.set(
+        //   error.status === 403
+        //     ? 'You are not allowed to change this avatar.'
+        //     : 'Upload failed. Please try again.',
+        // );
       },
     });
   }
@@ -184,5 +201,22 @@ export class Profile {
       username: profile.username,
       email: profile.email,
     });
+  }
+
+  private clearPendingPreview(): void {
+    const previewUrl = this.pendingPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      this.pendingPreviewUrl.set(null);
+    }
+  }
+
+
+  removeImage(): void {
+      this.clearPendingPreview();
+      this.pendingPreviewUrl.set;
+      this.uploading.set(false);
+      this.pendingFile = null;
+      this.pendingFileName.set('');
   }
 }

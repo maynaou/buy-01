@@ -84,7 +84,7 @@ public class SecurityConfig {
             response.getWriter().write("""
                 {
                     "status": 401,
-                    "message": "Authentication required",
+                    "message": "Username or password incorrect",
                     "timestamp": "%s"
                 }
                 """.formatted(LocalDateTime.now()));

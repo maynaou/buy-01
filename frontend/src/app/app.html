@@ -1,4 +1,23 @@
 <app-navbar />
+@if (notification.getMessage()) {
+  <div
+    style="
+      position: fixed;
+      right: 32px;
+      bottom: 32px;
+      z-index: 1000;
+      min-width: 220px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    "
+    [style.background]="notification.getColor() === 'red' ? '#e53935' : '#43a047'"
+  >
+    {{ notification.getMessage() }}
+  </div>
+}
 <main>
   <router-outlet></router-outlet>
 </main>

@@ -4,6 +4,8 @@ import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 import { LoginRequest } from '../models/login-request';
 import { TokenService } from '../../../core/services/token';
+import { NotificationError } from '../../../core/services/notification-error';
+
 
 @Component({
   selector: 'app-login',
@@ -17,6 +19,8 @@ export class Login {
   private authService = inject(AuthService);
   private tokenService = inject(TokenService);
   private router = inject(Router);
+  private notificationError = inject(NotificationError);
+
 
   loginForm = this.fb.group({
     identifier: ['', Validators.required],
@@ -41,10 +45,14 @@ export class Login {
           response.refresh_Token
         );
         this.authService.setAuthenticated();
-        this.router.navigate(['/']);
+        this.notificationError.show('User registered successfully', 'green');
+
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 1000);
       },
       error: (error) => {
-        console.error('Login failed:', error);
+           this.notificationError.show(error.error.message, 'red');
       }
     });
   }

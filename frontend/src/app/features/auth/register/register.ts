@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth';
+import { NotificationError } from '../../../core/services/notification-error';
 import { RegisterRequest } from '../models/register-request';
 
 @Component({
@@ -15,6 +16,8 @@ export class Register {
 
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private notificationError = inject(NotificationError);
+  private router = inject(Router)
 
   registerForm = this.fb.group({
     username: ['', [
@@ -52,10 +55,14 @@ export class Register {
 
     this.authService.register(request).subscribe({
       next: (response) => {
-        console.log('Registration successful:', response);
+        this.notificationError.show(response, 'green');
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 1000);
       },
-      error: (error) => {
-        console.error('Registration failed:', error);
+      error: (error) => {  
+           const errorBody = JSON.parse(error.error);
+           this.notificationError.show(errorBody.message, 'red');
       }
     });
   }

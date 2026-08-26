@@ -53,7 +53,7 @@
 .gallery__image {
   display: block;
   width: 100%;
-  height: min(52vh, 420px);
+  height: min(52vh, 426px);
   object-fit: contain;
 }
 
@@ -127,6 +127,7 @@
   margin-top: 6px;
   color: var(--sm-ink-soft);
   font-size: 0.9rem;
+  overflow-wrap: break-word;
 }
 
 .gallery__meta {

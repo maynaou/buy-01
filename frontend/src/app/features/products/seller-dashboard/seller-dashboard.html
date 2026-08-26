@@ -157,9 +157,9 @@
         }
       </div>
 
-      @if (formError()) {
+      <!-- @if (formError()) {
         <p class="dashboard__note dashboard__note--error">{{ formError() }}</p>
-      }
+      } -->
 
       <div class="panel__actions">
         <button
@@ -182,12 +182,12 @@
     </form>
   }
 
-  @if (notice()) {
+  <!-- @if (notice()) {
     <p class="dashboard__note dashboard__note--ok">{{ notice() }}</p>
-  }
-  @if (noticeError()) {
+  } -->
+  <!-- @if (noticeError()) {
     <p class="dashboard__note dashboard__note--error">{{ noticeError() }}</p>
-  }
+  } -->
 
   @if (loading()) {
     <p class="dashboard__status">Loading your products…</p>
