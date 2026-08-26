@@ -2,8 +2,8 @@
 
 :root {
   /* Brand */
-  --sm-accent: #ff4d2d;
-  --sm-accent-dark: #e03d1f;
+  --sm-accent: #049639;
+  --sm-accent-dark: #4ce01f;
   --sm-ink: #0f172a;
   --sm-ink-soft: #475569;
   --sm-muted: #94a3b8;
@@ -12,7 +12,7 @@
   --sm-bg: #f4f6fa;
   --sm-surface: #ffffff;
   --sm-border: #e2e8f0;
-  --sm-danger: #d92d20;
+  --sm-danger: #049639;
 
   /* Shape & motion */
   --sm-radius: 10px;
@@ -38,6 +38,7 @@ body {
 body {
   margin: 0;
   background-color: var(--sm-bg);
+  // background-image: radial-gradient(black, transparent);
   color: var(--sm-ink);
   font-family: var(--sm-font);
   font-size: 16px;

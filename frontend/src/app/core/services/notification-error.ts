@@ -13,7 +13,7 @@ export class NotificationError {
     this.color.set(color);
     setTimeout(() => {
       this.message.set(null);
-    }, 2000);
+    }, 3000);
   }
 
   getMessage() {

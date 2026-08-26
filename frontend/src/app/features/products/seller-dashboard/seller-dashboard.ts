@@ -124,6 +124,8 @@ export class SellerDashboard {
         // A 401 here means the interceptor could not refresh the session.
         if (error.status === 401) {
           this.router.navigate(['/login']);
+          
+          this.notificationError.show(error.error.message, 'red')
           return;
         }
 

@@ -78,6 +78,8 @@ export class Profile {
 
         if (error.status === 401) {
           this.router.navigate(['/login']);
+          
+          this.notificationError.show(error.error.message, 'red')
           return;
         }
 

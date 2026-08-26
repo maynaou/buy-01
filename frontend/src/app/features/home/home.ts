@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth';
 import { ProductService } from '../../core/services/product';
 import { Product } from '../products/models/product';
 import { ProductGallery } from '../products/product-gallery/product-gallery';
+import { NotificationError } from '../../core/services/notification-error';
 
 @Component({
   selector: 'app-home',
@@ -16,6 +17,7 @@ import { ProductGallery } from '../products/product-gallery/product-gallery';
 export class Home {
   private productService = inject(ProductService);
   private authService = inject(AuthService);
+  private notificationError = inject(NotificationError);
 
   readonly products = signal<Product[]>([]);
   readonly loading = signal(false);
@@ -45,6 +47,9 @@ export class Home {
         if ((error.status === 401 || error.status === 403) && retryOnAuthError) {
           this.authService.logout();
           this.loadProducts(false);
+          console.log(error);
+          
+           this.notificationError.show(error.error.message, 'red')
           return;
         }
 
