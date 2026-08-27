@@ -64,13 +64,11 @@ export class SellerDashboard {
   readonly loadError = signal('');
 
   /** Result of the last create/edit/delete, shown above the list. */
-  // readonly notice = signal('');
   readonly noticeError = signal('');
 
   readonly formOpen = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly saving = signal(false);
-  // readonly formError = signal('');
 
   /** Images already on the product being edited; read-only here. */
   readonly editingImages = signal<string[]>([]);
@@ -138,8 +136,6 @@ export class SellerDashboard {
     });
   }
 
-  // --- Form ---------------------------------------------------------------
-
   startCreate(): void {
     this.editingId.set(null);
     this.editingImages.set([]);
@@ -157,6 +153,11 @@ export class SellerDashboard {
       quantity: product.quantity,
     });
     this.openForm();
+    
+    window.scrollTo({
+       top: 0,
+       behavior: 'smooth'
+       });
   }
 
   closeForm(): void {
@@ -164,7 +165,6 @@ export class SellerDashboard {
     this.editingId.set(null);
     this.editingImages.set([]);
     this.clearPendingImages();
-    // this.formError.set('');
   }
 
   onSubmit(): void {
@@ -184,7 +184,6 @@ export class SellerDashboard {
     const isCreate = editingId === null;
 
     this.saving.set(true);
-    // this.formError.set('');
 
     const save = isCreate
       ? this.productService.createProduct(request)
@@ -194,13 +193,7 @@ export class SellerDashboard {
       next: (product) => this.attachImages(product, isCreate),
       error: (error: HttpErrorResponse) => {
         this.saving.set(false);
-        // this.formError.set(
-        //   error.status === 403
-        //     ? 'You are not allowed to save this product.'
-        //     : error.status === 400
-        //       ? 'The server rejected these details. Please review the fields.'
-        //       : 'Could not save the product. Please try again.',
-        // );
+
 
         const message = error.status === 403
             ? 'You are not allowed to save this product.'
@@ -255,8 +248,6 @@ export class SellerDashboard {
 
 
   askDelete(product: Product): void {
-    // this.notice.set('');
-    // this.noticeError.set('');
     this.deleteTarget.set(product.id);
   }
 
@@ -276,7 +267,6 @@ export class SellerDashboard {
         this.products.update((products) => products.filter((p) => p.id !== product.id));
         this.deleting.set(null);
         this.deleteTarget.set(null);
-        // this.notice.set(`“${product.name}” was deleted.`);
         this.notificationError.show(`“${product.name}” was deleted.`,'green');
       },
       error: (error: HttpErrorResponse) => {
@@ -302,9 +292,6 @@ export class SellerDashboard {
 
   private openForm(): void {
     this.clearPendingImages();
-    // this.formError.set('');
-    // this.notice.set('');
-    // this.noticeError.set('');
     this.deleteTarget.set(null);
     this.formOpen.set(true);
   }
@@ -341,11 +328,6 @@ export class SellerDashboard {
        const message = error.status === 403
             ? `“${product.name}” was saved, but the image upload was not authorised yet. Open Edit and upload again in a moment.`
             : `“${product.name}” was saved, but its images could not be uploaded. Open Edit to try again.`;
-        // this.noticeError.set(
-        //   error.status === 403
-        //     ? `“${product.name}” was saved, but the image upload was not authorised yet. Open Edit and upload again in a moment.`
-        //     : `“${product.name}” was saved, but its images could not be uploaded. Open Edit to try again.`,
-        // );
 
         this.notificationError.show(message,'red')
       },
@@ -384,6 +366,5 @@ export class SellerDashboard {
     this.saving.set(false);
     this.closeForm();
     this.notificationError.show(message,'green')
-    // this.notice.set(message);
   }
 }
