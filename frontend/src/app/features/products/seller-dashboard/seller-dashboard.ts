@@ -285,7 +285,7 @@ export class SellerDashboard {
           const message = error.status === 403
             ? 'You can only delete your own products.'
             : 'Could not delete the product. Please try again.';
-          this.notificationError.show(message,'green');   
+          this.notificationError.show(message,'red');   
       },
     });
   }
@@ -347,7 +347,7 @@ export class SellerDashboard {
         //     : `“${product.name}” was saved, but its images could not be uploaded. Open Edit to try again.`,
         // );
 
-        this.notificationError.show(message,'green')
+        this.notificationError.show(message,'red')
       },
     });
   }

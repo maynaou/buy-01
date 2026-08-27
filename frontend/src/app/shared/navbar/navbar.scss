@@ -1,7 +1,9 @@
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   border-bottom: 1px solid var(--sm-border);
   background-color: var(--sm-surface);
 }

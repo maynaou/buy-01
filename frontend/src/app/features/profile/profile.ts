@@ -139,13 +139,13 @@ export class Profile {
 
     if (!file.type.startsWith('image/')) {
       // this.avatarError.set('Please choose an image file.');
-      this.notificationError.show('Please choose an image file.')
+      this.notificationError.show('Please choose an image file.','red')
       return;
     }
 
     if (file.size > MAX_AVATAR_BYTES) {
       // this.avatarError.set('Image is larger than 1 MB. Please choose a smaller one.');
-       this.notificationError.show('Image is larger than 1 MB. Please choose a smaller one..');
+       this.notificationError.show('Image is larger than 1 MB. Please choose a smaller one..', 'red');
       return;
     }
 
@@ -163,7 +163,7 @@ export class Profile {
     const userId = this.tokenService.getUserId();
     if (!userId) {
       // this.avatarError.set('Could not identify your account. Please sign in again.');
-      this.notificationError.show('Could not identify your account. Please sign in again.')
+      this.notificationError.show('Could not identify your account. Please sign in again.', 'red')
       return;
     }
 
