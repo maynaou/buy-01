@@ -34,12 +34,12 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserDetailService userDetailService;
+    // private final UserDetailService userDetailService;
 
     public SecurityConfig(RsaKeysConfig rsaKeysConfig, PasswordEncoder passwordEncoder, UserDetailService userDetailService) {
         this.rsaKeysConfig = rsaKeysConfig;
         this.passwordEncoder = passwordEncoder;
-        this.userDetailService = userDetailService;
+        // this.userDetailService = userDetailService;
     }
 
     @Bean
@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
+                // .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
                 // .userDetailsService(userDetailService)
                 .build();
@@ -71,10 +71,10 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
-    }
+    // @Bean
+    // JwtDecoder jwtDecoder() {
+    //     return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
+    // }
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {

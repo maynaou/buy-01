@@ -16,7 +16,6 @@ import com.example.media_service.entities.Media;
 import com.example.media_service.enums.EventType;
 import com.example.media_service.enums.MediaType;
 import com.example.media_service.events.MediaCreatedEvent;
-import com.example.media_service.exception.MediaNotFoundException;
 import com.example.media_service.mapper.MediaMapper;
 import com.example.media_service.repository.MediaRepository;
 import com.example.media_service.repository.ProductReferenceRepository;
@@ -133,11 +132,5 @@ public class MediaService {
         }
     }
 
-    public void deleteImage(String id) {
-        Media media = mediaRepository.findById(id).orElseThrow(() -> new MediaNotFoundException("image not found"));
-        mediaRepository.delete(media);
-        streamBridge.send("mediaProducer-out-0",
-                new MediaCreatedEvent(EventType.DELETED, media.getEntityId(), media.getImagePath(), media.getMediaType()));
-    }
 
 }

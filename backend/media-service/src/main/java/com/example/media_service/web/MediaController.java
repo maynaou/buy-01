@@ -35,15 +35,9 @@ public class MediaController {
     }
 
     @PostMapping(value = "/avatar/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("#userId == authentication.name")
+    @PreAuthorize("hasAuthority('ROLE_SELLER') and #userId == authentication.name")
     public ResponseEntity<MediaDTO> uplaodAvatar(@RequestParam("imgUrl") MultipartFile imgUrl , @PathVariable String userId) {
            return ResponseEntity.status(HttpStatus.CREATED).body(mediaService.uploadAvatar(imgUrl, userId));
     } 
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("#userId == authentication.name")
-    public ResponseEntity<Void> deleteImage(@PathVariable String id) {
-          return ResponseEntity.noContent().build() ;
-    }
 
 } 

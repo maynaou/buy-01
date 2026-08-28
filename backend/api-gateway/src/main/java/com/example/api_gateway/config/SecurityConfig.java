@@ -51,7 +51,6 @@ public class SecurityConfig {
 
     @Bean
     public ServerAuthenticationEntryPoint customAuthenticationEntryPoint() {
-        System.out.println("+++++++++++++++++++++++++++++++++++++");
         return (exchange, ex) -> {
             var response = exchange.getResponse();
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
