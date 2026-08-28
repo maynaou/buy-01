@@ -63,9 +63,6 @@ export class SellerDashboard {
   readonly loading = signal(true);
   readonly loadError = signal('');
 
-  /** Result of the last create/edit/delete, shown above the list. */
-  readonly noticeError = signal('');
-
   readonly formOpen = signal(false);
   readonly editingId = signal<string | null>(null);
   readonly saving = signal(false);
