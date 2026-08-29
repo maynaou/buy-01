@@ -93,6 +93,8 @@ services:
     
   api-gateway:
     build: ./api-gateway
+    environment:
+      SSL_PASSWORD: ${SSL_PASSWORD}
     container_name: api-gateway
     ports:
       - "8888:8888"
