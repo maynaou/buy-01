@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Security certificates ###
-**/src/main/resources/certs/
+# **/src/main/resources/certs/
