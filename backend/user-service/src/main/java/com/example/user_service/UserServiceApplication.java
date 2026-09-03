@@ -16,7 +16,18 @@ public class UserServiceApplication {
     // @Bean
 	CommandLineRunner commandLineRunner(UserRepository userRepository) {
 		return args -> {
-
+            //    Stream.of("maynaou","achraf","yahya", "hafid").forEach(name -> {
+			// 	        User user = User.builder()
+			// 			           .id(UUID.randomUUID().toString())
+			// 		               .username(name)
+			// 					   .email(name+"123@gmail.com")
+			// 					   .role(Role.CLIENT)
+			// 					//    .avatar(name)
+			// 		               .build();
+			// 		    userRepository.save(user);
+			// 			// streamBridge.send("userProducer-out-0", new UserCreatedEvent(user.getId(), user.getName(), user.getRole())	
+			// 			// );
+			//    });
 		};
 	}
 }
