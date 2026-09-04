@@ -1,21 +1,46 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { catchError, switchMap, throwError } from 'rxjs';
+
 import { TokenService } from '../services/token';
+import { TokenRefreshService } from '../services/token-refresh';
+import { NotificationError } from '../services/notification-error';
+
+function withToken(request: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
+  return request.clone({
+    setHeaders: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-
   const tokenService = inject(TokenService);
-  const token = tokenService.getAccessToken();
+  const tokenRefreshService = inject(TokenRefreshService);
+  
 
-  if (!token || req.url.includes('/auth/')) {
+  if (req.url.includes('/auth/')) {
     return next(req);
   }
 
-  const authReq = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const token = tokenService.getAccessToken();
+  if (!token) {
+    return next(req);
+  }
 
-  return next(authReq);
+  return next(withToken(req, token)).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status !== 401) {
+        return throwError(() => error);
+      }
+
+      
+     
+
+      return tokenRefreshService.refresh().pipe(
+        catchError(() => throwError(() => error)),
+        switchMap((freshToken) => next(withToken(req, freshToken))),
+      );
+    }),
+  );
 };

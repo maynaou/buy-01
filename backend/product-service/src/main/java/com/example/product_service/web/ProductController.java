@@ -32,7 +32,7 @@ public class ProductController {
     
     @PostMapping("/product")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productRequest, Authentication authentication) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest, Authentication authentication) {
            return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
     }
 
@@ -43,7 +43,18 @@ public class ProductController {
 
     @GetMapping("/product")
     public ResponseEntity<List<ProductDTO>> getProducts() {
+        System.out.println("------------------------------------");
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
+    }
+
+    /**
+     * The caller's own products. Scoped to authentication.name so the public
+     * catalogue never has to carry a seller id.
+     */
+    @GetMapping("/my-products")
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    public ResponseEntity<List<ProductDTO>> getMyProducts(Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getMyProducts(authentication.getName()));
     }
 
     @PutMapping("/product/{id}")

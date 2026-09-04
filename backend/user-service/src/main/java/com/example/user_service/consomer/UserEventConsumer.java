@@ -18,7 +18,6 @@ public class UserEventConsumer {
   public Consumer<UserConsumerDTO> userConsumer(UserRepository userRepository) {
     return event -> {
 
-      System.out.println("----------------------------------------------");
       User users = User.builder()
           .id(event.getId())
           .username(event.getUsername())
@@ -37,7 +36,7 @@ public class UserEventConsumer {
       if (!"AVATAR".equals(event.getMediaType())) {
         return;
       }
-      System.out.println("----------------------------------------------"+ event.getUserId() + event.getImagePath());
+
       switch (event.getEventType()) {
         case CREATED -> {
           User user = userRepository.findById(event.getUserId())
@@ -45,13 +44,6 @@ public class UserEventConsumer {
           user.setAvatar(event.getImagePath());
           userRepository.save(user);
           break;
-        }
-
-        case DELETED -> {
-            User user = userRepository.findById(event.getUserId())
-              .orElseThrow(() -> new RuntimeException("user not found"));
-            user.setAvatar(null);
-            userRepository.save(user);
         }
 
         default -> {

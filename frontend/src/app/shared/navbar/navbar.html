@@ -1,0 +1,29 @@
+<header class="navbar">
+  <div class="navbar__inner">
+    <a class="navbar__brand" routerLink="/">
+      <span class="navbar__mark" aria-hidden="true">&#9917;</span>
+      <span class="navbar__name">Sport<span>Market</span></span>
+    </a>
+
+    <nav class="navbar__actions" aria-label="Account">
+      @if (isAuthenticated()) {
+        @if (isSeller()) {
+          <a class="navbar__link" routerLink="/dashboard" routerLinkActive="navbar__link--active">
+            Dashboard
+          </a>
+        }
+        <a class="navbar__link" routerLink="/profile" routerLinkActive="navbar__link--active">
+          Profile
+        </a>
+        <button type="button" class="navbar__btn navbar__btn--ghost" (click)="onLogout()">
+          Logout
+        </button>
+      } @else {
+        <a class="navbar__link" routerLink="/login">Login</a>
+        <a class="navbar__btn" routerLink="/register">Register</a>
+      }
+    </nav>
+  </div>
+</header>
+
+

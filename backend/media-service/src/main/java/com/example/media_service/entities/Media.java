@@ -20,5 +20,5 @@ public class Media {
     private String id;
     private String imagePath;
     private String entityId; 
-    private MediaType type;
+    private MediaType mediaType;
 }

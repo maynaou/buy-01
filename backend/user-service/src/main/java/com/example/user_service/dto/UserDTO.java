@@ -26,4 +26,10 @@ public class UserDTO {
       private String email;
       @NotNull(message = "role is required")
       private Role role;
+      /**
+       * Read-only: populated from the User entity by the mapper and kept in sync
+       * by the avatar events. updateProfile() never reads it from the request,
+       * so a PUT /me body cannot overwrite it.
+       */
+      private String avatar;
 }

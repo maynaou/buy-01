@@ -55,6 +55,11 @@ public class ProductService {
           return productMapper.fromProduct(products);
     }
 
+    /** The products owned by one seller — backs the seller dashboard. */
+    public List<ProductDTO> getMyProducts(String userId) {
+          return productMapper.fromProduct(productRepository.findByUserId(userId));
+    }
+
     public ProductDTO updateProduct(String id, ProductDTO productDTO) {
            Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("product not found"));
            product.setName(productDTO.getName());
