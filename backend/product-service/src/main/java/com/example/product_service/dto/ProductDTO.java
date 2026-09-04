@@ -12,6 +12,13 @@ import lombok.Data;
 
 @Data
 public class ProductDTO {
+     /**
+      * Server-assigned: createProduct always generates a fresh UUID and
+      * updateProduct never copies this field, so a client cannot set it.
+      * Exposed so callers can address a product for update, delete and media
+      * upload.
+      */
+     private String id;
      @NotBlank(message = "Name is required")
      @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
      private String name;

@@ -1,0 +1,144 @@
+<section class="profile">
+  <header class="profile__head">
+    <h1 class="profile__title">Your profile</h1>
+    <p class="profile__subtitle">Manage your account details.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="profile__status">Loading your profile…</p>
+  } @else if (loadError()) {
+    <div class="profile__status profile__status--error">
+      <p>{{ loadError() }}</p>
+      <button type="button" class="profile__btn" (click)="loadProfile()">Retry</button>
+    </div>
+  } @else if (profile(); as user) {
+    <div class="profile__grid">
+      <!-- Identity + avatar -->
+      <aside class="profile__card profile__identity">
+        <div class="avatar">
+        @if (avatarUrl()) {
+            <img class="avatar__image" [src]="avatarUrl()" [alt]="user.username" />
+          } @else {
+            <span class="avatar__initial" aria-hidden="true">{{
+              user.username.charAt(0).toUpperCase()
+            }}</span>
+          }
+        </div>
+
+        <p class="profile__username">{{ user.username }}</p>
+        <span class="profile__role" [class.profile__role--seller]="isSeller()">{{
+          user.role
+        }}</span>
+
+        @if (isSeller()) {
+          <!-- Avatar management is a seller-only capability. -->
+          <div class="avatar-upload">
+            <label class="avatar-upload__pick">
+              <input
+                type="file"
+                accept="image/*"
+                class="visually-hidden"
+                (change)="onFileSelected($event)"
+              />
+              <span>Choose image</span>
+            </label>
+
+            @if (pendingFileName()) {
+              <p class="avatar-upload__file">{{ pendingFileName() }}</p>
+                @if (pendingPreviewUrl()) {
+                  <!-- <img class="thumbs__image" [src]="pendingPreviewUrl()" alt="Slected avatar previewe" /> -->
+                          <li class="thumbs__item">
+                <img class="thumbs__image" [src]="pendingPreviewUrl()" alt="Selected avatar previewe" />
+
+                <button
+                  type="button"
+                  class="thumbs__remove"
+                  (click)="removeImage()"
+                  [attr.aria-label]="'Remove ' + pendingFileName() "
+                >
+                  &#10005;
+                </button>
+
+                <span class="thumbs__name">{{ pendingFileName() }}</span>
+              </li>
+                } 
+              <button
+                type="button"
+                class="profile__btn"
+                [disabled]="uploading()"
+                (click)="uploadAvatar()"
+              >
+                {{ uploading() ? 'Uploading…' : 'Upload avatar' }}
+              </button>
+            }
+
+            <!-- @if (avatarMessage()) {
+              <p class="profile__note profile__note--ok">{{ avatarMessage() }}</p>
+            } -->
+            <!-- @if (avatarError()) {
+              <p class="profile__note profile__note--error">{{ avatarError() }}</p>
+            } -->
+          </div>
+        }
+      </aside>
+
+      <!-- Editable details -->
+      <form class="profile__card profile__form" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" type="text" formControlName="username" autocomplete="username" />
+
+          @if (profileForm.controls.username.touched && profileForm.controls.username.invalid) {
+            <div class="error">
+              @if (profileForm.controls.username.hasError('required')) {
+                <span>Username is required.</span>
+              }
+              @if (profileForm.controls.username.hasError('minlength')) {
+                <span>Username must be at least 3 characters.</span>
+              }
+              @if (profileForm.controls.username.hasError('maxlength')) {
+                <span>Username must not exceed 20 characters.</span>
+              }
+              @if (profileForm.controls.username.hasError('pattern')) {
+                <span>Only letters, numbers and underscore are allowed.</span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" autocomplete="email" />
+
+          @if (profileForm.controls.email.touched && profileForm.controls.email.invalid) {
+            <div class="error">
+              @if (profileForm.controls.email.hasError('required')) {
+                <span>Email is required.</span>
+              }
+              @if (profileForm.controls.email.hasError('email')) {
+                <span>Please enter a valid email.</span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="role">Account type</label>
+          <input id="role" type="text" [value]="user.role" disabled />
+          <p class="form-hint">Your account type can’t be changed.</p>
+        </div>
+
+        @if (savedMessage()) {
+          <p class="profile__note profile__note--ok">{{ savedMessage() }}</p>
+        }
+        @if (saveError()) {
+          <p class="profile__note profile__note--error">{{ saveError() }}</p>
+        }
+
+        <button type="submit" [disabled]="saving() || profileForm.invalid">
+          {{ saving() ? 'Saving…' : 'Save changes' }}
+        </button>
+      </form>
+    </div>
+  }
+</section>

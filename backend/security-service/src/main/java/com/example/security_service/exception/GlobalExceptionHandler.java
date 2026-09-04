@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler(BadCredentialsException.class)
-        public ResponseEntity<ApiError> handleInvalidRefreshToken(BadCredentialsException ex) {
+        public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
                 return ResponseEntity
                                 .status(HttpStatus.UNAUTHORIZED)
                                 .body(new ApiError("BAD_CREDENTIALS", ex.getMessage()));

@@ -21,6 +21,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import java.time.LocalDateTime;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -31,12 +34,12 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserDetailService userDetailService;
+    // private final UserDetailService userDetailService;
 
     public SecurityConfig(RsaKeysConfig rsaKeysConfig, PasswordEncoder passwordEncoder, UserDetailService userDetailService) {
         this.rsaKeysConfig = rsaKeysConfig;
         this.passwordEncoder = passwordEncoder;
-        this.userDetailService = userDetailService;
+        // this.userDetailService = userDetailService;
     }
 
     @Bean
@@ -53,8 +56,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
-                .userDetailsService(userDetailService)
+                // .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
+                // .userDetailsService(userDetailService)
                 .build();
     }
 
@@ -67,8 +71,23 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
+    // @Bean
+    // JwtDecoder jwtDecoder() {
+    //     return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
+    // }
+
     @Bean
-    JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, ex) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                    "status": 401,
+                    "message": "Username or password incorrect",
+                    "timestamp": "%s"
+                }
+                """.formatted(LocalDateTime.now()));
+        };
     }
 }

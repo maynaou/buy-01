@@ -1,0 +1,126 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--sm-border);
+  background-color: var(--sm-surface);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 20px;
+}
+
+/* Brand */
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--sm-ink);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.navbar__brand:hover {
+  color: var(--sm-ink);
+  text-decoration: none;
+}
+
+.navbar__mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--sm-accent);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.navbar__name span {
+  color: var(--sm-accent);
+}
+
+/* Actions */
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar__link {
+  padding: 8px 12px;
+  border-radius: var(--sm-radius);
+  color: var(--sm-ink-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    color var(--sm-transition),
+    background-color var(--sm-transition);
+}
+
+.navbar__link:hover {
+  background-color: #f1f5f9;
+  color: var(--sm-ink);
+  text-decoration: none;
+}
+
+.navbar__link--active {
+  background-color: rgb(255 77 45 / 10%);
+  color: var(--sm-accent);
+}
+
+.navbar__btn {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--sm-radius);
+  background-color: var(--sm-accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color var(--sm-transition),
+    border-color var(--sm-transition),
+    color var(--sm-transition);
+}
+
+.navbar__btn:hover {
+  background-color: var(--sm-accent-dark);
+  color: #fff;
+  text-decoration: none;
+}
+
+.navbar__btn--ghost {
+  border: 1px solid var(--sm-border);
+  background-color: transparent;
+  color: var(--sm-ink-soft);
+}
+
+.navbar__btn--ghost:hover {
+  border-color: var(--sm-accent);
+  background-color: transparent;
+  color: var(--sm-accent);
+}
+
+@media (max-width: 480px) {
+  .navbar__inner {
+    padding: 10px 14px;
+  }
+
+  .navbar__link,
+  .navbar__btn {
+    padding: 7px 11px;
+    font-size: 0.85rem;
+  }
+}

@@ -1,0 +1,166 @@
+// Shared SportMarket auth layout — used by the login and register pages.
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--sm-navbar-h));
+  padding: 32px 16px;
+  background:
+    radial-gradient(circle at 12% 12%, rgb(255 77 45 / 10%), transparent 42%),
+    radial-gradient(circle at 88% 88%, rgb(15 23 42 / 8%), transparent 45%), var(--sm-bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 32px 32px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius-lg);
+  background-color: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+}
+
+/* Headings */
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.auth-subtitle {
+  margin: 6px 0 26px;
+  color: var(--sm-ink-soft);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Fields */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--sm-ink-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius);
+  background-color: #fbfcfe;
+  color: var(--sm-ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition:
+    border-color var(--sm-transition),
+    box-shadow var(--sm-transition),
+    background-color var(--sm-transition);
+}
+
+.form-group input::placeholder {
+  color: var(--sm-muted);
+}
+
+.form-group input:hover,
+.form-group select:hover {
+  border-color: #cbd5e1;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--sm-accent);
+  background-color: var(--sm-surface);
+  box-shadow: 0 0 0 3px rgb(255 77 45 / 15%);
+  outline: none;
+}
+
+.form-group select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1.4 0 6 4.6 10.6 0 12 1.4 6 7.4 0 1.4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  cursor: pointer;
+}
+
+/* Validation */
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+  color: var(--sm-danger);
+  font-size: 0.8rem;
+}
+
+.form-group:has(.error) input,
+.form-group:has(.error) select {
+  border-color: var(--sm-danger);
+}
+
+/* Submit */
+.auth-card button[type='submit'] {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--sm-radius);
+  background-color: var(--sm-accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background-color var(--sm-transition),
+    transform var(--sm-transition),
+    box-shadow var(--sm-transition);
+}
+
+.auth-card button[type='submit']:hover:not(:disabled) {
+  background-color: var(--sm-accent-dark);
+  box-shadow: 0 8px 18px rgb(255 77 45 / 28%);
+  transform: translateY(-1px);
+}
+
+.auth-card button[type='submit']:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.auth-card button[type='submit']:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Footer link */
+.auth-footer {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--sm-border);
+  color: var(--sm-ink-soft);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.auth-footer a {
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 28px 20px 24px;
+  }
+}
