@@ -11,8 +11,14 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh './mvnw clean test'
-                sh 'npm install && npm test -- --watch=false --browsers=ChromeHeadless'
+                script {
+                    def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
+                    services.each { svc ->
+                        dir(svc) {
+                            sh './mvnw clean test'
+                        }
+                    }
+                }
             }
         }
 
@@ -43,11 +49,9 @@ pipeline {
     post {
         success {
             echo "✅ Build réussi"
-            // slackSend ou emailext ici
         }
         failure {
             echo "❌ Build échoué"
-            // slackSend ou emailext ici
         }
     }
 }
