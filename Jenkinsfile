@@ -9,22 +9,34 @@ pipeline {
             }
         }
 
-stage('Test') {
-    steps {
-        script {
-            def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
-            services.each { svc ->
-                dir("backend/${svc}") {
-                    sh './mvnw clean test'
+        stage('Backend Tests') {
+            steps {
+                script {
+                    def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
+                    services.each { svc ->
+                        dir("backend/${svc}") {
+                            sh 'chmod +x mvnw'
+                            sh 'sh ./mvnw clean test'
+                        }
+                    }
                 }
             }
         }
-    }
-}
+
+        stage('Frontend Tests') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    sh 'npm test -- --watch=false --browsers=ChromeHeadless'
+                }
+            }
+        }
 
         stage('Docker Build') {
             steps {
-                sh 'docker compose build'
+                dir('backend') {
+                    sh 'docker compose build'
+                }
             }
         }
 
@@ -33,13 +45,15 @@ stage('Test') {
                 branch 'main'
             }
             steps {
-                script {
-                    try {
-                        sh 'docker compose up -d'
-                    } catch (err) {
-                        sh 'docker compose down'
-                        sh 'docker compose -f docker-compose.previous.yml up -d'
-                        error("Déploiement échoué — rollback exécuté")
+                dir('backend') {
+                    script {
+                        try {
+                            sh 'docker compose up -d'
+                        } catch (err) {
+                            sh 'docker compose down'
+                            sh 'docker compose -f docker-compose.previous.yml up -d'
+                            error("Déploiement échoué — rollback exécuté")
+                        }
                     }
                 }
             }
