@@ -101,16 +101,16 @@ services:
     depends_on:
       - discovery-service
   
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    ports:
-      - "4200:80"
-    depends_on:
-      - api-gateway
-    restart: unless-stopped
+  # frontend:
+  #   build:
+  #     context: ../frontend
+  #     dockerfile: Dockerfile
+  #   container_name: frontend
+  #   ports:
+  #     - "4200:80"
+  #   depends_on:
+  #     - api-gateway
+  #   restart: unless-stopped
 
 volumes:
   mongodb_data:

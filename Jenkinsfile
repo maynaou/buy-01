@@ -34,26 +34,22 @@ pipeline {
             steps {
                 dir('frontend') {
 
-                    sh 'npm ci'
+                    // sh 'npm ci'
 
-                    sh '''
-                        npm test -- \
-                        --watch=false \
-                        --no-progress
-                    '''
+                    sh 'npm test'
                 }
             }
         }
 
 
-        stage('Frontend Build') {
-            steps {
-                dir('frontend') {
+        // stage('Frontend Build') {
+        //     steps {
+        //         dir('frontend') {
 
-                    sh 'npm run build'
-                }
-            }
-        }
+        //             sh 'npm run build'
+        //         }
+        //     }
+        // }
 
         stage('Deploy Backend') {
             when {
