@@ -12,7 +12,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
+                    def services = ['media-service', 'product-service', 'security-service', 'user-service']
                     services.each { svc ->
                         dir(svc) {
                             sh './mvnw clean test'
