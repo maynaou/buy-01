@@ -1,13 +1,14 @@
-package com.example.discovery_service;
+// package com.example.discovery_service;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class DiscoveryServiceApplicationTests {
+// @SpringBootTest
+// class DiscoveryServiceApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }
+// // 

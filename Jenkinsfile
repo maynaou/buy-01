@@ -15,8 +15,7 @@ stage('Test') {
             def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
             services.each { svc ->
                 dir(svc) {
-                    sh 'chmod +x mvnw'
-                    sh 'sh ./mvnw clean test -Dtest=!*ApplicationTests'
+                    sh './mvnw clean test'
                 }
             }
         }
