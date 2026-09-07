@@ -42,14 +42,13 @@ pipeline {
         }
 
 
-        // stage('Frontend Build') {
-        //     steps {
-        //         dir('frontend') {
-
-        //             sh 'npm run build'
-        //         }
-        //     }
-        // }
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
 
         stage('Deploy Backend') {
             when {
@@ -66,6 +65,21 @@ pipeline {
                             error("Déploiement backend échoué — rollback exécuté")
                         }
                     }
+                }
+            }
+        }
+
+        stage('Deploy Frontend') {
+            when {
+                branch 'main'
+            }
+            steps {
+                dir('frontend') {
+                    sh '''
+                        pkill -f "ng serve" || true
+                        nohup npx ng serve --ssl --host 0.0.0.0 > ng-serve.log 2>&1 &
+                        sleep 5
+                    '''
                 }
             }
         }
