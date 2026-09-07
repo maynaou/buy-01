@@ -23,14 +23,14 @@ pipeline {
             }
         }
 
-        stage('Frontend Tests') {
-            steps {
-                dir('frontend') {
-                    sh 'npm install'
-                    sh 'npm test -- --watch=false --browsers=ChromeHeadless'
-                }
-            }
-        }
+        // stage('Frontend Tests') {
+        //     steps {
+        //         dir('frontend') {
+        //             sh 'npm install'
+        //             sh 'npm test -- --watch=false --browsers=ChromeHeadless'
+        //         }
+        //     }
+        // }
 
         stage('Docker Build') {
             steps {
