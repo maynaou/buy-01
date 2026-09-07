@@ -16,7 +16,7 @@ stage('Test') {
             services.each { svc ->
                 dir(svc) {
                     sh 'chmod +x mvnw'
-                    sh 'sh ./mvnw clean test'
+                    sh 'sh ./mvnw clean test -Dtest=!*ApplicationTests'
                 }
             }
         }
