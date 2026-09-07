@@ -64,11 +64,7 @@ pipeline {
             }
             steps {
                 dir('frontend') {
-                    sh '''
-                        pkill -f "ng serve" || true
-                        nohup npx ng serve --ssl --host 0.0.0.0 > ng-serve.log 2>&1 &
-                        sleep 5
-                    '''
+                    sh 'npx ng serve --ssl'
                 }
             }
         }
