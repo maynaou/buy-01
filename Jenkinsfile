@@ -22,15 +22,6 @@ pipeline {
             }
         }
 
-        // stage('Frontend Tests') {
-        //     steps {
-        //         dir('frontend') {
-        //             sh 'npm install'
-        //             sh 'npm test -- --watch=false --browsers=ChromeHeadless'
-        //         }
-        //     }
-        // }
-
         stage('Docker Build') {
             steps {
                 dir('backend') {
@@ -58,16 +49,6 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend') {
-            when {
-                branch 'main'
-            }
-            steps {
-                dir('frontend') {
-                    sh 'npx ng serve --ssl'
-                }
-            }
-        }
     }
 
     post {
