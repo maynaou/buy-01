@@ -9,18 +9,19 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                script {
-                    def services = ['media-service', 'product-service', 'security-service', 'user-service']
-                    services.each { svc ->
-                        dir(svc) {
-                            sh './mvnw clean test'
-                        }
-                    }
+stage('Test') {
+    steps {
+        script {
+            def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
+            services.each { svc ->
+                dir(svc) {
+                    sh 'chmod +x mvnw'
+                    sh 'sh ./mvnw clean test'
                 }
             }
         }
+    }
+}
 
         stage('Docker Build') {
             steps {
