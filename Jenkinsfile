@@ -14,7 +14,7 @@ stage('Test') {
         script {
             def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
             services.each { svc ->
-                dir(svc) {
+                dir("backend/${svc}") {
                     sh './mvnw clean test'
                 }
             }
