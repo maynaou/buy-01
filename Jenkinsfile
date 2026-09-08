@@ -69,20 +69,36 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend') {
-            when {
-                branch 'main'
-            }
-            steps {
-                dir('frontend') {
-                    sh '''
-                        pkill -f "ng serve" || true
-                        nohup npx ng serve --ssl --host 0.0.0.0 > ng-serve.log 2>&1 &
-                        sleep 5
-                    '''
-                }
-            }
+stage('Deploy Frontend') {
+    when {
+        branch 'main'
+    }
+    steps {
+        dir('frontend') {
+            sh '''
+                pkill -f "ng serve" || true
+
+                export JENKINS_NODE_COOKIE=dontKillMe
+
+                nohup npx ng serve \
+                    --ssl \
+                    --host 0.0.0.0 \
+                    --port 4200 \
+                    > ng-serve.log 2>&1 &
+
+                sleep 10
+
+                if ! wget --no-check-certificate -qO- https://127.0.0.1:4200 >/dev/null 2>&1; then
+                    echo "❌ Angular n'est pas démarré"
+                    cat ng-serve.log
+                    exit 1
+                fi
+
+                echo "✅ Frontend disponible sur https://localhost:4200"
+            '''
         }
+    }
+}
 
     }
 
