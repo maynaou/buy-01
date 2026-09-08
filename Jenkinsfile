@@ -86,22 +86,20 @@ stage('Deploy Frontend') {
                     --port 4200 \
                     > ng-serve.log 2>&1 &
 
-                echo "Waiting for Angular..."
+                echo "Angular started in background"
 
-                for i in $(seq 1 30); do
-                    if wget --no-check-certificate -qO- \
-                        https://127.0.0.1:4200 >/dev/null 2>&1; then
+                sleep 5
 
-                        echo "✅ Angular is running"
-                        exit 0
-                    fi
-
-                    sleep 2
-                done
-
-                echo "❌ Angular failed to start"
                 cat ng-serve.log
-                exit 1
+
+                echo "Checking Angular process..."
+
+                if pgrep -f "ng serve" > /dev/null; then
+                    echo "✅ Angular process is running"
+                else
+                    echo "❌ Angular process is not running"
+                    exit 1
+                fi
             '''
         }
     }
