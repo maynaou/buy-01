@@ -86,15 +86,22 @@ stage('Deploy Frontend') {
                     --port 4200 \
                     > ng-serve.log 2>&1 &
 
-                sleep 10
+                echo "Waiting for Angular..."
 
-                if ! wget --no-check-certificate -qO- https://127.0.0.1:4200 >/dev/null 2>&1; then
-                    echo "❌ Angular n'est pas démarré"
-                    cat ng-serve.log
-                    exit 1
-                fi
+                for i in $(seq 1 30); do
+                    if wget --no-check-certificate -qO- \
+                        https://127.0.0.1:4200 >/dev/null 2>&1; then
 
-                echo "✅ Frontend disponible sur https://localhost:4200"
+                        echo "✅ Angular is running"
+                        exit 0
+                    fi
+
+                    sleep 2
+                done
+
+                echo "❌ Angular failed to start"
+                cat ng-serve.log
+                exit 1
             '''
         }
     }
