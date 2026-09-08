@@ -1,37 +1,14 @@
 module.exports = function (config) {
   config.set({
     basePath: '',
-    
-    frameworks: ['jasmine', '@angular-devkit/build-angular'],
+
+    frameworks: ['jasmine'],
 
     plugins: [
-      require('karma-jasmine'),
-      require('karma-chrome-launcher'),
-      require('karma-jasmine-html-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      'karma-jasmine',
+      'karma-chrome-launcher',
+      'karma-jasmine-html-reporter'
     ],
-
-    client: {
-      jasmine: {
-        // options Jasmine
-      },
-      clearContext: false
-    },
-
-    jasmineHtmlReporter: {
-      suppressAll: true
-    },
-
-    coverageReporter: {
-      dir: require('path').join(__dirname, './coverage'),
-      subdir: '.',
-      reporters: [
-        { type: 'html' },
-        { type: 'text-summary' }
-      ]
-    },
-
-    reporters: ['progress', 'kjhtml'],
 
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
@@ -45,6 +22,8 @@ module.exports = function (config) {
     },
 
     browsers: ['ChromeHeadlessNoSandbox'],
+
+    reporters: ['progress', 'kjhtml'],
 
     restartOnFileChange: true
   });
