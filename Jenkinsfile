@@ -34,7 +34,7 @@ pipeline {
             steps {
                 dir('frontend') {
 
-                    // sh 'npm ci'
+                    sh 'npm ci'
 
                     sh 'npm test'
                 }
