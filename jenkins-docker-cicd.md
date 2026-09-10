@@ -308,4 +308,21 @@ stage('Deploy') {
         sh 'docker compose up -d'
     }
 }
+
+docker rm -f jenkins-blueocean jenkins-docker
+
+docker volume rm jenkins-data jenkins-docker-certs
+
+docker volume ls | grep jenkins
+
+docker network rm jenkins
+
+docker network ls | grep jenkins
+
+docker images | grep -E 'jenkins|myjenkins' 
+
+docker exec jenkins-docker docker ps 
+
+docker exec jenkins-docker docker info
+
 ```
