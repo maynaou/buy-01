@@ -109,9 +109,6 @@ docker run \
   --env DOCKER_TLS_CERTDIR=/certs \
   --volume jenkins-docker-certs:/certs/client \
   --volume jenkins-data:/var/jenkins_home \
-  --publish 2376:2376 \
-  --publish 8761:8761 \
-  --publish 8888:8888 \
   docker:dind \
   --storage-driver overlay2
 ```
@@ -124,24 +121,30 @@ FROM jenkins/jenkins:2.568.3-jdk21
 
 USER root
 
+# Installation des prérequis et du CLI Docker
 RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
     install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg \
-    -o /etc/apt/keyrings/docker.asc && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc && \
     chmod a+r /etc/apt/keyrings/docker.asc && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
-    https://download.docker.com/linux/debian \
-    $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" \
-    | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y docker-ce-cli && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Installation de Node.js, Angular CLI et Chromium pour les tests
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs chromium && \
+    npm install -g @angular/cli && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV CHROME_BIN=/usr/bin/chromium
+
 USER jenkins
 
-RUN jenkins-plugin-cli --plugins \
-    "blueocean docker-workflow json-path-api"
+# Installation des plugins Jenkins nécessaires
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
 ```
 
 ```bash
@@ -305,4 +308,21 @@ stage('Deploy') {
         sh 'docker compose up -d'
     }
 }
+
+docker rm -f jenkins-blueocean jenkins-docker
+
+docker volume rm jenkins-data jenkins-docker-certs
+
+docker volume ls | grep jenkins
+
+docker network rm jenkins
+
+docker network ls | grep jenkins
+
+docker images | grep -E 'jenkins|myjenkins' 
+
+docker exec jenkins-docker docker ps 
+
+docker exec jenkins-docker docker info
+
 ```

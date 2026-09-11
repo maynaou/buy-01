@@ -26,7 +26,6 @@ public class UserEventConsumer {
           .avatar("")
           .build();
       userRepository.save(users);
-
     };
   }
 
