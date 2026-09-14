@@ -123,7 +123,7 @@ Branch: ${env.BRANCH_NAME}
 URL Jenkins:
 ${env.BUILD_URL}
 """,
-            to: "ton-email@example.com"
+            to: "mohssinaynaou874@gmail.com"
         )
     }
 
@@ -142,7 +142,7 @@ Branch: ${env.BRANCH_NAME}
 Consulte les logs :
 ${env.BUILD_URL}
 """,
-            to: "ton-email@example.com"
+            to: "mohssinaynaou874@gmail.com"
         )
     }
 }
