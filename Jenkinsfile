@@ -33,14 +33,11 @@ pipeline {
         stage('Frontend Tests') {
             steps {
                 dir('frontend') {
-
                     sh 'npm ci'
-
                     sh 'npm test -- --watch=false'
                 }
             }
         }
-
 
         stage('Frontend Build') {
             steps {
@@ -69,82 +66,70 @@ pipeline {
             }
         }
 
-stage('Deploy Frontend') {
-    when {
-        branch 'main'
-    }
-    steps {
-        dir('frontend') {
-            sh '''
-                pkill -f "ng serve" || true
+        stage('Deploy Frontend') {
+            when {
+                branch 'main'
+            }
+            steps {
+                dir('frontend') {
+                    sh '''
+                        pkill -f "ng serve" || true
 
-                export JENKINS_NODE_COOKIE=dontKillMe
+                        export JENKINS_NODE_COOKIE=dontKillMe
 
-                nohup npx ng serve \
-                    --ssl \
-                    --host 0.0.0.0 \
-                    --port 4200 \
-                    > ng-serve.log 2>&1 &
+                        nohup npx ng serve \
+                            --ssl \
+                            --host 0.0.0.0 \
+                            --port 4200 \
+                            > ng-serve.log 2>&1 &
 
-                echo "Angular started in background"
+                        echo "Angular started in background"
 
-                sleep 5
+                        sleep 5
 
-                cat ng-serve.log
+                        cat ng-serve.log
 
-                echo "Checking Angular process..."
+                        echo "Checking Angular process..."
 
-                if pgrep -f "ng serve" > /dev/null; then
-                    echo "✅ Angular process is running"
-                else
-                    echo "❌ Angular process is not running"
-                    exit 1
-                fi
-            '''
+                        if pgrep -f "ng serve" > /dev/null; then
+                            echo "✅ Angular process is running"
+                        else
+                            echo "❌ Angular process is not running"
+                            exit 1
+                        fi
+                    '''
+                }
+            }
         }
     }
-}
 
+    post {
+        success {
+            echo "✅ Build réussi"
+
+            emailext(
+                subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Build réussi.
+                         Job: ${env.JOB_NAME}
+                         Build: #${env.BUILD_NUMBER}
+                         Branch: ${env.BRANCH_NAME}
+                         URL Jenkins: ${env.BUILD_URL}""",
+                to: "mohssinaynaou874@gmail.com"
+            )
+        }
+
+        failure {
+            echo "❌ Build échoué"
+
+            emailext(
+                subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Build échoué.
+                         Job: ${env.JOB_NAME}
+                         Build: #${env.BUILD_NUMBER}
+                         Branch: ${env.BRANCH_NAME}
+                         Consulte les logs :${env.BUILD_URL}""",
+                to: "mohssinaynaou874@gmail.com"
+            )
+        }
     }
-
- post {
-    success {
-        echo "✅ Build réussi"
-
-        emailext(
-            subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
-Build réussi.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Branch: ${env.BRANCH_NAME}
-
-URL Jenkins:
-${env.BUILD_URL}
-""",
-            to: "mohssinaynaou874@gmail.com"
-        )
-    }
-
-    failure {
-        echo "❌ Build échoué"
-
-        emailext(
-            subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: """
-Build échoué.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Branch: ${env.BRANCH_NAME}
-
-Consulte les logs :
-${env.BUILD_URL}
-""",
-            to: "mohssinaynaou874@gmail.com"
-        )
-    }
-}
-
 }
