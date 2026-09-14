@@ -107,12 +107,44 @@ stage('Deploy Frontend') {
 
     }
 
-    post {
-        success {
-            echo "✅ Build réussi"
-        }
-        failure {
-            echo "❌ Build échoué"
-        }
+ post {
+    success {
+        echo "✅ Build réussi"
+
+        emailext(
+            subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+Build réussi.
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+
+URL Jenkins:
+${env.BUILD_URL}
+""",
+            to: "ton-email@example.com"
+        )
     }
+
+    failure {
+        echo "❌ Build échoué"
+
+        emailext(
+            subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+Build échoué.
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+
+Consulte les logs :
+${env.BUILD_URL}
+""",
+            to: "ton-email@example.com"
+        )
+    }
+}
+
 }
