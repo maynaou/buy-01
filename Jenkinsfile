@@ -18,6 +18,63 @@ pipeline {
             }
         }
 
+
+        stage('Prepare Secrets') {
+    when {
+        branch 'main'
+    }
+
+    steps {
+        withCredentials([
+            string(
+                credentialsId: 'cloudinary-url',
+                variable: 'CLOUDINARY_URL'
+            ),
+            file(
+                credentialsId: 'jwt-private-key',
+                variable: 'JWT_PRIVATE_KEY'
+            ),
+            file(
+                credentialsId: 'jwt-public-key',
+                variable: 'JWT_PUBLIC_KEY'
+            )
+        ]) {
+
+            sh '''
+                mkdir -p backend/security-service/src/main/resources/certs
+
+                cp "$JWT_PRIVATE_KEY" \
+                   backend/security-service/src/main/resources/certs/pri.pem
+
+                cp "$JWT_PUBLIC_KEY" \
+                   backend/security-service/src/main/resources/certs/pub.pem
+
+                cat > backend/security-service/src/main/resources/env.properties <<EOF
+CLOUDINARY_URL=$CLOUDINARY_URL
+EOF
+
+                echo "✅ Secrets préparés"
+            '''
+
+            sh '''
+    echo "===== Vérification ====="
+
+    test -f backend/security-service/src/main/resources/certs/pub.pem \
+        && echo "✅ pub.pem OK" \
+        || echo "❌ pub.pem MANQUANT"
+
+    test -f backend/security-service/src/main/resources/certs/pri.pem \
+        && echo "✅ pri.pem OK" \
+        || echo "❌ pri.pem MANQUANT"
+
+    test -f backend/security-service/src/main/resources/env.properties \
+        && echo "✅ env.properties OK" \
+        || echo "❌ env.properties MANQUANT"
+'''
+        }
+    }
+}
+
         // ============================================================
         // BACKEND TESTS
         // ============================================================
