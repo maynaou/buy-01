@@ -81,27 +81,27 @@ pipeline {
         }
 
 
-//         stage('Test Credentials') {
-//     steps {
-//         withCredentials([
-//             usernamePassword(
-//                 credentialsId: 'mongo-creds',
-//                 usernameVariable: 'MONGO_USERNAME',
-//                 passwordVariable: 'MONGO_PASSWORD'
-//             ),
-//             string(
-//                 credentialsId: 'ssl-password',
-//                 variable: 'SSL_PASSWORD'
-//             )
-//         ]) {
-//             sh '''
-//                 echo "MONGO_USERNAME existe : ${MONGO_USERNAME:+OUI}"
-//                 echo "MONGO_PASSWORD existe : ${MONGO_PASSWORD:+OUI}"
-//                 echo "SSL_PASSWORD existe : ${SSL_PASSWORD:+OUI}"
-//             '''
-//         }
-//     }
-// }
+        stage('Test Credentials') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'mongo-creds',
+                usernameVariable: 'MONGO_USERNAME',
+                passwordVariable: 'MONGO_PASSWORD'
+            ),
+            string(
+                credentialsId: 'ssl-password',
+                variable: 'SSL_PASSWORD'
+            )
+        ]) {
+            sh '''
+                echo "MONGO_USERNAME existe : ${MONGO_USERNAME:+OUI}"
+                echo "MONGO_PASSWORD existe : ${MONGO_PASSWORD:+OUI}"
+                echo "SSL_PASSWORD existe : ${SSL_PASSWORD:+OUI}"
+            '''
+        }
+    }
+}
 
         // ============================================================
         // DEPLOY BACKEND
@@ -119,12 +119,6 @@ pipeline {
                 usernamePassword(credentialsId: 'mongo-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD'),
                 string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD')
             ]) {
-            sh '''
-                echo "MONGO_USERNAME existe : ${MONGO_USERNAME:+OUI}"
-                echo "MONGO_PASSWORD existe : ${MONGO_PASSWORD:+OUI}"
-                echo "SSL_PASSWORD existe : ${SSL_PASSWORD:+OUI}"
-            '''
-        }{
                 try {
 
                     echo "🚀 Déploiement de la nouvelle version Backend..."
