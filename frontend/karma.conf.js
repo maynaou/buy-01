@@ -7,7 +7,9 @@ module.exports = function (config) {
     plugins: [
       'karma-jasmine',
       'karma-chrome-launcher',
-      'karma-jasmine-html-reporter'
+      'karma-jasmine-html-reporter',
+      'karma-junit-reporter'
+      
     ],
 
     customLaunchers: {
@@ -23,7 +25,13 @@ module.exports = function (config) {
 
     browsers: ['ChromeHeadlessNoSandbox'],
 
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['progress', 'kjhtml', 'junit'],
+    
+    junitReporter: {
+    outputDir: 'test-results',
+    outputFile: 'karma-results.xml',
+    useBrowserName: false
+    },
 
     restartOnFileChange: true
   });

@@ -90,69 +90,62 @@ pipeline {
                 branch 'main'
             }
 
-            steps {
-                script {
+   steps {
+        script {
+            withCredentials([
+                usernamePassword(credentialsId: 'mongo-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD'),
+                string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD')
+            ]) {
+                try {
 
-                    try {
+                    echo "🚀 Déploiement de la nouvelle version Backend..."
 
-                        echo "🚀 Déploiement de la nouvelle version Backend..."
+                    dir('backend') {
+                        sh 'docker compose up -d'
+                    }
+
+                    echo "✅ Backend déployé avec succès"
+
+                } catch (err) {
+
+                    echo "❌ Déploiement Backend échoué"
+                    echo "🔄 Rollback Backend..."
+
+                    def lastGoodCommit = sh(
+                        script: """
+                            if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
+                                cat "${LAST_GOOD_COMMIT_FILE}"
+                            else
+                                echo ""
+                            fi
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    if (lastGoodCommit) {
+                        echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
 
                         dir('backend') {
+                            sh 'docker compose down'
+                            sh "git checkout ${lastGoodCommit} -- ."
+                            sh 'docker compose build'
                             sh 'docker compose up -d'
                         }
 
-                        echo "✅ Backend déployé avec succès"
+                        echo "✅ Rollback Backend terminé"
+                    } else {
+                        echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
 
-                    } catch (err) {
-
-                        echo "❌ Déploiement Backend échoué"
-                        echo "🔄 Rollback Backend..."
-
-                        // Récupérer le dernier commit connu comme fonctionnel
-                        def lastGoodCommit = sh(
-                            script: """
-                                if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
-                                    cat "${LAST_GOOD_COMMIT_FILE}"
-                                else
-                                    echo ""
-                                fi
-                            """,
-                            returnStdout: true
-                        ).trim()
-
-                        if (lastGoodCommit) {
-
-                            echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
-
-                            // Arrêter la version actuelle
-                            dir('backend') {
-                                sh 'docker compose down'
-                            }
-
-                            // Revenir au commit précédent
-                            sh "git checkout ${lastGoodCommit}"
-
-                            // Reconstruire les anciennes images
-                            dir('backend') {
-                                sh 'docker compose build'
-                                sh 'docker compose up -d'
-                            }
-
-                            echo "✅ Rollback Backend terminé"
-
-                        } else {
-
-                            echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
-
-                            dir('backend') {
-                                sh 'docker compose down'
-                            }
+                        dir('backend') {
+                            sh 'docker compose down'
                         }
-
-                        error("❌ Déploiement Backend échoué — rollback exécuté")
                     }
+
+                    error("❌ Déploiement Backend échoué — rollback exécuté")
                 }
             }
+        }
+    }
         }
 
         // ============================================================
@@ -167,7 +160,7 @@ pipeline {
 
             steps {
                 script {
-
+                    withCredentials([string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD')]) {
                     try {
 
                         echo "🚀 Déploiement de la nouvelle version Frontend..."
@@ -282,6 +275,7 @@ pipeline {
                         error("❌ Déploiement Frontend échoué — rollback exécuté")
                     }
                 }
+              }
             }
         }
     }
@@ -290,7 +284,11 @@ pipeline {
     // POST
     // ================================================================
 
-    post {
+    post { 
+
+        always {
+            junit allowEmptyResults: true, testResults: 'backend/*/target/surefire-reports/*.xml, frontend/test-results/*.xml'
+        }
 
         success {
 
