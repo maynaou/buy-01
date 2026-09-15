@@ -32,8 +32,8 @@ services:
     build:
       context: ./discovery-service
     container_name: discovery-service
-    # ports:
-    #   - "8761:8761"
+      ports:
+        - "8761:8761"
 
   security-service:
     build:
@@ -88,8 +88,8 @@ services:
     environment:
       SSL_PASSWORD: ${SSL_PASSWORD}
     container_name: api-gateway
-    # ports:
-    #   - "8888:8888"
+    ports:
+      - "8888:8888"
     depends_on:
       - discovery-service
 
