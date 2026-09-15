@@ -18,13 +18,7 @@ pipeline {
             }
         }
 
-
-        stage('Prepare Secrets') {
-    when {
-        branch 'main'
-    }
-
-stage('Prepare Secrets') {
+         stage('Prepare Secrets') {
     steps {
         withCredentials([
             string(
@@ -49,8 +43,8 @@ stage('Prepare Secrets') {
                 cp "$JWT_PRIVATE_KEY" \
                    backend/security-service/src/main/resources/certs/pri.pem
 
-                // cp "$JWT_PUBLIC_KEY" \
-                //    backend/security-service/src/main/resources/certs/pub.pem
+                cp "$JWT_PUBLIC_KEY" \
+                   backend/security-service/src/main/resources/certs/pub.pem
 
                 # API Gateway
                 mkdir -p backend/api-gateway/src/main/resources/certs
@@ -80,7 +74,7 @@ EOF
         }
     }
 }
-
+    
         // ============================================================
         // BACKEND TESTS
         // ============================================================
