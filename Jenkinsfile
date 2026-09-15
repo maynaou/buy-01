@@ -1,7 +1,16 @@
 pipeline {
     agent any
 
+    environment {
+        // Fichier persistant dans le volume Jenkins
+        LAST_GOOD_COMMIT_FILE = "${JENKINS_HOME}/last-good-commit.txt"
+    }
+
     stages {
+
+        // ============================================================
+        // CHECKOUT
+        // ============================================================
 
         stage('Checkout') {
             steps {
@@ -9,10 +18,22 @@ pipeline {
             }
         }
 
+        // ============================================================
+        // BACKEND TESTS
+        // ============================================================
+
         stage('Backend Tests') {
             steps {
                 script {
-                    def services = ['api-gateway', 'discovery-service', 'media-service', 'product-service', 'security-service', 'user-service']
+                    def services = [
+                        'api-gateway',
+                        'discovery-service',
+                        'media-service',
+                        'product-service',
+                        'security-service',
+                        'user-service'
+                    ]
+
                     services.each { svc ->
                         dir("backend/${svc}") {
                             sh './mvnw clean test'
@@ -22,13 +43,9 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
-            steps {
-                dir('backend') {
-                    sh 'docker compose build'
-                }
-            }
-        }
+        // ============================================================
+        // FRONTEND TESTS
+        // ============================================================
 
         stage('Frontend Tests') {
             steps {
@@ -39,6 +56,10 @@ pipeline {
             }
         }
 
+        // ============================================================
+        // FRONTEND BUILD
+        // ============================================================
+
         stage('Frontend Build') {
             steps {
                 dir('frontend') {
@@ -47,87 +68,275 @@ pipeline {
             }
         }
 
+        // ============================================================
+        // DOCKER BUILD
+        // ============================================================
+
+        stage('Docker Build') {
+            steps {
+                dir('backend') {
+                    sh 'docker compose build'
+                }
+            }
+        }
+
+        // ============================================================
+        // DEPLOY BACKEND
+        // ============================================================
+
         stage('Deploy Backend') {
+
             when {
                 branch 'main'
             }
+
             steps {
-                dir('backend') {
-                    script {
-                        try {
+                script {
+
+                    try {
+
+                        echo "🚀 Déploiement de la nouvelle version Backend..."
+
+                        dir('backend') {
                             sh 'docker compose up -d'
-                        } catch (err) {
-                            sh 'docker compose down'
-                            sh 'docker compose -f docker-compose.previous.yml up -d'
-                            error("Déploiement backend échoué — rollback exécuté")
                         }
+
+                        echo "✅ Backend déployé avec succès"
+
+                    } catch (err) {
+
+                        echo "❌ Déploiement Backend échoué"
+                        echo "🔄 Rollback Backend..."
+
+                        // Récupérer le dernier commit connu comme fonctionnel
+                        def lastGoodCommit = sh(
+                            script: """
+                                if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
+                                    cat "${LAST_GOOD_COMMIT_FILE}"
+                                else
+                                    echo ""
+                                fi
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        if (lastGoodCommit) {
+
+                            echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
+
+                            // Arrêter la version actuelle
+                            dir('backend') {
+                                sh 'docker compose down'
+                            }
+
+                            // Revenir au commit précédent
+                            sh "git checkout ${lastGoodCommit}"
+
+                            // Reconstruire les anciennes images
+                            dir('backend') {
+                                sh 'docker compose build'
+                                sh 'docker compose up -d'
+                            }
+
+                            echo "✅ Rollback Backend terminé"
+
+                        } else {
+
+                            echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
+
+                            dir('backend') {
+                                sh 'docker compose down'
+                            }
+                        }
+
+                        error("❌ Déploiement Backend échoué — rollback exécuté")
                     }
                 }
             }
         }
 
+        // ============================================================
+        // DEPLOY FRONTEND
+        // ============================================================
+
         stage('Deploy Frontend') {
+
             when {
                 branch 'main'
             }
+
             steps {
-                dir('frontend') {
-                    sh '''
-                        pkill -f "ng serve" || true
+                script {
 
-                        export JENKINS_NODE_COOKIE=dontKillMe
+                    try {
 
-                        nohup npx ng serve \
-                            --ssl \
-                            --host 0.0.0.0 \
-                            --port 4200 \
-                            > ng-serve.log 2>&1 &
+                        echo "🚀 Déploiement de la nouvelle version Frontend..."
 
-                        echo "Angular started in background"
+                        dir('frontend') {
 
-                        sleep 5
+                            sh '''
+                                echo "Arrêt de l'ancienne version Angular..."
 
-                        cat ng-serve.log
+                                pkill -f "ng serve" || true
 
-                        echo "Checking Angular process..."
+                                export JENKINS_NODE_COOKIE=dontKillMe
 
-                        if pgrep -f "ng serve" > /dev/null; then
-                            echo "✅ Angular process is running"
-                        else
-                            echo "❌ Angular process is not running"
-                            exit 1
-                        fi
-                    '''
+                                echo "Démarrage de la nouvelle version Angular..."
+
+                                nohup npx ng serve \
+                                    --ssl \
+                                    --host 0.0.0.0 \
+                                    --port 4200 \
+                                    > ng-serve.log 2>&1 &
+
+                                echo "Angular lancé en arrière-plan"
+
+                                sleep 5
+
+                                echo "===== Angular logs ====="
+                                cat ng-serve.log
+                                echo "========================"
+
+                                echo "Vérification du processus Angular..."
+
+                                if pgrep -f "ng serve" > /dev/null; then
+                                    echo "✅ Angular fonctionne correctement"
+                                else
+                                    echo "❌ Angular ne fonctionne pas"
+                                    exit 1
+                                fi
+                            '''
+                        }
+
+                        echo "✅ Frontend déployé avec succès"
+
+                    } catch (err) {
+
+                        echo "❌ Déploiement Frontend échoué"
+                        echo "🔄 Rollback Frontend..."
+
+                        // Récupérer le dernier commit fonctionnel
+                        def lastGoodCommit = sh(
+                            script: """
+                                if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
+                                    cat "${LAST_GOOD_COMMIT_FILE}"
+                                else
+                                    echo ""
+                                fi
+                            """,
+                            returnStdout: true
+                        ).trim()
+
+                        if (lastGoodCommit) {
+
+                            echo "↩️ Dernier commit Frontend fonctionnel : ${lastGoodCommit}"
+
+                            dir('frontend') {
+
+                                // Arrêter la nouvelle version
+                                sh '''
+                                    pkill -f "ng serve" || true
+                                '''
+
+                                // Restaurer les fichiers du dernier commit fonctionnel
+                                sh "git clean -fd"
+                                sh "git checkout ${lastGoodCommit} -- ."
+
+                                // Réinstaller les dépendances
+                                sh 'npm ci'
+
+                                // Relancer l'ancienne version
+                                sh '''
+                                    export JENKINS_NODE_COOKIE=dontKillMe
+
+                                    nohup npx ng serve \
+                                        --ssl \
+                                        --host 0.0.0.0 \
+                                        --port 4200 \
+                                        > ng-serve.log 2>&1 &
+
+                                    sleep 5
+
+                                    cat ng-serve.log
+
+                                    if pgrep -f "ng serve" > /dev/null; then
+                                        echo "✅ Ancienne version Frontend restaurée"
+                                    else
+                                        echo "❌ Impossible de restaurer le Frontend"
+                                        exit 1
+                                    fi
+                                '''
+                            }
+
+                            echo "✅ Rollback Frontend terminé"
+
+                        } else {
+
+                            echo "⚠️ Aucun ancien commit disponible pour le rollback Frontend"
+
+                            dir('frontend') {
+                                sh 'pkill -f "ng serve" || true'
+                            }
+                        }
+
+                        error("❌ Déploiement Frontend échoué — rollback exécuté")
+                    }
                 }
             }
         }
     }
 
+    // ================================================================
+    // POST
+    // ================================================================
+
     post {
+
         success {
+
             echo "✅ Build réussi"
+
+            // Sauvegarder le commit qui vient d'être déployé
+            sh """
+                mkdir -p "\$(dirname "${LAST_GOOD_COMMIT_FILE}")"
+                git rev-parse HEAD > "${LAST_GOOD_COMMIT_FILE}"
+            """
+
+            echo "💾 Dernier commit fonctionnel sauvegardé"
 
             emailext(
                 subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build réussi.
-                         Job: ${env.JOB_NAME}
-                         Build: #${env.BUILD_NUMBER}
-                         Branch: ${env.BRANCH_NAME}
-                         URL Jenkins: ${env.BUILD_URL}""",
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+
+Commit déployé:
+${env.GIT_COMMIT}
+
+URL Jenkins:
+${env.BUILD_URL}
+""",
                 to: "mohssinaynaou874@gmail.com"
             )
         }
 
         failure {
+
             echo "❌ Build échoué"
 
             emailext(
                 subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build échoué.
-                         Job: ${env.JOB_NAME}
-                         Build: #${env.BUILD_NUMBER}
-                         Branch: ${env.BRANCH_NAME}
-                         Consulte les logs :${env.BUILD_URL}""",
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+
+Consulte les logs Jenkins:
+${env.BUILD_URL}
+""",
                 to: "mohssinaynaou874@gmail.com"
             )
         }
