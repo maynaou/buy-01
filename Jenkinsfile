@@ -176,6 +176,8 @@ EOF
 
                                     sleep 30
 
+                                    sh 'exit 1'
+
                                     sh '''
                                           if docker compose ps | grep -q "unhealthy\\|Exited"; then
                                           echo "❌ Un container est unhealthy ou arrêté"
