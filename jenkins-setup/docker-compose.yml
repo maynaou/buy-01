@@ -13,7 +13,6 @@ services:
           - docker
     volumes:
       - jenkins-docker-certs:/certs/client
-      - jenkins-data:/var/jenkins_home
     ports:
       - "8888:8888"
       - "8761:8761"

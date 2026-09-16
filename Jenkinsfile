@@ -381,7 +381,7 @@ EOF
                          Branch: ${env.BRANCH_NAME}
                          Commit déployé: ${env.GIT_COMMIT}
                          URL Jenkins:${env.BUILD_URL}""",
-                to: "mohssinaynaou874@gmail.com"
+                to: "koukihamza469@gmail.com"
             )
         }
 
@@ -396,7 +396,7 @@ EOF
                          Build: #${env.BUILD_NUMBER}
                          Branch: ${env.BRANCH_NAME}
                          Consulte les logs Jenkins: ${env.BUILD_URL}""",
-                to: "mohssinaynaou874@gmail.com"
+                to: "koukihamza469@gmail.com"
             )
         }
     }
