@@ -18,70 +18,74 @@ pipeline {
             }
         }
 
-      stage('Prepare Secrets') {
-    steps {
-        withCredentials([
-            string(
-                credentialsId: 'cloudinary-url',
-                variable: 'CLOUDINARY_URL'
-            ),
-            file(
-                credentialsId: 'jwt-private-key',
-                variable: 'JWT_PRIVATE_KEY'
-            ),
-            file(
-                credentialsId: 'jwt-public-key',
-                variable: 'JWT_PUBLIC_KEY'
-            )
-        ]) {
-            sh '''
-                echo "===== Préparation des secrets ====="
+        // ============================================================
+        // PREPARE SECRETS
+        // ============================================================
 
-                # Security Service
-                mkdir -p backend/security-service/src/main/resources/certs
+        stage('Prepare Secrets') {
+            steps {
+                withCredentials([
+                    string(
+                        credentialsId: 'cloudinary-url',
+                        variable: 'CLOUDINARY_URL'
+                    ),
+                    file(
+                        credentialsId: 'jwt-private-key',
+                        variable: 'JWT_PRIVATE_KEY'
+                    ),
+                    file(
+                        credentialsId: 'jwt-public-key',
+                        variable: 'JWT_PUBLIC_KEY'
+                    )
+                ]) {
+                    sh '''
+                        echo "===== Préparation des secrets ====="
 
-                rm -f backend/security-service/src/main/resources/certs/pri.pem
-                rm -f backend/security-service/src/main/resources/certs/pub.pem
+                        # Security Service
+                        mkdir -p backend/security-service/src/main/resources/certs
 
-                cp "$JWT_PRIVATE_KEY" \
-                   backend/security-service/src/main/resources/certs/pri.pem
+                        rm -f backend/security-service/src/main/resources/certs/pri.pem
+                        rm -f backend/security-service/src/main/resources/certs/pub.pem
 
-                cp "$JWT_PUBLIC_KEY" \
-                   backend/security-service/src/main/resources/certs/pub.pem
+                        cp "$JWT_PRIVATE_KEY" \
+                           backend/security-service/src/main/resources/certs/pri.pem
 
-                # API Gateway
-                mkdir -p backend/api-gateway/src/main/resources/certs
+                        cp "$JWT_PUBLIC_KEY" \
+                           backend/security-service/src/main/resources/certs/pub.pem
 
-                rm -f backend/api-gateway/src/main/resources/certs/pub.pem
+                        # API Gateway
+                        mkdir -p backend/api-gateway/src/main/resources/certs
 
-                cp "$JWT_PUBLIC_KEY" \
-                   backend/api-gateway/src/main/resources/certs/pub.pem
+                        rm -f backend/api-gateway/src/main/resources/certs/pub.pem
 
-                # Media Service
-                rm -f backend/media-service/src/main/resources/env.properties
+                        cp "$JWT_PUBLIC_KEY" \
+                           backend/api-gateway/src/main/resources/certs/pub.pem
 
-                cat > backend/media-service/src/main/resources/env.properties <<EOF
+                        # Media Service
+                        rm -f backend/media-service/src/main/resources/env.properties
+
+                        cat > backend/media-service/src/main/resources/env.properties <<EOF
 CLOUDINARY_URL=$CLOUDINARY_URL
 EOF
 
-                echo "===== Vérification ====="
+                        echo "===== Vérification ====="
 
-                test -f backend/security-service/src/main/resources/certs/pri.pem \
-                    && echo "✅ security pri.pem OK"
+                        test -f backend/security-service/src/main/resources/certs/pri.pem \
+                            && echo "✅ security pri.pem OK"
 
-                test -f backend/security-service/src/main/resources/certs/pub.pem \
-                    && echo "✅ security pub.pem OK"
+                        test -f backend/security-service/src/main/resources/certs/pub.pem \
+                            && echo "✅ security pub.pem OK"
 
-                test -f backend/api-gateway/src/main/resources/certs/pub.pem \
-                    && echo "✅ gateway pub.pem OK"
+                        test -f backend/api-gateway/src/main/resources/certs/pub.pem \
+                            && echo "✅ gateway pub.pem OK"
 
-                test -f backend/media-service/src/main/resources/env.properties \
-                    && echo "✅ media env.properties OK"
-            '''
+                        test -f backend/media-service/src/main/resources/env.properties \
+                            && echo "✅ media env.properties OK"
+                    '''
+                }
+            }
         }
-    }
-}
-    
+
         // ============================================================
         // BACKEND TESTS
         // ============================================================
@@ -154,65 +158,65 @@ EOF
                 branch 'main'
             }
 
-   steps {
-        script {
-            withCredentials([
-                usernamePassword(credentialsId: 'mongo-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD'),
-                string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD'),
-                string(credentialsId: 'cloudinary-url', variable: 'CLOUDINARY_URL'),
-                file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
-                file(credentialsId: 'jwt-public-key', variable: 'JWT_PUBLIC_KEY')
-            ]) {
-                try {
+            steps {
+                script {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'mongo-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD'),
+                        string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD'),
+                        string(credentialsId: 'cloudinary-url', variable: 'CLOUDINARY_URL'),
+                        file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
+                        file(credentialsId: 'jwt-public-key', variable: 'JWT_PUBLIC_KEY')
+                    ]) {
+                        try {
 
-                    echo "🚀 Déploiement de la nouvelle version Backend..."
+                            echo "🚀 Déploiement de la nouvelle version Backend..."
 
-                    dir('backend') {
-                        sh 'docker compose up -d'
-                    }
+                            dir('backend') {
+                                sh 'docker compose up -d'
+                            }
 
-                    echo "✅ Backend déployé avec succès"
+                            echo "✅ Backend déployé avec succès"
 
-                } catch (err) {
+                        } catch (err) {
 
-                    echo "❌ Déploiement Backend échoué"
-                    echo "🔄 Rollback Backend..."
+                            echo "❌ Déploiement Backend échoué"
+                            echo "🔄 Rollback Backend..."
 
-                    def lastGoodCommit = sh(
-                        script: """
-                            if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
-                                cat "${LAST_GOOD_COMMIT_FILE}"
-                            else
-                                echo ""
-                            fi
-                        """,
-                        returnStdout: true
-                    ).trim()
+                            def lastGoodCommit = sh(
+                                script: """
+                                    if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
+                                        cat "${LAST_GOOD_COMMIT_FILE}"
+                                    else
+                                        echo ""
+                                    fi
+                                """,
+                                returnStdout: true
+                            ).trim()
 
-                    if (lastGoodCommit) {
-                        echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
+                            if (lastGoodCommit) {
+                                echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
 
-                        dir('backend') {
-                            sh 'docker compose down'
-                            sh "git checkout ${lastGoodCommit} -- ."
-                            sh 'docker compose build'
-                            sh 'docker compose up -d'
+                                dir('backend') {
+                                    sh 'docker compose down'
+                                    sh "git checkout ${lastGoodCommit} -- ."
+                                    sh 'docker compose build'
+                                    sh 'docker compose up -d'
+                                }
+
+                                echo "✅ Rollback Backend terminé"
+                            } else {
+                                echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
+
+                                dir('backend') {
+                                    sh 'docker compose down'
+                                }
+                            }
+
+                            error("❌ Déploiement Backend échoué — rollback exécuté")
                         }
-
-                        echo "✅ Rollback Backend terminé"
-                    } else {
-                        echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
-
-                        dir('backend') {
-                            sh 'docker compose down'
-                        }
                     }
-
-                    error("❌ Déploiement Backend échoué — rollback exécuté")
                 }
             }
-        }
-    }
         }
 
         // ============================================================
@@ -228,86 +232,20 @@ EOF
             steps {
                 script {
                     withCredentials([string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD')]) {
-                    try {
+                        try {
 
-                        echo "🚀 Déploiement de la nouvelle version Frontend..."
-
-                        dir('frontend') {
-
-                            sh '''
-                                echo "Arrêt de l'ancienne version Angular..."
-
-                                pkill -f "ng serve" || true
-
-                                export JENKINS_NODE_COOKIE=dontKillMe
-
-                                echo "Démarrage de la nouvelle version Angular..."
-
-                                nohup npx ng serve \
-                                    --ssl \
-                                    --host 0.0.0.0 \
-                                    --port 4200 \
-                                    > ng-serve.log 2>&1 &
-
-                                echo "Angular lancé en arrière-plan"
-
-                                sleep 5
-
-                                echo "===== Angular logs ====="
-                                cat ng-serve.log
-                                echo "========================"
-
-                                echo "Vérification du processus Angular..."
-
-                                if pgrep -f "ng serve" > /dev/null; then
-                                    echo "✅ Angular fonctionne correctement"
-                                else
-                                    echo "❌ Angular ne fonctionne pas"
-                                    exit 1
-                                fi
-                            '''
-                        }
-
-                        echo "✅ Frontend déployé avec succès"
-
-                    } catch (err) {
-
-                        echo "❌ Déploiement Frontend échoué"
-                        echo "🔄 Rollback Frontend..."
-
-                        // Récupérer le dernier commit fonctionnel
-                        def lastGoodCommit = sh(
-                            script: """
-                                if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
-                                    cat "${LAST_GOOD_COMMIT_FILE}"
-                                else
-                                    echo ""
-                                fi
-                            """,
-                            returnStdout: true
-                        ).trim()
-
-                        if (lastGoodCommit) {
-
-                            echo "↩️ Dernier commit Frontend fonctionnel : ${lastGoodCommit}"
+                            echo "🚀 Déploiement de la nouvelle version Frontend..."
 
                             dir('frontend') {
 
-                                // Arrêter la nouvelle version
                                 sh '''
+                                    echo "Arrêt de l'ancienne version Angular..."
+
                                     pkill -f "ng serve" || true
-                                '''
 
-                                // Restaurer les fichiers du dernier commit fonctionnel
-                                sh "git clean -fd"
-                                sh "git checkout ${lastGoodCommit} -- ."
-
-                                // Réinstaller les dépendances
-                                sh 'npm ci'
-
-                                // Relancer l'ancienne version
-                                sh '''
                                     export JENKINS_NODE_COOKIE=dontKillMe
+
+                                    echo "Démarrage de la nouvelle version Angular..."
 
                                     nohup npx ng serve \
                                         --ssl \
@@ -315,34 +253,100 @@ EOF
                                         --port 4200 \
                                         > ng-serve.log 2>&1 &
 
+                                    echo "Angular lancé en arrière-plan"
+
                                     sleep 5
 
+                                    echo "===== Angular logs ====="
                                     cat ng-serve.log
+                                    echo "========================"
+
+                                    echo "Vérification du processus Angular..."
 
                                     if pgrep -f "ng serve" > /dev/null; then
-                                        echo "✅ Ancienne version Frontend restaurée"
+                                        echo "✅ Angular fonctionne correctement"
                                     else
-                                        echo "❌ Impossible de restaurer le Frontend"
+                                        echo "❌ Angular ne fonctionne pas"
                                         exit 1
                                     fi
                                 '''
                             }
 
-                            echo "✅ Rollback Frontend terminé"
+                            echo "✅ Frontend déployé avec succès"
 
-                        } else {
+                        } catch (err) {
 
-                            echo "⚠️ Aucun ancien commit disponible pour le rollback Frontend"
+                            echo "❌ Déploiement Frontend échoué"
+                            echo "🔄 Rollback Frontend..."
 
-                            dir('frontend') {
-                                sh 'pkill -f "ng serve" || true'
+                            // Récupérer le dernier commit fonctionnel
+                            def lastGoodCommit = sh(
+                                script: """
+                                    if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
+                                        cat "${LAST_GOOD_COMMIT_FILE}"
+                                    else
+                                        echo ""
+                                    fi
+                                """,
+                                returnStdout: true
+                            ).trim()
+
+                            if (lastGoodCommit) {
+
+                                echo "↩️ Dernier commit Frontend fonctionnel : ${lastGoodCommit}"
+
+                                dir('frontend') {
+
+                                    // Arrêter la nouvelle version
+                                    sh '''
+                                        pkill -f "ng serve" || true
+                                    '''
+
+                                    // Restaurer les fichiers du dernier commit fonctionnel
+                                    sh "git clean -fd"
+                                    sh "git checkout ${lastGoodCommit} -- ."
+
+                                    // Réinstaller les dépendances
+                                    sh 'npm ci'
+
+                                    // Relancer l'ancienne version
+                                    sh '''
+                                        export JENKINS_NODE_COOKIE=dontKillMe
+
+                                        nohup npx ng serve \
+                                            --ssl \
+                                            --host 0.0.0.0 \
+                                            --port 4200 \
+                                            > ng-serve.log 2>&1 &
+
+                                        sleep 5
+
+                                        cat ng-serve.log
+
+                                        if pgrep -f "ng serve" > /dev/null; then
+                                            echo "✅ Ancienne version Frontend restaurée"
+                                        else
+                                            echo "❌ Impossible de restaurer le Frontend"
+                                            exit 1
+                                        fi
+                                    '''
+                                }
+
+                                echo "✅ Rollback Frontend terminé"
+
+                            } else {
+
+                                echo "⚠️ Aucun ancien commit disponible pour le rollback Frontend"
+
+                                dir('frontend') {
+                                    sh 'pkill -f "ng serve" || true'
+                                }
                             }
-                        }
 
-                        error("❌ Déploiement Frontend échoué — rollback exécuté")
+                            error("❌ Déploiement Frontend échoué — rollback exécuté")
+                        }
                     }
                 }
-              }
             }
         }
     }
@@ -351,7 +355,7 @@ EOF
     // POST
     // ================================================================
 
-    post { 
+    post {
 
         always {
             junit allowEmptyResults: true, testResults: 'backend/*/target/surefire-reports/*.xml, frontend/test-results/*.xml'
@@ -372,17 +376,11 @@ EOF
             emailext(
                 subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build réussi.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Branch: ${env.BRANCH_NAME}
-
-Commit déployé:
-${env.GIT_COMMIT}
-
-URL Jenkins:
-${env.BUILD_URL}
-""",
+                         Job: ${env.JOB_NAME}
+                         Build: #${env.BUILD_NUMBER}
+                         Branch: ${env.BRANCH_NAME}
+                         Commit déployé: ${env.GIT_COMMIT}
+                         URL Jenkins:${env.BUILD_URL}""",
                 to: "mohssinaynaou874@gmail.com"
             )
         }
@@ -394,14 +392,10 @@ ${env.BUILD_URL}
             emailext(
                 subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build échoué.
-
-Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
-Branch: ${env.BRANCH_NAME}
-
-Consulte les logs Jenkins:
-${env.BUILD_URL}
-""",
+                         Job: ${env.JOB_NAME}
+                         Build: #${env.BUILD_NUMBER}
+                         Branch: ${env.BRANCH_NAME}
+                         Consulte les logs Jenkins: ${env.BUILD_URL}""",
                 to: "mohssinaynaou874@gmail.com"
             )
         }
