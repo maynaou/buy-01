@@ -172,7 +172,16 @@ EOF
                             echo "🚀 Déploiement de la nouvelle version Backend..."
 
                             dir('backend') {
-                                sh 'docker compose up -d'
+                                sh 'docker compose up -d' 
+
+                                    sleep 30
+
+                                    sh '''
+                                          if docker compose ps | grep -q "unhealthy\\|Exited"; then
+                                          echo "❌ Un container est unhealthy ou arrêté"
+                                          exit 1
+                                          fi
+                                        '''
                             }
 
                             echo "✅ Backend déployé avec succès"
