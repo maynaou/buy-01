@@ -176,7 +176,7 @@ EOF
 
                                     sleep 30
 
-                                    sh 'exit 1'
+                                    // sh 'exit 1'
 
                                     sh '''
                                           if docker compose ps | grep -q "unhealthy\\|Exited"; then
@@ -191,40 +191,29 @@ EOF
 
                         } catch (err) {
 
-                            echo "❌ Déploiement Backend échoué"
-                            echo "🔄 Rollback Backend..."
+                           echo "❌ Déploiement Backend échoué"
+                            echo "🔄 Rollback vers les images Docker précédentes..."
 
-                            def lastGoodCommit = sh(
-                                script: """
-                                    if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
-                                        cat "${LAST_GOOD_COMMIT_FILE}"
-                                    else
-                                        echo ""
-                                    fi
-                                """,
-                                returnStdout: true
-                            ).trim()
+                            dir('backend') {
+                                sh '''
+                                    echo "Arrêt de la version défaillante..."
+                                    docker compose down
 
-                            if (lastGoodCommit) {
-                                echo "↩️ Dernier commit Backend fonctionnel : ${lastGoodCommit}"
+                                    echo "Restauration des tags précédents..."
+                                    docker tag backend-api-gateway:previous backend-api-gateway:latest || true
+                                    docker tag backend-discovery-service:previous backend-discovery-service:latest || true
+                                    docker tag backend-media-service:previous backend-media-service:latest || true
+                                    docker tag backend-product-service:previous backend-product-service:latest || true
+                                    docker tag backend-security-service:previous backend-security-service:latest || true
+                                    docker tag backend-user-service:previous backend-user-service:latest || true
 
-                                dir('backend') {
-                                    sh 'docker compose down'
-                                    sh "git checkout ${lastGoodCommit} -- ."
-                                    sh 'docker compose build'
-                                    sh 'docker compose up -d'
-                                }
-
-                                echo "✅ Rollback Backend terminé"
-                            } else {
-                                echo "⚠️ Aucun ancien commit disponible pour le rollback Backend"
-
-                                dir('backend') {
-                                    sh 'docker compose down'
-                                }
+                                    echo "Redémarrage avec les images précédentes..."
+                                    docker compose up -d
+                                '''
                             }
 
-                            error("❌ Déploiement Backend échoué — rollback exécuté")
+                            echo "✅ Rollback Docker Backend terminé"
+                            error("❌ Déploiement Backend échoué — rollback Docker exécuté")
                         }
                     }
                 }
@@ -288,43 +277,22 @@ EOF
 
                         } catch (err) {
 
-                            echo "❌ Déploiement Frontend échoué"
-                            echo "🔄 Rollback Frontend..."
+                          echo "❌ Déploiement Frontend échoué"
+                            echo "🔄 Rollback vers le build Frontend précédent..."
 
-                            // Récupérer le dernier commit fonctionnel
-                            def lastGoodCommit = sh(
-                                script: """
-                                    if [ -f "${LAST_GOOD_COMMIT_FILE}" ]; then
-                                        cat "${LAST_GOOD_COMMIT_FILE}"
-                                    else
-                                        echo ""
-                                    fi
-                                """,
-                                returnStdout: true
-                            ).trim()
+                            dir('frontend') {
+                                sh '''
+                                    # Arrêt de la version défaillante
+                                    pkill -f "ng serve" || true
 
-                            if (lastGoodCommit) {
+                                    if [ -d "dist-previous" ]; then
+                                        echo "Restauration des fichiers de build..."
+                                        rm -rf dist
+                                        cp -r dist-previous dist
 
-                                echo "↩️ Dernier commit Frontend fonctionnel : ${lastGoodCommit}"
-
-                                dir('frontend') {
-
-                                    // Arrêter la nouvelle version
-                                    sh '''
-                                        pkill -f "ng serve" || true
-                                    '''
-
-                                    // Restaurer les fichiers du dernier commit fonctionnel
-                                    sh "git clean -fd"
-                                    sh "git checkout ${lastGoodCommit} -- ."
-
-                                    // Réinstaller les dépendances
-                                    sh 'npm ci'
-
-                                    // Relancer l'ancienne version
-                                    sh '''
                                         export JENKINS_NODE_COOKIE=dontKillMe
 
+                                        echo "Redémarrage rapide du Frontend avec l'ancien build..."
                                         nohup npx ng serve \
                                             --ssl \
                                             --host 0.0.0.0 \
@@ -333,28 +301,19 @@ EOF
 
                                         sleep 5
 
-                                        cat ng-serve.log
-
                                         if pgrep -f "ng serve" > /dev/null; then
-                                            echo "✅ Ancienne version Frontend restaurée"
+                                            echo "✅ Ancienne version Frontend restaurée instantanément"
                                         else
-                                            echo "❌ Impossible de restaurer le Frontend"
+                                            echo "❌ Impossible de relancer Angular"
                                             exit 1
                                         fi
-                                    '''
-                                }
-
-                                echo "✅ Rollback Frontend terminé"
-
-                            } else {
-
-                                echo "⚠️ Aucun ancien commit disponible pour le rollback Frontend"
-
-                                dir('frontend') {
-                                    sh 'pkill -f "ng serve" || true'
-                                }
+                                    else
+                                        echo "⚠️ Aucun backup dist-previous disponible"
+                                    fi
+                                '''
                             }
 
+                            echo "✅ Rollback Frontend terminé"
                             error("❌ Déploiement Frontend échoué — rollback exécuté")
                         }
                     }
@@ -364,22 +323,44 @@ EOF
 
 
 
-            stage('Save Last Good Commit') {
-                when {
-                    branch 'main'
-                }
-
-                steps {
-                    script {
-                        sh """
-                              mkdir -p "\$(dirname "${LAST_GOOD_COMMIT_FILE}")"
-                              git rev-parse HEAD > "${LAST_GOOD_COMMIT_FILE}"
-                        """
-
-                    echo "💾 Last good commit sauvegardé : ${env.GIT_COMMIT}"
-                    }
+        stage('Backup Current Frontend Build') {
+            when { branch 'main' }
+            steps {
+                dir('frontend') {
+                    sh '''
+                        if [ -d "dist" ]; then
+                            echo "===== Backup du build Frontend actuel ====="
+                            rm -rf dist-previous
+                            cp -r dist dist-previous
+                            echo "✅ Build précédent sauvegardé"
+                        fi
+                    '''
                 }
             }
+        }
+
+
+            stage('Backup Current Docker Images') {
+
+    when {
+        branch 'main'
+    }
+
+    steps {
+        sh '''
+            echo "===== Backup des images Docker actuelles ====="
+
+            docker tag backend-api-gateway:latest backend-api-gateway:previous
+            docker tag backend-discovery-service:latest backend-discovery-service:previous
+            docker tag backend-media-service:latest backend-media-service:previous
+            docker tag backend-product-service:latest backend-product-service:previous
+            docker tag backend-security-service:latest backend-security-service:previous
+            docker tag backend-user-service:latest backend-user-service:previous
+
+            echo "✅ Images précédentes sauvegardées"
+        '''
+    }
+}
         }
 
 
