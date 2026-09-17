@@ -176,7 +176,7 @@ EOF
 
                                     sleep 30
 
-                                    sh 'exit 1'
+                                    // sh 'exit 1'
 
                                     sh '''
                                           if docker compose ps | grep -q "unhealthy\\|Exited"; then
@@ -187,6 +187,7 @@ EOF
                             }
 
                             echo "✅ Backend déployé avec succès"
+                            
 
                         } catch (err) {
 
@@ -360,7 +361,30 @@ EOF
                 }
             }
         }
-    }
+
+
+
+            stage('Save Last Good Commit') {
+                when {
+                    branch 'main'
+                }
+
+                steps {
+                    script {
+                        sh """
+                              mkdir -p "\$(dirname "${LAST_GOOD_COMMIT_FILE}")"
+                              git rev-parse HEAD > "${LAST_GOOD_COMMIT_FILE}"
+                        """
+
+                    echo "💾 Last good commit sauvegardé : ${env.GIT_COMMIT}"
+                    }
+                }
+            }
+        }
+
+
+
+
 
     // ================================================================
     // POST
@@ -375,14 +399,6 @@ EOF
         success {
 
             echo "✅ Build réussi"
-
-            // Sauvegarder le commit qui vient d'être déployé
-            sh """
-                mkdir -p "\$(dirname "${LAST_GOOD_COMMIT_FILE}")"
-                git rev-parse HEAD > "${LAST_GOOD_COMMIT_FILE}"
-            """
-
-            echo "💾 Dernier commit fonctionnel sauvegardé"
 
             emailext(
                 subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
