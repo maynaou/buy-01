@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Fichier persistant dans le volume Jenkins
         LAST_GOOD_COMMIT_FILE = "${JENKINS_HOME}/last-good-commit.txt"
     }
 
@@ -25,62 +24,36 @@ pipeline {
         stage('Prepare Secrets') {
             steps {
                 withCredentials([
-                    string(
-                        credentialsId: 'cloudinary-url',
-                        variable: 'CLOUDINARY_URL'
-                    ),
-                    file(
-                        credentialsId: 'jwt-private-key',
-                        variable: 'JWT_PRIVATE_KEY'
-                    ),
-                    file(
-                        credentialsId: 'jwt-public-key',
-                        variable: 'JWT_PUBLIC_KEY'
-                    )
+                    string(credentialsId: 'cloudinary-url', variable: 'CLOUDINARY_URL'),
+                    file(credentialsId: 'jwt-private-key', variable: 'JWT_PRIVATE_KEY'),
+                    file(credentialsId: 'jwt-public-key', variable: 'JWT_PUBLIC_KEY')
                 ]) {
                     sh '''
                         echo "===== Préparation des secrets ====="
 
                         # Security Service
                         mkdir -p backend/security-service/src/main/resources/certs
-
                         rm -f backend/security-service/src/main/resources/certs/pri.pem
                         rm -f backend/security-service/src/main/resources/certs/pub.pem
-
-                        cp "$JWT_PRIVATE_KEY" \
-                           backend/security-service/src/main/resources/certs/pri.pem
-
-                        cp "$JWT_PUBLIC_KEY" \
-                           backend/security-service/src/main/resources/certs/pub.pem
+                        cp "$JWT_PRIVATE_KEY" backend/security-service/src/main/resources/certs/pri.pem
+                        cp "$JWT_PUBLIC_KEY" backend/security-service/src/main/resources/certs/pub.pem
 
                         # API Gateway
                         mkdir -p backend/api-gateway/src/main/resources/certs
-
                         rm -f backend/api-gateway/src/main/resources/certs/pub.pem
-
-                        cp "$JWT_PUBLIC_KEY" \
-                           backend/api-gateway/src/main/resources/certs/pub.pem
+                        cp "$JWT_PUBLIC_KEY" backend/api-gateway/src/main/resources/certs/pub.pem
 
                         # Media Service
                         rm -f backend/media-service/src/main/resources/env.properties
-
                         cat > backend/media-service/src/main/resources/env.properties <<EOF
 CLOUDINARY_URL=$CLOUDINARY_URL
 EOF
 
                         echo "===== Vérification ====="
-
-                        test -f backend/security-service/src/main/resources/certs/pri.pem \
-                            && echo "✅ security pri.pem OK"
-
-                        test -f backend/security-service/src/main/resources/certs/pub.pem \
-                            && echo "✅ security pub.pem OK"
-
-                        test -f backend/api-gateway/src/main/resources/certs/pub.pem \
-                            && echo "✅ gateway pub.pem OK"
-
-                        test -f backend/media-service/src/main/resources/env.properties \
-                            && echo "✅ media env.properties OK"
+                        test -f backend/security-service/src/main/resources/certs/pri.pem && echo "✅ security pri.pem OK"
+                        test -f backend/security-service/src/main/resources/certs/pub.pem && echo "✅ security pub.pem OK"
+                        test -f backend/api-gateway/src/main/resources/certs/pub.pem && echo "✅ gateway pub.pem OK"
+                        test -f backend/media-service/src/main/resources/env.properties && echo "✅ media env.properties OK"
                     '''
                 }
             }
@@ -112,7 +85,7 @@ EOF
         }
 
         // ============================================================
-        // FRONTEND TESTS
+        // FRONTEND TESTS & BUILD
         // ============================================================
 
         stage('Frontend Tests') {
@@ -123,10 +96,6 @@ EOF
                 }
             }
         }
-
-        // ============================================================
-        // FRONTEND BUILD
-        // ============================================================
 
         stage('Frontend Build') {
             steps {
@@ -149,15 +118,47 @@ EOF
         }
 
         // ============================================================
+        // BACKUPS (Placés AVANT les déploiements)
+        // ============================================================
+
+        stage('Backup Current Docker Images') {
+            when { branch 'main' }
+            steps {
+                sh '''
+                    echo "===== Backup des images Docker actuelles ====="
+                    docker tag backend-api-gateway:latest backend-api-gateway:previous || true
+                    docker tag backend-discovery-service:latest backend-discovery-service:previous || true
+                    docker tag backend-media-service:latest backend-media-service:previous || true
+                    docker tag backend-product-service:latest backend-product-service:previous || true
+                    docker tag backend-security-service:latest backend-security-service:previous || true
+                    docker tag backend-user-service:latest backend-user-service:previous || true
+                    echo "✅ Images précédentes sauvegardées"
+                '''
+            }
+        }
+
+        stage('Backup Current Frontend Build') {
+            when { branch 'main' }
+            steps {
+                dir('frontend') {
+                    sh '''
+                        if [ -d "dist" ]; then
+                            echo "===== Backup du build Frontend actuel ====="
+                            rm -rf dist-previous
+                            cp -r dist dist-previous
+                            echo "✅ Build précédent sauvegardé"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        // ============================================================
         // DEPLOY BACKEND
         // ============================================================
 
         stage('Deploy Backend') {
-
-            when {
-                branch 'main'
-            }
-
+            when { branch 'main' }
             steps {
                 script {
                     withCredentials([
@@ -168,30 +169,24 @@ EOF
                         file(credentialsId: 'jwt-public-key', variable: 'JWT_PUBLIC_KEY')
                     ]) {
                         try {
-
                             echo "🚀 Déploiement de la nouvelle version Backend..."
 
                             dir('backend') {
-                                sh 'docker compose up -d' 
+                                sh 'docker compose up -d'
+                                sleep 30
 
-                                    sleep 30
-
-                                    // sh 'exit 1'
-
-                                    sh '''
-                                          if docker compose ps | grep -q "unhealthy\\|Exited"; then
-                                          echo "❌ Un container est unhealthy ou arrêté"
-                                          exit 1
-                                          fi
-                                        '''
+                                sh '''
+                                    if docker compose ps | grep -q "unhealthy\\|Exited"; then
+                                        echo "❌ Un container est unhealthy ou arrêté"
+                                        exit 1
+                                    fi
+                                '''
                             }
 
                             echo "✅ Backend déployé avec succès"
-                            
 
                         } catch (err) {
-
-                           echo "❌ Déploiement Backend échoué"
+                            echo "❌ Déploiement Backend échoué"
                             echo "🔄 Rollback vers les images Docker précédentes..."
 
                             dir('backend') {
@@ -225,44 +220,28 @@ EOF
         // ============================================================
 
         stage('Deploy Frontend') {
-
-            when {
-                branch 'main'
-            }
-
+            when { branch 'main' }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'ssl-password', variable: 'SSL_PASSWORD')]) {
                         try {
-
                             echo "🚀 Déploiement de la nouvelle version Frontend..."
 
                             dir('frontend') {
-
                                 sh '''
                                     echo "Arrêt de l'ancienne version Angular..."
-
                                     pkill -f "ng serve" || true
 
                                     export JENKINS_NODE_COOKIE=dontKillMe
 
                                     echo "Démarrage de la nouvelle version Angular..."
-
                                     nohup npx ng serve \
                                         --ssl \
                                         --host 0.0.0.0 \
                                         --port 4200 \
                                         > ng-serve.log 2>&1 &
 
-                                    echo "Angular lancé en arrière-plan"
-
                                     sleep 5
-
-                                    echo "===== Angular logs ====="
-                                    cat ng-serve.log
-                                    echo "========================"
-
-                                    echo "Vérification du processus Angular..."
 
                                     if pgrep -f "ng serve" > /dev/null; then
                                         echo "✅ Angular fonctionne correctement"
@@ -276,13 +255,11 @@ EOF
                             echo "✅ Frontend déployé avec succès"
 
                         } catch (err) {
-
-                          echo "❌ Déploiement Frontend échoué"
+                            echo "❌ Déploiement Frontend échoué"
                             echo "🔄 Rollback vers le build Frontend précédent..."
 
                             dir('frontend') {
                                 sh '''
-                                    # Arrêt de la version défaillante
                                     pkill -f "ng serve" || true
 
                                     if [ -d "dist-previous" ]; then
@@ -292,7 +269,6 @@ EOF
 
                                         export JENKINS_NODE_COOKIE=dontKillMe
 
-                                        echo "Redémarrage rapide du Frontend avec l'ancien build..."
                                         nohup npx ng serve \
                                             --ssl \
                                             --host 0.0.0.0 \
@@ -320,67 +296,19 @@ EOF
                 }
             }
         }
-
-
-
-        stage('Backup Current Frontend Build') {
-            when { branch 'main' }
-            steps {
-                dir('frontend') {
-                    sh '''
-                        if [ -d "dist" ]; then
-                            echo "===== Backup du build Frontend actuel ====="
-                            rm -rf dist-previous
-                            cp -r dist dist-previous
-                            echo "✅ Build précédent sauvegardé"
-                        fi
-                    '''
-                }
-            }
-        }
-
-
-            stage('Backup Current Docker Images') {
-
-    when {
-        branch 'main'
     }
-
-    steps {
-        sh '''
-            echo "===== Backup des images Docker actuelles ====="
-
-            docker tag backend-api-gateway:latest backend-api-gateway:previous
-            docker tag backend-discovery-service:latest backend-discovery-service:previous
-            docker tag backend-media-service:latest backend-media-service:previous
-            docker tag backend-product-service:latest backend-product-service:previous
-            docker tag backend-security-service:latest backend-security-service:previous
-            docker tag backend-user-service:latest backend-user-service:previous
-
-            echo "✅ Images précédentes sauvegardées"
-        '''
-    }
-}
-        }
-
-
-
-
 
     // ================================================================
     // POST
     // ================================================================
 
     post {
-
         always {
             junit allowEmptyResults: true, testResults: 'backend/*/target/surefire-reports/*.xml, frontend/test-results/*.xml'
         }
 
         success {
-
             echo "✅ Build réussi"
-
             emailext(
                 subject: "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build réussi.
@@ -394,9 +322,7 @@ EOF
         }
 
         failure {
-
             echo "❌ Build échoué"
-
             emailext(
                 subject: "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build échoué.
