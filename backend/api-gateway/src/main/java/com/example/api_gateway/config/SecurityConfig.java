@@ -36,7 +36,8 @@ public class SecurityConfig {
         return http
               .cors(cors -> cors.configurationSource(corsConfigurationSource()))
               .csrf(csrf-> csrf.disable())
-              .authorizeExchange(authorize -> authorize.pathMatchers("/api/auth/**").permitAll()
+              .authorizeExchange(authorize -> authorize.pathMatchers("/actuator/health/**").permitAll()
+                                                       .pathMatchers("/api/auth/**").permitAll()
                                                        .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll())
               .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
               .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder()))
