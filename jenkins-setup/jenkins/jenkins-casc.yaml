@@ -1,0 +1,126 @@
+jenkins:
+  systemMessage: "Jenkins configuré via JCasC — MR-Jenk pipeline"
+  numExecutors: 2
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "github-creds"
+              username: "${GITHUB_USERNAME}"
+              password: "${GITHUB_TOKEN}"
+              description: "GitHub username + Personal Access Token"
+
+          - usernamePassword:
+              scope: GLOBAL
+              id: "gmail-smtp-creds"
+              username: "${GMAIL_USERNAME}"
+              password: "${GMAIL_APP_PASSWORD}"
+              description: "Gmail SMTP credentials pour emailext"
+
+          - usernamePassword:
+              scope: GLOBAL
+              id: "mongo-creds"
+              username: "${MONGO_USERNAME}"
+              password: "${MONGO_PASSWORD}"
+              description: "MongoDB root credentials"
+
+          - string:
+              scope: GLOBAL
+              id: "ssl-password"
+              secret: "${SSL_PASSWORD}"
+              description: "Mot de passe du certificat SSL Angular/API Gateway"
+
+          - string:
+              scope: GLOBAL
+              id: "cloudinary-url"
+              secret: "${CLOUDINARY_URL}"
+              description: "URL Cloudinary pour media-service"
+
+          - file:
+              scope: GLOBAL
+              id: "jwt-private-key"
+              fileName: "pri.pem"
+              secretBytes: "${file:/run/secrets/pri.pem}"
+              description: "Clé privée JWT (RS256)"
+
+          - file:
+              scope: GLOBAL
+              id: "jwt-public-key"
+              fileName: "pub.pem"
+              secretBytes: "${file:/run/secrets/pub.pem}"
+              description: "Clé publique JWT (RS256)"
+
+unclassified:
+
+  location:
+    url: "http://localhost:8080/"
+    adminAddress: "${GMAIL_USERNAME}"
+
+  mailer:
+    smtpHost: "smtp.gmail.com"
+    useSsl: false
+    useTls: true
+    charset: "UTF-8"
+    authentication:
+      username: "${GMAIL_USERNAME}"
+      password: "${GMAIL_APP_PASSWORD}"
+
+jobs:
+  - script: >
+      multibranchPipelineJob('buy-01-pipeline') {
+        branchSources {
+          branchSource {
+            source {
+              github {
+                id('buy-01-github-source')
+                repoOwner('maynaou')
+                repository('buy-01')
+                repositoryUrl('https://github.com/maynaou/buy-01')
+                configuredByUrl(false)
+                credentialsId('github-creds')
+
+                traits {
+                  gitHubBranchDiscovery {
+                    strategyId(3)
+                  }
+                  gitHubPullRequestDiscovery {
+                    strategyId(1)
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(20)
+          }
+        }
+
+        triggers {
+          periodicFolderTrigger {
+            interval('1m')
+          }
+        }
+
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }

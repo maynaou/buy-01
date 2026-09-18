@@ -30,12 +30,25 @@ services:
       DOCKER_HOST: tcp://docker:2376
       DOCKER_CERT_PATH: /certs/client
       DOCKER_TLS_VERIFY: "1"
+
+      # ---- JCasC : variables interpolées dans jenkins-casc.yaml ----
+      GITHUB_USERNAME: ${GITHUB_USERNAME}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GMAIL_USERNAME: ${GMAIL_USERNAME}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      SSL_PASSWORD: ${SSL_PASSWORD}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD}
     ports:
       - "8080:8080"
       - "4200:4200"
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
+      - ./jenkins:/var/jenkins_home/casc_configs:ro
+      - ./secrets:/run/secrets:ro
     depends_on:
       - jenkins-docker
     restart: on-failure
@@ -49,4 +62,4 @@ volumes:
   jenkins-data:
     name: jenkins-data
   jenkins-docker-certs:
-    name: jenkins-docker-certs
+    name: jenkins-docker-certs  

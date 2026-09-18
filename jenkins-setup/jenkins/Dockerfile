@@ -1,5 +1,10 @@
 FROM jenkins/jenkins:2.568.3-jdk21
 
+ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins-casc.yaml
+ENV CHROME_BIN=/usr/bin/chromium
+
+
+
 USER root
 
 RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
@@ -18,8 +23,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-ENV CHROME_BIN=/usr/bin/chromium
-
+COPY jenkins-casc.yaml /var/jenkins_home/casc_configs/jenkins-casc.yaml
+ 
 USER jenkins
 
-RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api configuration-as-code email-ext github github-branch-source job-dsl"
