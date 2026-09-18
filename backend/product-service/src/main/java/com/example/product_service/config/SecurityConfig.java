@@ -25,6 +25,7 @@ public class SecurityConfig {
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).permitAll()
+                                                  .requestMatchers("/actuator/health/**").permitAll()
                                                   .anyRequest().authenticated())
                .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler()))

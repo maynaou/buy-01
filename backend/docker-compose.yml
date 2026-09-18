@@ -26,12 +26,12 @@ services:
         ]
       interval: 10s
       timeout: 10s
-      retries: 10
-      start_period: 30s
+      retries: 15
+      start_period: 40s
 
 
   mongodb:
-    image: mongo:8
+    image: mongo:7
     container_name: mongodb
 
     environment:
@@ -68,8 +68,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
   security-service:
@@ -96,8 +96,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
   user-service:
@@ -124,8 +124,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
   product-service:
@@ -152,8 +152,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
   media-service:
@@ -180,8 +180,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
   api-gateway:
@@ -197,6 +197,14 @@ services:
     depends_on:
       discovery-service:
         condition: service_healthy
+      security-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      media-service:
+        condition: service_healthy
 
     healthcheck:
       test:
@@ -206,8 +214,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 60s
 
 
 volumes:
