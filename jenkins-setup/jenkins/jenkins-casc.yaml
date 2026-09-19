@@ -70,14 +70,18 @@ unclassified:
     url: "http://localhost:8080/"
     adminAddress: "${GMAIL_USERNAME}"
 
-  mailer:
+  extendedEmailPublisher:
     smtpHost: "smtp.gmail.com"
-    useSsl: false
+    smtpPort: "587"
     useTls: true
-    charset: "UTF-8"
-    authentication:
-      username: "${GMAIL_USERNAME}"
-      password: "${GMAIL_APP_PASSWORD}"
+    credentialsId: "gmail-smtp-creds"
+    defaultSuffix: "@gmail.com"
+    defaultContentType: "text/plain"
+    defaultSubject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!'
+    defaultBody: |
+      $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+
+      Check console output at $BUILD_URL to view the results.
 
 jobs:
   - script: >
