@@ -2,38 +2,16 @@
 
 set -e
 
-echo "===== DEBUG ====="
+echo "===== Préparation des secrets ====="
 
-whoami
-id
+# =========================
+# Security Service
+# =========================
 
-echo "JWT_PRIVATE_KEY = $JWT_PRIVATE_KEY"
-echo "JWT_PUBLIC_KEY  = $JWT_PUBLIC_KEY"
+mkdir -p backend/security-service/src/main/resources/certs
 
-echo ""
-echo "PRIVATE KEY:"
-ls -l "$JWT_PRIVATE_KEY"
-
-echo ""
-echo "PUBLIC KEY:"
-ls -l "$JWT_PUBLIC_KEY"
-
-echo ""
-echo "TEST READ:"
-
-cat "$JWT_PRIVATE_KEY" > /dev/null
-echo "✅ PRIVATE KEY lisible"
-
-cat "$JWT_PUBLIC_KEY" > /dev/null
-echo "✅ PUBLIC KEY lisible"
-
-echo ""
-echo "TEST DESTINATION:"
-
-ls -ld backend/security-service/src/main/resources/certs
-
-echo ""
-echo "COPY:"
+rm -f backend/security-service/src/main/resources/certs/pri.pem
+rm -f backend/security-service/src/main/resources/certs/pub.pem
 
 cp "$JWT_PRIVATE_KEY" \
    backend/security-service/src/main/resources/certs/pri.pem
@@ -41,4 +19,44 @@ cp "$JWT_PRIVATE_KEY" \
 cp "$JWT_PUBLIC_KEY" \
    backend/security-service/src/main/resources/certs/pub.pem
 
-echo "✅ COPY OK"
+
+# =========================
+# API Gateway
+# =========================
+
+mkdir -p backend/api-gateway/src/main/resources/certs
+
+rm -f backend/api-gateway/src/main/resources/certs/pub.pem
+
+cp "$JWT_PUBLIC_KEY" \
+   backend/api-gateway/src/main/resources/certs/pub.pem
+
+
+# =========================
+# Media Service
+# =========================
+
+cat > backend/media-service/src/main/resources/env.properties <<EOF
+CLOUDINARY_URL=$CLOUDINARY_URL
+EOF
+
+
+# =========================
+# Vérification
+# =========================
+
+echo "===== Vérification ====="
+
+test -f backend/security-service/src/main/resources/certs/pri.pem
+echo "✅ security pri.pem OK"
+
+test -f backend/security-service/src/main/resources/certs/pub.pem
+echo "✅ security pub.pem OK"
+
+test -f backend/api-gateway/src/main/resources/certs/pub.pem
+echo "✅ gateway pub.pem OK"
+
+test -f backend/media-service/src/main/resources/env.properties
+echo "✅ media env.properties OK"
+
+echo "===== Secrets prêts ====="
