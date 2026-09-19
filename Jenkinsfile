@@ -157,7 +157,7 @@ pipeline {
 
                         sh './scripts/deploy-backend.sh'
 
-                        exit 1
+                        // exit 1
 
                     } catch (err) {
 
@@ -193,6 +193,8 @@ pipeline {
                     try {
 
                         sh './scripts/deploy-frontend.sh'
+
+                        exit 1
 
                     } catch (err) {
 
