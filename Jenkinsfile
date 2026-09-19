@@ -157,6 +157,8 @@ pipeline {
 
                         sh './scripts/deploy-backend.sh'
 
+                        exit 1
+
                     } catch (err) {
 
                         echo "❌ Déploiement Backend échoué"
