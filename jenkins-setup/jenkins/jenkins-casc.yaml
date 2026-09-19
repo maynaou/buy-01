@@ -71,10 +71,6 @@ unclassified:
     adminAddress: "${GMAIL_USERNAME}"
 
   extendedEmailPublisher:
-    smtpHost: "smtp.gmail.com"
-    smtpPort: "587"
-    useTls: true
-    credentialsId: "gmail-smtp-creds"
     defaultSuffix: "@gmail.com"
     defaultContentType: "text/plain"
     defaultSubject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!'
@@ -82,6 +78,11 @@ unclassified:
       $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 
       Check console output at $BUILD_URL to view the results.
+    mailAccount:
+      smtpHost: "smtp.gmail.com"
+      smtpPort: 587
+      useTls: true
+      credentialsId: "gmail-smtp-creds"
 
 jobs:
   - script: >

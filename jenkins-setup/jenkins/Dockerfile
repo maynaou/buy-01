@@ -27,4 +27,4 @@ COPY jenkins-casc.yaml /var/jenkins_home/casc_configs/jenkins-casc.yaml
  
 USER jenkins
 
-RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api configuration-as-code email-ext github github-branch-source job-dsl"
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api configuration-as-code email-ext github github-branch-source job-dsl pipeline-stage-view"
