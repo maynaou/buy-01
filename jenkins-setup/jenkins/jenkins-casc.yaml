@@ -54,14 +54,14 @@ credentials:
               scope: GLOBAL
               id: "jwt-private-key"
               fileName: "pri.pem"
-              secretBytes: "${file:/run/secrets/pri.pem}"
+              secretBytes: "${JWT_PRIVATE_KEY_B64}"
               description: "Clé privée JWT (RS256)"
 
           - file:
               scope: GLOBAL
               id: "jwt-public-key"
               fileName: "pub.pem"
-              secretBytes: "${file:/run/secrets/pub.pem}"
+              secretBytes: "${JWT_PUBLIC_KEY_B64}"
               description: "Clé publique JWT (RS256)"
 
 unclassified:
