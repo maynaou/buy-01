@@ -19,7 +19,7 @@ for SERVICE in "${SERVICES[@]}"; do
 
     echo "Backup : ${IMAGE}:latest → ${IMAGE}:previous"
 
-    docker tag "${IMAGE}:latest" "${IMAGE}:previous"
+    docker tag "${IMAGE}:latest" "${IMAGE}:previous" 2>/dev/null || echo "⚠️ Pas d'image ${IMAGE}:latest existante, backup ignoré"
 
 done
 
