@@ -156,7 +156,7 @@ pipeline {
                     try {
 
                         sh './scripts/deploy-backend.sh'
-                        // exit 1
+                       // // exit 1
 
                     } catch (err) {
 
