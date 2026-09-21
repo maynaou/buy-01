@@ -46,6 +46,7 @@ services:
     ports:
       - "8080:8080"
       - "4200:4200"
+      - "50000:50000"
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
@@ -54,6 +55,32 @@ services:
     depends_on:
       - jenkins-docker
     restart: on-failure
+  
+  jenkins-agent-backend:
+    image: jenkins/inbound-agent:latest-jdk17
+    container_name: jenkins-agent-backend
+    environment:
+      JENKINS_URL: http://jenkins-blueocean:8080
+      JENKINS_AGENT_NAME: backend-agent
+      JENKINS_SECRET: ${BACKEND_AGENT_SECRET}
+      JENKINS_AGENT_WORKDIR: /home/jenkins/agent
+    networks:
+      - jenkins
+    depends_on:
+      - jenkins-blueocean
+
+  jenkins-agent-frontend:
+    image: jenkins/inbound-agent:latest-jdk17
+    container_name: jenkins-agent-frontend
+    environment:
+      JENKINS_URL: http://jenkins-blueocean:8080
+      JENKINS_AGENT_NAME: frontend-agent
+      JENKINS_SECRET: ${FRONTEND_AGENT_SECRET}
+      JENKINS_AGENT_WORKDIR: /home/jenkins/agent
+    networks:
+      - jenkins
+    depends_on:
+      - jenkins-blueocean
 
 networks:
   jenkins:
