@@ -12,8 +12,6 @@ echo "⏳ Attente du démarrage des services..."
 
 sleep 30
 
-exit 1
-
 echo "===== Vérification des containers ====="
 
 if docker compose ps | grep -q "unhealthy\|Exited"; then
