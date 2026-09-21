@@ -1,23 +1,6 @@
 jenkins:
   systemMessage: "Jenkins configuré via JCasC — MR-Jenk pipeline"
   numExecutors: 2
-  # nodes:
-  #   - permanent:
-  #       name: "backend-agent"
-  #       remoteFS: "/home/jenkins/agent"
-  #       labelString: "backend"
-  #       launcher:
-  #         jnlp:
-  #           workDirSettings:
-  #             disabled: false
-  #   - permanent:
-  #       name: "frontend-agent"
-  #       remoteFS: "/home/jenkins/agent"
-  #       labelString: "frontend"
-  #       launcher:
-  #         jnlp:
-  #           workDirSettings:
-  #             disabled: false
 
   securityRealm:
     local:
