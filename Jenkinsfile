@@ -133,37 +133,6 @@ stage('SonarQube Analysis') {
 }
 
 
-stage('Frontend SonarQube Analysis') {
-    steps {
-        dir('frontend') {
-            withSonarQubeEnv('SonarQube') {
-                sh '''
-                    npx sonar-scanner \
-                      -Dsonar.projectKey=buy-01-frontend \
-                      -Dsonar.projectName=buy-01-frontend \
-                      -Dsonar.sources=src \
-                      -Dsonar.exclusions=**/node_modules/**,**/dist/**
-                '''
-            }
-        }
-    }
-}
-
-
-
-stage('Quality Gate') {
-
-    steps {
-
-        timeout(time: 5, unit: 'MINUTES') {
-
-            waitForQualityGate abortPipeline: true
-
-        }
-
-        echo "✅ Quality Gate passed!"
-    }
-}
 
 
         // ==========================================
@@ -204,6 +173,40 @@ stage('Quality Gate') {
                 }
             }
         }
+
+
+
+stage('Frontend SonarQube Analysis') {
+    steps {
+        dir('frontend') {
+            withSonarQubeEnv('SonarQube') {
+                sh '''
+                    npx sonar-scanner \
+                      -Dsonar.projectKey=buy-01-frontend \
+                      -Dsonar.projectName=buy-01-frontend \
+                      -Dsonar.sources=src \
+                      -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                '''
+            }
+        }
+    }
+}
+
+
+
+stage('Quality Gate') {
+
+    steps {
+
+        timeout(time: 5, unit: 'MINUTES') {
+
+            waitForQualityGate abortPipeline: true
+
+        }
+
+        echo "✅ Quality Gate passed!"
+    }
+}
 
 
         // ==========================================
