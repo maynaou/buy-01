@@ -85,19 +85,32 @@ pipeline {
         }
 
 
-        stage('SonarQube Analysis') {
-            steps {
-              withSonarQubeEnv('SonarQube') {
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            def services = [
+                'api-gateway',
+                'discovery-service',
+                'media-service',
+                'product-service',
+                'security-service',
+                'user-service'
+            ]
 
-            dir('backend') {
-
-                sh '''
-                    ./mvnw sonar:sonar \
-                      -Dsonar.projectKey=buy-01 \
-                      -Dsonar.projectName=buy-01
-                '''
+            services.each { service ->
+                dir("backend/${service}") {
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ./mvnw sonar:sonar \
+                              -Dsonar.projectKey=buy-01-${service} \
+                              -Dsonar.projectName=buy-01-${service}
+                        """
+                    }
+                }
             }
         }
+    }
+}
 
         script {
             echo "🔍 Running SonarQube Analysis..."
