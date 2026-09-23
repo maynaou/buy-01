@@ -53,7 +53,21 @@ services:
       - ./secrets:/run/secrets:ro
     depends_on:
       - jenkins-docker
+      - sonarqube
     restart: on-failure
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    networks:
+      - jenkins
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    restart: unless-stopped
 
 networks:
   jenkins:
@@ -65,3 +79,9 @@ volumes:
     name: jenkins-data
   jenkins-docker-certs:
     name: jenkins-docker-certs  
+  sonarqube-data:
+    name: sonarqube-data
+  sonarqube-extensions:
+    name: sonarqube-extensions
+  sonarqube-logs:
+    name: sonarqube-logs
