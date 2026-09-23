@@ -112,11 +112,6 @@ stage('SonarQube Analysis') {
     }
 }
 
-        script {
-            echo "🔍 Running SonarQube Analysis..."
-        }
-    }
-}
 
 
 stage('Quality Gate') {
