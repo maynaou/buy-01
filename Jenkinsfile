@@ -87,17 +87,17 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-        //       withSonarQubeEnv('SonarQube') {
+              withSonarQubeEnv('SonarQube') {
 
-        //     dir('backend') {
+            dir('backend') {
 
-        //         sh '''
-        //             ./mvnw sonar:sonar \
-        //               -Dsonar.projectKey=buy-01 \
-        //               -Dsonar.projectName=buy-01
-        //         '''
-        //     }
-        // }
+                sh '''
+                    ./mvnw sonar:sonar \
+                      -Dsonar.projectKey=buy-01 \
+                      -Dsonar.projectName=buy-01
+                '''
+            }
+        }
 
         script {
             echo "🔍 Running SonarQube Analysis..."
@@ -110,11 +110,11 @@ stage('Quality Gate') {
 
     steps {
 
-        // timeout(time: 5, unit: 'MINUTES') {
+        timeout(time: 5, unit: 'MINUTES') {
 
-        //     waitForQualityGate abortPipeline: true
+            waitForQualityGate abortPipeline: true
 
-        // }
+        }
 
         echo "✅ Quality Gate passed!"
     }
