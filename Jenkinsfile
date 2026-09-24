@@ -120,11 +120,20 @@ stage('SonarQube Analysis') {
             services.each { service ->
                 dir("backend/${service}") {
                     withSonarQubeEnv('SonarQube') {
-                        sh """
-                              ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                              -Dsonar.projectKey=buy-01-${service} \
-                              -Dsonar.projectName=buy-01-${service}
-                        """
+                        withCredentials([
+                            string(
+                                credentialsId: 'sonar-token',
+                                variable: 'SONAR_TOKEN'
+                            )
+                        ]) {
+
+                            sh """
+                                ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                                -Dsonar.projectKey=buy-01-${service} \
+                                -Dsonar.projectName=buy-01-${service} \
+                                -Dsonar.token="\$SONAR_TOKEN"
+                            """
+                        }
                     }
                 }
             }

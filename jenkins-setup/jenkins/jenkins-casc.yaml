@@ -50,6 +50,12 @@ credentials:
               secret: "${CLOUDINARY_URL}"
               description: "URL Cloudinary pour media-service"
 
+          - string:
+              scope: GLOBAL
+              id: "sonar-token"
+              secret: "${SONAR_TOKEN}"
+              description: "Token d'authentification SonarQube (généré manuellement dans l'UI Sonar)"
+
           - file:
               scope: GLOBAL
               id: "jwt-private-key"
@@ -83,6 +89,13 @@ unclassified:
       smtpPort: 587
       useTls: true
       credentialsId: "gmail-smtp-creds"
+
+  sonarglobalconfiguration:
+    buildWrapperEnabled: false
+    installations:
+      - name: "SonarQube"
+        serverUrl: "http://sonarqube:9000"
+        credentialsId: "sonar-token"
 
 jobs:
   - script: >
