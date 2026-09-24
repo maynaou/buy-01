@@ -2,47 +2,49 @@
 
 set -e
 
-SERVICES=(
-    "api-gateway"
-    "discovery-service"
-    "media-service"
-    "product-service"
-    "security-service"
-    "user-service"
-)
-
 echo "===== Rollback Backend ====="
 
 cd backend
+
+if [ ! -f ".last-good-version" ]; then
+
+    echo "❌ Aucune version précédente disponible"
+
+    exit 1
+fi
+
+PREVIOUS_VERSION=$(cat .last-good-version)
+
+if [ -z "$PREVIOUS_VERSION" ]; then
+
+    echo "❌ La version précédente est vide"
+
+    exit 1
+fi
+
+echo "🔄 Version à restaurer : $PREVIOUS_VERSION"
 
 echo "🛑 Arrêt de la version défaillante..."
 
 docker compose down
 
-echo "===== Restauration des images précédentes ====="
+echo "🚀 Redémarrage avec : $PREVIOUS_VERSION"
 
-RESTORED=false
-
-for SERVICE in "${SERVICES[@]}"; do
-    IMAGE="backend-${SERVICE}"
-    if docker image inspect "${IMAGE}:previous" > /dev/null 2>&1; then
-        docker tag "${IMAGE}:previous" "${IMAGE}:latest"
-        RESTORED=true
-    else
-        echo "⚠️ Aucune image ${IMAGE}:previous disponible — impossible de restaurer ce service"
-    fi
-done
-
-if [ "$RESTORED" = false ]; then
-    echo "❌ Aucune version précédente disponible — rollback impossible (premier déploiement)"
-    exit 1
-fi
-
-echo "🚀 Redémarrage avec les anciennes images..."
-docker compose up -d
+IMAGE_TAG="$PREVIOUS_VERSION" docker compose up -d
 
 echo "⏳ Vérification..."
+
 sleep 30
+
+echo "===== État des containers ====="
+
 docker compose ps
+
+if docker compose ps | grep -q "unhealthy\|Exited"; then
+
+    echo "❌ Le rollback a échoué"
+
+    exit 1
+fi
 
 echo "✅ Rollback Backend terminé"

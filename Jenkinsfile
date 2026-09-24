@@ -2,7 +2,13 @@ pipeline {
 
     agent any
 
+    environment {
+              IMAGE_TAG = "build-${BUILD_NUMBER}"
+    }
+
     stages {
+
+        
 
         stage('Print Environment') {
             steps {
@@ -78,18 +84,19 @@ pipeline {
                         
                     tests[service] = {
 
-                    // stage("Test ${service}") {
-
                         dir("backend/${service}") {
 
                             sh './mvnw clean test'
 
                         }
-                    // }
                 }
                     }
 
-                    parallel tests
+                    parallel(
+
+                             tests,
+                             failFast: true
+                    )
 
                 }
             }
