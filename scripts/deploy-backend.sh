@@ -19,7 +19,7 @@ docker compose up -d
 
 # sleep 30
 
-exit 1
+# exit 1
 
 echo "===== Vérification des containers ====="
 
