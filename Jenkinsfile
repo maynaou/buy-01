@@ -8,14 +8,6 @@ pipeline {
 
     stages {
 
-        
-
-        stage('Print Environment') {
-            steps {
-                sh 'printenv | sort'
-            }
-        }
-
         // ==========================================
         // CHECKOUT
         // ==========================================
@@ -140,7 +132,6 @@ stage('SonarQube Analysis') {
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                 -Dsonar.projectKey=buy-01-${service} \
                                 -Dsonar.projectName=buy-01-${service} \
-                                -Dsonar.token="\$SONAR_TOKEN"
                             """
                     }
                 }

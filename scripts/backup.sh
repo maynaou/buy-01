@@ -2,30 +2,6 @@
 
 set -e
 
-SERVICES=(
-    "api-gateway"
-    "discovery-service"
-    "media-service"
-    "product-service"
-    "security-service"
-    "user-service"
-)
-
-echo "===== Backup des images Docker ====="
-
-for SERVICE in "${SERVICES[@]}"; do
-
-    IMAGE="backend-${SERVICE}"
-
-    echo "Backup : ${IMAGE}:latest → ${IMAGE}:previous"
-
-    docker tag "${IMAGE}:latest" "${IMAGE}:previous" 2>/dev/null || echo "⚠️ Pas d'image ${IMAGE}:latest existante, backup ignoré"
-
-done
-
-echo "✅ Backup Docker terminé"
-
-
 # =========================
 # Frontend
 # =========================
