@@ -269,6 +269,16 @@ stage('Quality Gate') {
         }
 
 
+        stage('Docker Cleanup') { 
+            when { 
+                branch 'main' 
+                } 
+            steps { 
+                sh './scripts/cleanup-images.sh' 
+            } 
+        }
+
+
         // ==========================================
         // DEPLOY FRONTEND
         // ==========================================
