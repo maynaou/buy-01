@@ -78,14 +78,14 @@ pipeline {
                         
                     tests[service] = {
 
-                    stage("Test ${service}") {
+                    // stage("Test ${service}") {
 
                         dir("backend/${service}") {
 
                             sh './mvnw clean test'
 
                         }
-                    }
+                    // }
                 }
                     }
 
