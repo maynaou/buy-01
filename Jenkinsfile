@@ -72,7 +72,13 @@ pipeline {
                         'user-service'
                     ]
 
-                    services.each { service ->
+                    def tests = [:]
+
+                    services.each {  service ->             
+                        
+                    tests[service] = {
+
+                    stage("Test ${service}") {
 
                         dir("backend/${service}") {
 
@@ -80,6 +86,11 @@ pipeline {
 
                         }
                     }
+                }
+                    }
+
+                    parallel tests
+
                 }
             }
         }
@@ -120,12 +131,6 @@ stage('SonarQube Analysis') {
             services.each { service ->
                 dir("backend/${service}") {
                     withSonarQubeEnv('SonarQube') {
-                        // withCredentials([
-                        //     string(
-                        //         credentialsId: 'sonar-token',
-                        //         variable: 'SONAR_TOKEN'
-                        //     )
-                        // ]) {
 
                             sh """
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
@@ -133,7 +138,6 @@ stage('SonarQube Analysis') {
                                 -Dsonar.projectName=buy-01-${service} \
                                 -Dsonar.token="\$SONAR_TOKEN"
                             """
-                        // }
                     }
                 }
             }
