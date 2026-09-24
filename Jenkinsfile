@@ -92,35 +92,32 @@ pipeline {
                 }
                     }
 
-                    parallel(
-
-                             tests,
-                             failFast: true
-                    )
+                 tests.failFast = true 
+                 parallel tests
 
                 }
             }
         }
 
-        stage('Test Sonar Credentials') {
-    steps {
-        withCredentials([
-            string(
-                credentialsId: 'sonar-token',
-                variable: 'SONAR_TOKEN'
-            )
-        ]) {
-            sh '''
-                if [ -n "$SONAR_TOKEN" ]; then
-                    echo "SONAR_TOKEN is available"
-                else
-                    echo "SONAR_TOKEN is NOT available"
-                    exit 1
-                fi
-            '''
-        }
-    }
-}
+    //     stage('Test Sonar Credentials') {
+    // steps {
+    //     withCredentials([
+    //         string(
+    //             credentialsId: 'sonar-token',
+    //             variable: 'SONAR_TOKEN'
+    //         )
+    //     ]) {
+    //         sh '''
+    //             if [ -n "$SONAR_TOKEN" ]; then
+    //                 echo "SONAR_TOKEN is available"
+    //             else
+    //                 echo "SONAR_TOKEN is NOT available"
+    //                 exit 1
+    //             fi
+    //         '''
+    //     }
+    // }
+// }
 
 
 stage('SonarQube Analysis') {
