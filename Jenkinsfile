@@ -132,6 +132,7 @@ stage('SonarQube Analysis') {
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                 -Dsonar.projectKey=buy-01-${service} \
                                 -Dsonar.projectName=buy-01-${service} \
+                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             """
                     }
                 }
