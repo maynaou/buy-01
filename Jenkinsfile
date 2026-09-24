@@ -120,12 +120,12 @@ stage('SonarQube Analysis') {
             services.each { service ->
                 dir("backend/${service}") {
                     withSonarQubeEnv('SonarQube') {
-                        withCredentials([
-                            string(
-                                credentialsId: 'sonar-token',
-                                variable: 'SONAR_TOKEN'
-                            )
-                        ]) {
+                        // withCredentials([
+                        //     string(
+                        //         credentialsId: 'sonar-token',
+                        //         variable: 'SONAR_TOKEN'
+                        //     )
+                        // ]) {
 
                             sh """
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
@@ -133,7 +133,7 @@ stage('SonarQube Analysis') {
                                 -Dsonar.projectName=buy-01-${service} \
                                 -Dsonar.token="\$SONAR_TOKEN"
                             """
-                        }
+                        // }
                     }
                 }
             }
