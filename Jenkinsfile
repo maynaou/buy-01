@@ -243,7 +243,7 @@ stage('Frontend SonarQube Analysis') {
             steps {
 
                 script {
-                    sh './scripts/clean-up.sh'
+                    sh './scripts/cleanup-images.sh'
                 }
             }
         }
