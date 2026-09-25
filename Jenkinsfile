@@ -1,3 +1,13 @@
+def BACKEND_SERVICES = [
+    'api-gateway',
+    'discovery-service',
+    'media-service',
+    'product-service',
+    'security-service',
+    'user-service'
+]
+
+
 pipeline {
 
     agent any
@@ -61,18 +71,9 @@ pipeline {
 
                 script {
 
-                    def services = [
-                        'api-gateway',
-                        'discovery-service',
-                        'media-service',
-                        'product-service',
-                        'security-service',
-                        'user-service'
-                    ]
-
                     def tests = [:]
 
-                    services.each {  service ->             
+                    BACKEND_SERVICES.each {  service ->             
                         
                     tests[service] = {
 
@@ -91,49 +92,24 @@ pipeline {
             }
         }
 
-    //     stage('Test Sonar Credentials') {
-    // steps {
-    //     withCredentials([
-    //         string(
-    //             credentialsId: 'sonar-token',
-    //             variable: 'SONAR_TOKEN'
-    //         )
-    //     ]) {
-    //         sh '''
-    //             if [ -n "$SONAR_TOKEN" ]; then
-    //                 echo "SONAR_TOKEN is available"
-    //             else
-    //                 echo "SONAR_TOKEN is NOT available"
-    //                 exit 1
-    //             fi
-    //         '''
-    //     }
-    // }
-// }
-
-
 stage('SonarQube Analysis') {
     steps {
         script {
-            def services = [
-                'api-gateway',
-                'discovery-service',
-                'media-service',
-                'product-service',
-                'security-service',
-                'user-service'
-            ]
 
-            services.each { service ->
+
+            BACKEND_SERVICES.each { service ->
                 dir("backend/${service}") {
                     withSonarQubeEnv('SonarQube') {
-
                             sh """
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                                 -Dsonar.projectKey=buy-01-${service} \
                                 -Dsonar.projectName=buy-01-${service} \
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             """
+                    }
+
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
@@ -197,25 +173,22 @@ stage('Frontend SonarQube Analysis') {
                       -Dsonar.exclusions=**/node_modules/**,**/dist/**
                 '''
             }
+
+            timeout(time: 5, unit: 'MINUTES') {
+                 waitForQualityGate abortPipeline: true
+            }
         }
     }
 }
 
 
 
-stage('Quality Gate') {
+// stage('Quality Gate') {
 
-    steps {
-
-        timeout(time: 5, unit: 'MINUTES') {
-
-            waitForQualityGate abortPipeline: true
-
-        }
-
-        echo "✅ Quality Gate passed!"
-    }
-}
+//     steps {
+//         echo "✅ Quality Gate passed!"
+//     }
+// }
 
 
         // ==========================================
@@ -251,7 +224,6 @@ stage('Quality Gate') {
                     try {
 
                         sh './scripts/deploy-backend.sh'
-                       // // exit 1
 
                     } catch (err) {
 
@@ -268,16 +240,6 @@ stage('Quality Gate') {
                 }
             }
         }
-
-
-        // stage('Docker Cleanup') { 
-        //     when { 
-        //         branch 'main' 
-        //         } 
-        //     steps { 
-        //         sh './scripts/cleanup-images.sh' 
-        //     } 
-        // }
 
 
         // ==========================================
