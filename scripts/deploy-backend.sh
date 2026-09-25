@@ -13,13 +13,7 @@ echo "📦 Version à déployer : $IMAGE_TAG"
 
 cd backend
 
-docker compose up -d
-
-# echo "⏳ Attente du démarrage des services..."
-
-# sleep 30
-
-# exit 1
+docker compose up -d --wait
 
 echo "===== Vérification des containers ====="
 

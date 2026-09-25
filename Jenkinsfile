@@ -183,14 +183,6 @@ stage('Frontend SonarQube Analysis') {
 
 
 
-// stage('Quality Gate') {
-
-//     steps {
-//         echo "✅ Quality Gate passed!"
-//     }
-// }
-
-
         // ==========================================
         // DOCKER BUILD
         // ==========================================
@@ -237,6 +229,21 @@ stage('Frontend SonarQube Analysis') {
                             "❌ Déploiement Backend échoué — rollback exécuté"
                         )
                     }
+                }
+            }
+        }
+
+
+        stage('cleanUp') {
+
+            when {
+                branch 'main'
+            }
+
+            steps {
+
+                script {
+                    sh './scripts/clean-up.sh'
                 }
             }
         }
