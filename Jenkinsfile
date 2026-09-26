@@ -16,6 +16,27 @@ pipeline {
               IMAGE_TAG = "build-${BUILD_NUMBER}"
     }
 
+    options {
+
+        buildDiscarder(
+            logRotator(
+                numToKeepStr: '20'
+            )
+        )
+
+        disableConcurrentBuilds()
+
+        timestamps()
+
+        timeout(
+            time: 30,
+            unit: 'MINUTES'
+        )
+
+        preserveStashes(buildCount: 10)
+
+    }
+
     stages {
 
         // ==========================================
@@ -143,22 +164,29 @@ stage('SonarQube Analysis') {
         // FRONTEND
         // ==========================================
 
-        stage('Frontend Tests & Build') {
+stage('Frontend Tests') {
+    steps {
+        dir('frontend') {
+            sh 'npm ci'
+            sh 'npm test -- --watch=false'
+        }
+    }
+}
 
-            steps {
+stage('Frontend Build') {
+    steps {
+        dir('frontend') {
+            sh 'npm run build'
 
-                dir('frontend') {
 
-                    sh 'npm ci'
-
-                    sh 'npm test -- --watch=false'
-
-                    sh 'npm run build'
-
-                }
-            }
+            stash(
+                name: 'frontend-build',
+                includes: 'dist/**'
+            )
         }
 
+    }
+}
 
 
 stage('Frontend SonarQube Analysis') {
@@ -196,6 +224,13 @@ stage('Frontend SonarQube Analysis') {
                     sh 'docker compose build'
 
                 }
+
+                sh 'echo "${IMAGE_TAG}" > image-tag.txt'
+
+                stash(
+                    name: 'docker-image-tag',
+                    includes: 'image-tag.txt'
+              )
             }
         }
 
@@ -213,9 +248,15 @@ stage('Frontend SonarQube Analysis') {
 
                 script {
 
+                    unstash 'docker-image-tag'
+                    def deployTag = readFile('image-tag.txt').trim()
+                    echo "📦 Version à déployer : ${deployTag}"
+
                     try {
 
-                        sh './scripts/deploy-backend.sh'
+                        sh """
+                            IMAGE_TAG=${deployTag} ./scripts/deploy-backend.sh
+                        """
 
                     } catch (err) {
 
@@ -223,7 +264,10 @@ stage('Frontend SonarQube Analysis') {
 
                         echo "🔄 Rollback Backend..."
 
-                        sh './scripts/rollback-backend.sh'
+                        
+                        sh """
+                             IMAGE_TAG=${deployTag} ./scripts/rollback-backend.sh
+                       """
 
                         error(
                             "❌ Déploiement Backend échoué — rollback exécuté"
@@ -262,6 +306,9 @@ stage('Frontend SonarQube Analysis') {
             steps {
 
                 script {
+
+                    unstash 'frontend-build'
+
 
                     try {
 
