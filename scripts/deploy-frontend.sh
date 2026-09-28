@@ -13,18 +13,18 @@ echo "📦 Version à déployer : $IMAGE_TAG"
 
 cd frontend
 
-# # Vérification des certificats
-# if [ ! -f "certs/nginx.crt" ]; then
-#     echo "❌ nginx.crt introuvable"
-#     exit 1
-# fi
+# Vérification des certificats
+if [ ! -f "certs/nginx.crt" ]; then
+    echo "❌ nginx.crt introuvable"
+    exit 1
+fi
 
-# if [ ! -f "certs/nginx.key" ]; then
-#     echo "❌ nginx.key introuvable"
-#     exit 1
-# fi
+if [ ! -f "certs/nginx.key" ]; then
+    echo "❌ nginx.key introuvable"
+    exit 1
+fi
 
-# echo "🔐 Certificats SSL OK"
+echo "🔐 Certificats SSL OK"
 
 # Démarre le frontend et ATTEND qu'il soit healthy.
 # Aucun build ici.

@@ -15,7 +15,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget --no-check-certificate --spider -q https://localhost:443 || exit 1"
+          "wget --no-check-certificate --spider -q https://127.0.0.1:443 || exit 1"
         ]
       interval: 10s
       timeout: 5s
