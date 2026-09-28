@@ -152,11 +152,7 @@ pipeline {
                 echo "🐳 Build Frontend"
         
                 dir('frontend') {
-                    sh '''
-                        docker build \ 
-                        -t frontend-app:${IMAGE_TAG} \
-                        .
-                    '''
+                    sh 'docker build -t frontend-app:${IMAGE_TAG} .'
                 }
 
                 sh 'echo "${IMAGE_TAG}" > image-tag.txt'
