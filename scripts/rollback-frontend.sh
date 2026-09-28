@@ -18,8 +18,7 @@ VERSION=$(cat .last-good-version)
 
 echo "🔄 Retour à la version : $VERSION"
 
-IMAGE_TAG="$VERSION" \
-docker compose up -d --no-build --wait --wait-timeout 420
+IMAGE_TAG="$VERSION" docker compose up -d --no-build --wait --wait-timeout 420
 
 docker compose ps
 
