@@ -41,6 +41,8 @@ echo "===== Toutes les images sont disponibles ====="
 
 docker compose up -d --no-build --wait
 
+exit 1
+
 echo "===== Vérification des containers ====="
 
 if docker compose ps | grep -q "unhealthy\|Exited"; then
