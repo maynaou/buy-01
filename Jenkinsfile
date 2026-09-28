@@ -90,11 +90,20 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    BACKEND_SERVICES.each { service ->
+stage('SonarQube Analysis') {
+    steps {
+        script {
+
+            def analyses = [:]
+
+            BACKEND_SERVICES.each { service ->
+
+                analyses[service] = {
+
                     dir("backend/${service}") {
+
+                        echo "🔎 SonarQube: ${service}"
+
                         withSonarQubeEnv('SonarQube') {
                             sh """
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
@@ -103,14 +112,20 @@ pipeline {
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             """
                         }
-                    timeout(time: 5, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
-                            }
+
+                        timeout(time: 5, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true
                         }
                     }
                 }
             }
+
+            analyses.failFast = true
+
+            parallel analyses
         }
+    }
+}
 
         stage('Frontend Tests') {
             steps {
