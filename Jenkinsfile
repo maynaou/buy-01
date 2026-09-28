@@ -153,25 +153,6 @@ stage('SonarQube Analysis') {
 
 
         // ==========================================
-        // BACKUP
-        // ==========================================
-
-        // stage('Backup') {
-
-        //     when {
-        //         branch 'main'
-        //     }
-
-        //     steps {
-
-        //         sh './scripts/backup.sh'
-
-        //     }
-        // }
-
-
-
-        // ==========================================
         // FRONTEND
         // ==========================================
 
@@ -183,21 +164,6 @@ stage('Frontend Tests') {
         }
     }
 }
-
-// stage('Frontend Build') {
-//     steps {
-//         dir('frontend') {
-//             sh 'npm run build'
-
-
-//             stash(
-//                 name: 'frontend-build',
-//                 includes: 'dist/**'
-//             )
-//         }
-
-//     }
-// }
 
 
 stage('Frontend SonarQube Analysis') {
@@ -288,19 +254,6 @@ try {
 }
 
 
-        stage('cleanUp') {
-
-            when {
-                branch 'main'
-            }
-
-            steps {
-
-                script {
-                    sh './scripts/cleanup-images.sh'
-                }
-            }
-        }
 
 
         // ==========================================
@@ -343,6 +296,22 @@ try {
     }
 }
     }
+
+
+
+        stage('cleanUp') {
+
+            when {
+                branch 'main'
+            }
+
+            steps {
+
+                script {
+                    sh './scripts/cleanup-images.sh'
+                }
+            }
+        }
 
 
     // ==========================================

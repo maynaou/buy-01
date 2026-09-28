@@ -15,6 +15,7 @@ services:
       - jenkins-docker-certs:/certs/client
       - jenkins-data:/var/jenkins_home:ro
     ports:
+      - "4200:4200"
       - "8888:8888"
       - "8761:8761"
     restart: always
