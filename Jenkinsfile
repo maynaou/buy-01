@@ -1,401 +1,410 @@
 def BACKEND_SERVICES = [
-  'api-gateway',
-  'discovery-service',
-  'media-service',
-  'product-service',
-  'security-service',
-  'user-service'
+    'api-gateway',
+    'discovery-service',
+    'media-service',
+    'product-service',
+    'security-service',
+    'user-service'
 ]
+
 
 pipeline {
 
-  agent any
+    agent any
 
-  environment {
-    IMAGE_TAG = "build-${BUILD_NUMBER}"
-  }
-
-  options {
-
-    buildDiscarder(
-      logRotator(
-        numToKeepStr: '20'
-      )
-    )
-
-    disableConcurrentBuilds()
-
-    timestamps()
-
-    timeout(
-      time: 30,
-      unit: 'MINUTES'
-    )
-
-    preserveStashes(buildCount: 10)
-
-  }
-
-  stages {
-
-    // ==========================================
-    // CHECKOUT
-    // ==========================================
-
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+              IMAGE_TAG = "build-${BUILD_NUMBER}"
     }
 
-    // ==========================================
-    // SECRETS
-    // ==========================================
+    options {
 
-    stage('Prepare Secrets') {
+        buildDiscarder(
+            logRotator(
+                numToKeepStr: '20'
+            )
+        )
 
-      steps {
+        disableConcurrentBuilds()
 
-        withCredentials([
-          string(
-            credentialsId: 'cloudinary-url',
-            variable: 'CLOUDINARY_URL'
-          ),
+        timestamps()
 
-          file(
-            credentialsId: 'jwt-private-key',
-            variable: 'JWT_PRIVATE_KEY'
-          ),
+        timeout(
+            time: 30,
+            unit: 'MINUTES'
+        )
 
-          file(
-            credentialsId: 'jwt-public-key',
-            variable: 'JWT_PUBLIC_KEY'
-          ),
+        preserveStashes(buildCount: 10)
 
-          file(
-            credentialsId: 'frontend-ssl-cert',
-            variable: 'FRONTEND_SSL_CERT'
-          ),
+    }
 
-          file(
-            credentialsId: 'frontend-ssl-key',
-            variable: 'FRONTEND_SSL_KEY'
-          )
+    stages {
 
-        ]) {
+        // ==========================================
+        // CHECKOUT
+        // ==========================================
 
-          sh './scripts/prepare-secrets.sh'
-
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    // ==========================================
-    // BACKEND TESTS
-    // ==========================================
 
-    stage('Backend Tests') {
+        // ==========================================
+        // SECRETS
+        // ==========================================
 
-      steps {
+        stage('Prepare Secrets') {
 
+            steps {
+
+                withCredentials([
+                    string(
+                        credentialsId: 'cloudinary-url',
+                        variable: 'CLOUDINARY_URL'
+                    ),
+
+                    file(
+                        credentialsId: 'jwt-private-key',
+                        variable: 'JWT_PRIVATE_KEY'
+                    ),
+
+                    file(
+                        credentialsId: 'jwt-public-key',
+                        variable: 'JWT_PUBLIC_KEY'
+                    ),
+
+                    file(
+                        credentialsId: 'frontend-ssl-cert',
+                        variable: 'FRONTEND_SSL_CERT'
+                    ),
+
+                    file(
+                        credentialsId: 'frontend-ssl-key',
+                        variable: 'FRONTEND_SSL_KEY'
+                    )
+
+                ]) {
+
+                    sh './scripts/prepare-secrets.sh'
+
+                }
+            }
+        }
+
+
+        // ==========================================
+        // BACKEND TESTS
+        // ==========================================
+
+        stage('Backend Tests') {
+
+            steps {
+
+                script {
+
+                    def tests = [:]
+
+                    BACKEND_SERVICES.each {  service ->             
+                        
+                    tests[service] = {
+
+                        dir("backend/${service}") {
+
+                            sh './mvnw clean test'
+
+                        }
+                }
+                    }
+
+                 tests.failFast = true 
+                 parallel tests
+
+                }
+            }
+        }
+
+stage('SonarQube Analysis') {
+    steps {
         script {
 
-          def tests = [: ]
 
-          BACKEND_SERVICES.each {
-            service ->
-
-              tests[service] = {
-
+            BACKEND_SERVICES.each { service ->
                 dir("backend/${service}") {
+                    withSonarQubeEnv('SonarQube') {
+                            sh """
+                                ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                                -Dsonar.projectKey=buy-01-${service} \
+                                -Dsonar.projectName=buy-01-${service} \
+                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                            """
+                    }
 
-                  sh './mvnw clean test'
-
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
-              }
-          }
-
-          tests.failFast = true
-          parallel tests
-
+            }
         }
-      }
     }
+}
 
-    stage('SonarQube Analysis') {
-      steps {
-        script {
 
-          BACKEND_SERVICES.each {
-            service ->
-              dir("backend/${service}") {
-                withSonarQubeEnv('SonarQube') {
-                  sh ""
-                  "
-                  . / mvnw org.sonarsource.scanner.maven: sonar - maven - plugin: sonar\ -
-                    Dsonar.projectKey = buy - 01 - $ {
-                      service
-                    }\ -
-                    Dsonar.projectName = buy - 01 - $ {
-                      service
-                    }\ -
-                    Dsonar.coverage.jacoco.xmlReportPaths = target / site / jacoco / jacoco.xml ""
-                  "
-                }
 
-                timeout(time: 5, unit: 'MINUTES') {
-                  waitForQualityGate abortPipeline: true
-                }
-              }
-          }
-        }
-      }
-    }
 
-    // ==========================================
-    // FRONTEND
-    // ==========================================
+        // ==========================================
+        // BACKUP
+        // ==========================================
 
-    stage('Frontend Tests') {
-      steps {
+        // stage('Backup') {
+
+        //     when {
+        //         branch 'main'
+        //     }
+
+        //     steps {
+
+        //         sh './scripts/backup.sh'
+
+        //     }
+        // }
+
+
+
+        // ==========================================
+        // FRONTEND
+        // ==========================================
+
+stage('Frontend Tests') {
+    steps {
         dir('frontend') {
-          sh 'npm ci'
-          sh 'npm test -- --watch=false'
+            sh 'npm ci'
+            sh 'npm test -- --watch=false'
         }
-      }
     }
+}
+
+// stage('Frontend Build') {
+//     steps {
+//         dir('frontend') {
+//             sh 'npm run build'
 
 
-    stage('Frontend SonarQube Analysis') {
-      steps {
+//             stash(
+//                 name: 'frontend-build',
+//                 includes: 'dist/**'
+//             )
+//         }
+
+//     }
+// }
+
+
+stage('Frontend SonarQube Analysis') {
+    steps {
         dir('frontend') {
-          withSonarQubeEnv('SonarQube') {
-            sh ''
-            '
-            npx sonar - scanner\ -
-              Dsonar.projectKey = buy - 01 - frontend\ -
-              Dsonar.projectName = buy - 01 - frontend\ -
-              Dsonar.sources = src\ -
-              Dsonar.exclusions = ** /node_modules/ ** , ** /dist/ **
-              ''
-            '
-          }
+            withSonarQubeEnv('SonarQube') {
+                sh '''
+                    npx sonar-scanner \
+                      -Dsonar.projectKey=buy-01-frontend \
+                      -Dsonar.projectName=buy-01-frontend \
+                      -Dsonar.sources=src \
+                      -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                '''
+            }
 
-          timeout(time: 5, unit: 'MINUTES') {
-            waitForQualityGate abortPipeline: true
-          }
+            timeout(time: 5, unit: 'MINUTES') {
+                 waitForQualityGate abortPipeline: true
+            }
         }
-      }
     }
+}
 
-    // ==========================================
-    // DOCKER BUILD
-    // ==========================================
 
-    stage('Docker Build') {
 
-      steps {
+        // ==========================================
+        // DOCKER BUILD
+        // ==========================================
+
+stage('Docker Build') {
+
+    steps {
 
         echo "🐳 Build Backend"
 
         dir('backend') {
-          sh ''
-          '
-          IMAGE_TAG = $IMAGE_TAG docker compose build ''
-          '
+            sh '''
+                IMAGE_TAG=$IMAGE_TAG docker compose build
+            '''
         }
 
         echo "🐳 Build Frontend"
 
         dir('frontend') {
-          sh ''
-          '
-          docker build\
-            -
-            t frontend - app: $ {
-              IMAGE_TAG
-            }\
-            .
-          ''
-          '
+            sh '''
+                docker build \
+                    -t frontend-app:${IMAGE_TAG} \
+                    .
+            '''
         }
 
         sh 'echo "${IMAGE_TAG}" > image-tag.txt'
 
         stash(
-          name: 'docker-image-tag',
-          includes: 'image-tag.txt'
+            name: 'docker-image-tag',
+            includes: 'image-tag.txt'
         )
-      }
+    }
+}
+
+        // ==========================================
+        // DEPLOY BACKEND
+        // ==========================================
+
+      stage('Deploy Backend') {
+
+    when {
+        branch 'main'
     }
 
-    // ==========================================
-    // DEPLOY BACKEND
-    // ==========================================
-
-    stage('Deploy Backend') {
-
-      when {
-        branch 'main'
-      }
-
-      steps {
+    steps {
 
         script {
 
-          unstash 'docker-image-tag'
+            unstash 'docker-image-tag'
 
-          def deployTag = readFile('image-tag.txt').trim()
+            def deployTag = readFile('image-tag.txt').trim()
 
-          echo "📦 Version à déployer : ${deployTag}"
+            echo "📦 Version à déployer : ${deployTag}"
 
-          try {
-            sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-backend.sh"
-          } catch (err) {
-            sh "IMAGE_TAG=${deployTag} bash ./scripts/rollback-backend.sh"
-            error("❌ Déploiement Backend échoué — rollback exécuté")
-          }
+try {
+    sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-backend.sh"
+} catch (err) {
+    sh "IMAGE_TAG=${deployTag} bash ./scripts/rollback-backend.sh"
+    error("❌ Déploiement Backend échoué — rollback exécuté")
+}
         }
-      }
     }
+}
 
-    stage('cleanUp') {
 
-      when {
-        branch 'main'
-      }
+        stage('cleanUp') {
 
-      steps {
+            when {
+                branch 'main'
+            }
 
-        script {
-          sh './scripts/cleanup-images.sh'
+            steps {
+
+                script {
+                    sh './scripts/cleanup-images.sh'
+                }
+            }
         }
-      }
+
+
+        // ==========================================
+        // DEPLOY FRONTEND
+        // ==========================================
+
+        stage('Deploy Frontend') {
+
+    when {
+        branch 'main'
     }
 
-    // ==========================================
-    // DEPLOY FRONTEND
-    // ==========================================
-
-    stage('Deploy Frontend') {
-
-      when {
-        branch 'main'
-      }
-
-      steps {
+    steps {
 
         script {
 
-          unstash 'docker-image-tag'
+            unstash 'docker-image-tag'
 
-          def deployTag = readFile('image-tag.txt').trim()
+            def deployTag = readFile('image-tag.txt').trim()
 
-          echo "📦 Version Frontend à déployer : ${deployTag}"
+            echo "📦 Version Frontend à déployer : ${deployTag}"
 
-          try {
+            try {
 
-            sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-frontend.sh"
+                sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-frontend.sh"
 
-          } catch (err) {
+            } catch (err) {
 
-            echo "❌ Déploiement Frontend échoué"
+                echo "❌ Déploiement Frontend échoué"
 
-            echo "🔄 Rollback Frontend..."
+                echo "🔄 Rollback Frontend..."
 
-            sh './scripts/rollback-frontend.sh'
+                sh './scripts/rollback-frontend.sh'
 
-            error(
-              "❌ Déploiement Frontend échoué — rollback exécuté"
+                error(
+                    "❌ Déploiement Frontend échoué — rollback exécuté"
+                )
+            }
+        }
+    }
+}
+    }
+
+
+    // ==========================================
+    // POST ACTIONS
+    // ==========================================
+
+    post {
+
+        always {
+
+            junit(
+                allowEmptyResults: true,
+                testResults:
+                    'backend/*/target/surefire-reports/*.xml, frontend/test-results/*.xml'
             )
-          }
         }
-      }
+
+
+        success {
+
+            echo "✅ Build réussi"
+
+            emailext(
+                subject:
+                    "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                body:
+                    """Build réussi.
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+Commit: ${env.GIT_COMMIT}
+
+URL Jenkins:
+${env.BUILD_URL}""",
+
+                to: "mohssinaynaou874@gmail.com"
+            )
+        }
+
+
+        failure {
+
+            echo "❌ Build échoué"
+
+            emailext(
+                subject:
+                    "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                body:
+                    """Build échoué.
+
+Job: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Branch: ${env.BRANCH_NAME}
+
+Consulte les logs Jenkins:
+${env.BUILD_URL}""",
+
+                to: "mohssinaynaou874@gmail.com"
+            )
+        }
     }
-  }
-
-  // ==========================================
-  // POST ACTIONS
-  // ==========================================
-
-  post {
-
-    always {
-
-      junit(
-        allowEmptyResults: true,
-        testResults:
-        'backend/*/target/surefire-reports/*.xml, frontend/test-results/*.xml'
-      )
-    }
-
-    success {
-
-      echo "✅ Build réussi"
-
-      emailext(
-        subject:
-        "✅ Jenkins SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-
-        body:
-        ""
-        "Build réussi.
-
-        Job: $ {
-          env.JOB_NAME
-        }
-        Build: #$ {
-          env.BUILD_NUMBER
-        }
-        Branch: $ {
-          env.BRANCH_NAME
-        }
-        Commit: $ {
-          env.GIT_COMMIT
-        }
-
-        URL Jenkins:
-        $ {
-          env.BUILD_URL
-        }
-        ""
-        ",
-
-        to: "mohssinaynaou874@gmail.com"
-      )
-    }
-
-    failure {
-
-      echo "❌ Build échoué"
-
-      emailext(
-        subject:
-        "❌ Jenkins FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-
-        body:
-        ""
-        "Build échoué.
-
-        Job: $ {
-          env.JOB_NAME
-        }
-        Build: #$ {
-          env.BUILD_NUMBER
-        }
-        Branch: $ {
-          env.BRANCH_NAME
-        }
-
-        Consulte les logs Jenkins:
-        $ {
-          env.BUILD_URL
-        }
-        ""
-        ",
-
-        to: "mohssinaynaou874@gmail.com"
-      )
-    }
-  }
 }
