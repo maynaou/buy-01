@@ -254,25 +254,12 @@ stage('Frontend SonarQube Analysis') {
 
             echo "📦 Version à déployer : ${deployTag}"
 
-            try {
-
-                sh """
-                    IMAGE_TAG=${deployTag} bash ./scripts/deploy-backend.sh
-                """
-
-            } catch (err) {
-
-                echo "❌ Déploiement Backend échoué"
-                echo "🔄 Rollback Backend..."
-
-                sh """
-                    IMAGE_TAG=${deployTag} bash ./scripts/rollback-backend.sh
-                """
-
-                error(
-                    "❌ Déploiement Backend échoué — rollback exécuté"
-                )
-            }
+try {
+    sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-backend.sh"
+} catch (err) {
+    sh "IMAGE_TAG=${deployTag} bash ./scripts/rollback-backend.sh"
+    error("❌ Déploiement Backend échoué — rollback exécuté")
+}
         }
     }
 }
