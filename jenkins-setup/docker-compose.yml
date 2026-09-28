@@ -46,7 +46,6 @@ services:
       SONAR_TOKEN: ${SONAR_TOKEN}
     ports:
       - "8080:8080"
-      - "4200:4200"
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro

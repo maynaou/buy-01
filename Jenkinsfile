@@ -72,7 +72,18 @@ pipeline {
                     file(
                         credentialsId: 'jwt-public-key',
                         variable: 'JWT_PUBLIC_KEY'
+                    ),
+
+                    file(
+                        credentialsId: 'frontend-ssl-cert',
+                        variable: 'FRONTEND_SSL_CERT'
+                    ),
+
+                    file(
+                        credentialsId: 'frontend-ssl-key',
+                        variable: 'FRONTEND_SSL_KEY'
                     )
+
                 ]) {
 
                     sh './scripts/prepare-secrets.sh'
@@ -145,18 +156,18 @@ stage('SonarQube Analysis') {
         // BACKUP
         // ==========================================
 
-        stage('Backup') {
+        // stage('Backup') {
 
-            when {
-                branch 'main'
-            }
+        //     when {
+        //         branch 'main'
+        //     }
 
-            steps {
+        //     steps {
 
-                sh './scripts/backup.sh'
+        //         sh './scripts/backup.sh'
 
-            }
-        }
+        //     }
+        // }
 
 
 
@@ -173,20 +184,20 @@ stage('Frontend Tests') {
     }
 }
 
-stage('Frontend Build') {
-    steps {
-        dir('frontend') {
-            sh 'npm run build'
+// stage('Frontend Build') {
+//     steps {
+//         dir('frontend') {
+//             sh 'npm run build'
 
 
-            stash(
-                name: 'frontend-build',
-                includes: 'dist/**'
-            )
-        }
+//             stash(
+//                 name: 'frontend-build',
+//                 includes: 'dist/**'
+//             )
+//         }
 
-    }
-}
+//     }
+// }
 
 
 stage('Frontend SonarQube Analysis') {
@@ -215,24 +226,36 @@ stage('Frontend SonarQube Analysis') {
         // DOCKER BUILD
         // ==========================================
 
-        stage('Docker Build') {
+stage('Docker Build') {
 
-            steps {
+    steps {
 
-                dir('backend') {
+        echo "🐳 Build Backend"
 
-                    sh 'docker compose build'
-
-                }
-
-                sh 'echo "${IMAGE_TAG}" > image-tag.txt'
-
-                stash(
-                    name: 'docker-image-tag',
-                    includes: 'image-tag.txt'
-              )
-            }
+        dir('backend') {
+            sh '''
+                IMAGE_TAG=$IMAGE_TAG docker compose build
+            '''
         }
+
+        echo "🐳 Build Frontend"
+
+        dir('frontend') {
+            sh '''
+                docker build \
+                    -t frontend-app:${IMAGE_TAG} \
+                    .
+            '''
+        }
+
+        sh 'echo "${IMAGE_TAG}" > image-tag.txt'
+
+        stash(
+            name: 'docker-image-tag',
+            includes: 'image-tag.txt'
+        )
+    }
+}
 
         // ==========================================
         // DEPLOY BACKEND
@@ -286,36 +309,39 @@ try {
 
         stage('Deploy Frontend') {
 
-            when {
-                branch 'main'
-            }
+    when {
+        branch 'main'
+    }
 
-            steps {
+    steps {
 
-                script {
+        script {
 
-                    unstash 'frontend-build'
+            unstash 'docker-image-tag'
 
+            def deployTag = readFile('image-tag.txt').trim()
 
-                    try {
+            echo "📦 Version Frontend à déployer : ${deployTag}"
 
-                        sh './scripts/deploy-frontend.sh'
+            try {
 
-                    } catch (err) {
+                sh "IMAGE_TAG=${deployTag} bash ./scripts/deploy-frontend.sh"
 
-                        echo "❌ Déploiement Frontend échoué"
+            } catch (err) {
 
-                        echo "🔄 Rollback Frontend..."
+                echo "❌ Déploiement Frontend échoué"
 
-                        sh './scripts/rollback-frontend.sh'
+                echo "🔄 Rollback Frontend..."
 
-                        error(
-                            "❌ Déploiement Frontend échoué — rollback exécuté"
-                        )
-                    }
-                }
+                sh './scripts/rollback-frontend.sh'
+
+                error(
+                    "❌ Déploiement Frontend échoué — rollback exécuté"
+                )
             }
         }
+    }
+}
     }
 
 

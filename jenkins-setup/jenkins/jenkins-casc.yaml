@@ -69,6 +69,20 @@ credentials:
               fileName: "pub.pem"
               secretBytes: "${JWT_PUBLIC_KEY_B64}"
               description: "Clé publique JWT (RS256)"
+          - file:
+              scope: GLOBAL
+              id: "frontend-ssl-cert"
+              fileName: "nginx.crt"
+              secretBytes: "${FRONTEND_SSL_CERT_B64}"
+              description: "Certificat SSL du frontend"
+
+          - file:
+              scope: GLOBAL
+              id: "frontend-ssl-key"
+              fileName: "nginx.key"
+              secretBytes: "${FRONTEND_SSL_KEY_B64}"
+              description: "Clé privée SSL du frontend"
+              
 
 unclassified:
 
