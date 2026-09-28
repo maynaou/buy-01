@@ -238,44 +238,44 @@ stage('Frontend SonarQube Analysis') {
         // DEPLOY BACKEND
         // ==========================================
 
-        stage('Deploy Backend') {
+      stage('Deploy Backend') {
 
-            when {
-                branch 'main'
-            }
+    when {
+        branch 'main'
+    }
 
-            steps {
+    steps {
 
-                script {
+        script {
 
-                    unstash 'docker-image-tag'
-                    def deployTag = readFile('image-tag.txt').trim()
-                    echo "📦 Version à déployer : ${deployTag}"
+            unstash 'docker-image-tag'
 
-                    try {
+            def deployTag = readFile('image-tag.txt').trim()
 
-                        sh """
-                            IMAGE_TAG=${deployTag} ./scripts/deploy-backend.sh
-                        """
+            echo "📦 Version à déployer : ${deployTag}"
 
-                    } catch (err) {
+            try {
 
-                        echo "❌ Déploiement Backend échoué"
+                sh """
+                    IMAGE_TAG=${deployTag} bash ./scripts/deploy-backend.sh
+                """
 
-                        echo "🔄 Rollback Backend..."
+            } catch (err) {
 
-                        
-                        sh """
-                             IMAGE_TAG=${deployTag} ./scripts/rollback-backend.sh
-                       """
+                echo "❌ Déploiement Backend échoué"
+                echo "🔄 Rollback Backend..."
 
-                        error(
-                            "❌ Déploiement Backend échoué — rollback exécuté"
-                        )
-                    }
-                }
+                sh """
+                    IMAGE_TAG=${deployTag} bash ./scripts/rollback-backend.sh
+                """
+
+                error(
+                    "❌ Déploiement Backend échoué — rollback exécuté"
+                )
             }
         }
+    }
+}
 
 
         stage('cleanUp') {
