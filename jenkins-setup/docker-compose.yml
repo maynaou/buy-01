@@ -13,6 +13,7 @@ services:
           - docker
     volumes:
       - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home:ro
     ports:
       - "8888:8888"
       - "8761:8761"
@@ -44,6 +45,8 @@ services:
       JWT_PRIVATE_KEY_B64: ${JWT_PRIVATE_KEY_B64}
       JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64}
       SONAR_TOKEN: ${SONAR_TOKEN}
+      FRONTEND_SSL_CERT_B64: ${FRONTEND_SSL_CERT_B64}
+      FRONTEND_SSL_KEY_B64: ${FRONTEND_SSL_KEY_B64}
     ports:
       - "8080:8080"
     volumes:
