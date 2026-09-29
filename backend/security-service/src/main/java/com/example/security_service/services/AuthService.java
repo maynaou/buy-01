@@ -65,17 +65,15 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest loginRequest) {
           Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getIdentifier(), loginRequest.getPassword()));
-
-          System.out.println(authentication);
           CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
           String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
 
-          String acces_Token = tokenService.generateToken(user.getId(), scopes);
-          RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
+          String accesToken = tokenService.generateToken(user.getId(), scopes);
+          RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
           return AuthResponse.builder()
-                             .acces_Token(acces_Token)
-                             .refresh_Token(refresh_Token.getToken())
+                             .accesToken(accesToken)
+                             .refreshToken(refreshToken.getToken())
                              .build();
     }
 
@@ -83,12 +81,12 @@ public class AuthService {
           RefreshToken token = tokenService.verifyToken(refreshToken);
           Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
           String scopes = "ROLE_" + user.getRole().toString();
-          String acces_Token = tokenService.generateToken(token.getUserId(), scopes);
-          RefreshToken refresh_Token = tokenService.createRefreshToken(user.getId());
+          String accesToken = tokenService.generateToken(token.getUserId(), scopes);
+          RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
           refreshTokenRepository.deleteById(token.getId());
           return AuthResponse.builder()
-                             .acces_Token(acces_Token)
-                             .refresh_Token(refresh_Token.getToken())
+                             .accesToken(accesToken)
+                             .refreshToken(refreshToken.getToken())
                              .build();
     }
 

@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -35,12 +34,9 @@ public class SecurityConfig {
 
     private final PasswordEncoder passwordEncoder;
 
-    // private final UserDetailService userDetailService;
-
     public SecurityConfig(RsaKeysConfig rsaKeysConfig, PasswordEncoder passwordEncoder, UserDetailService userDetailService) {
         this.rsaKeysConfig = rsaKeysConfig;
         this.passwordEncoder = passwordEncoder;
-        // this.userDetailService = userDetailService;
     }
 
     @Bean
@@ -58,9 +54,7 @@ public class SecurityConfig {
                                                    .requestMatchers("/api/auth/**").permitAll()
                                                    .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // .oauth2ResourceServer((oauth2) -> oauth2.jwt((jwt) -> jwt.decoder(jwtDecoder())))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
-                // .userDetailsService(userDetailService)
                 .build();
     }
 
@@ -72,11 +66,6 @@ public class SecurityConfig {
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSource);
     }
-
-    // @Bean
-    // JwtDecoder jwtDecoder() {
-    //     return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.publicKey()).build();
-    // }
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {

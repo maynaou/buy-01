@@ -2,13 +2,13 @@ package com.example.security_service.config;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.example.security_service.entities.Auth;
 import com.example.security_service.exception.BadCredentialsException;
 import com.example.security_service.repository.AuthRepository;
 
-@Component
+@Service
 public class UserDetailService implements UserDetailsService {
     
     private AuthRepository authRepository;

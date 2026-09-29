@@ -12,7 +12,7 @@ import lombok.Data;
 public class RegisterRequest {
      @NotBlank(message = "Username is required")
      @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
-     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username must contain only letters, numbers, and underscore")
+     @Pattern(regexp = "^\\w+$" , message = "Username must contain only letters, numbers, and underscore")
      private String username;
      @NotBlank(message = "Email is required")
      @Email(message = "Email is not valid")

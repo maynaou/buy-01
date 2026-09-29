@@ -33,8 +33,8 @@ public class TokenService {
                               .expiresAt(now.plus(5, ChronoUnit.MINUTES))
                               .claim("scope", scopes)
                               .build();
-            String token = jwtEncoder.encode(JwtEncoderParameters.from(Claim)).getTokenValue();
-            return token;
+
+            return jwtEncoder.encode(JwtEncoderParameters.from(Claim)).getTokenValue();
      }
 
      public RefreshToken createRefreshToken(String subject) {
@@ -60,9 +60,4 @@ public class TokenService {
 
         return refreshToken;
     }
-
-    // public void deleteByUserId(String username) {
-    //     refreshTokenRepository.deleteByUsername(username);
-    // }
-
 }
