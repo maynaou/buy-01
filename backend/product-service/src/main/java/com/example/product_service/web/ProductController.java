@@ -43,14 +43,9 @@ public class ProductController {
 
     @GetMapping("/product")
     public ResponseEntity<List<ProductDTO>> getProducts() {
-        System.out.println("------------------------------------");
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }
 
-    /**
-     * The caller's own products. Scoped to authentication.name so the public
-     * catalogue never has to carry a seller id.
-     */
     @GetMapping("/my-products")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     public ResponseEntity<List<ProductDTO>> getMyProducts(Authentication authentication) {

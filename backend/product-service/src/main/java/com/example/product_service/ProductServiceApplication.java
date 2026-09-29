@@ -12,38 +12,5 @@ public class ProductServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ProductServiceApplication.class, args);
 	}
-    
-	@Bean
-	CommandLineRunner commandLineRunner(ProductRepository productRepository) {
-		return args ->  {
-                //  Product product = Product.builder()
-				//                           .id(UUID.randomUUID().toString())
-				// 						  .name("djaja")
-				// 						  .description("djaja top")
-				// 						  .price(123.5)
-				// 						  .quantity(150)
-				// 						  .userId(UUID.randomUUID().toString())
-				//                           .build();
-				//  productRepository.save(product);
-				//   Product product1 = Product.builder()
-				//                           .id(UUID.randomUUID().toString())
-				// 						  .name("djaja")
-				// 						  .description("djaja top")
-				// 						  .price(123.5)
-				// 						  .quantity(150)
-				// 						  .userId(UUID.randomUUID().toString())
-				//                           .build();
-				//  productRepository.save(product1);
-				//   Product product2 = Product.builder()
-				//                           .id(UUID.randomUUID().toString())
-				// 						  .name("djaja")
-				// 						  .description("djaja top")
-				// 						  .price(123.5)
-				// 						  .quantity(150)
-				// 						  .userId(UUID.randomUUID().toString())
-				//                           .build();
-				//  productRepository.save(product2);
-		};
-	}
 
 }

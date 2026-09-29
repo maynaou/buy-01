@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
@@ -45,7 +45,7 @@ public class SecurityConfig {
                     "message": "Access denied",
                     "timestamp": "%s"
                 }
-                """.formatted(LocalDateTime.now()));
+                """.formatted(Instant.now()));
         };
     }
 }

@@ -2,7 +2,6 @@ package com.example.product_service.service;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -144,8 +143,7 @@ class ProductServiceTest {
         List<ProductDTO> result = productService.getProducts();
 
         // Assert
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
+        assertThat(result).isNotNull().hasSize(1);
         verify(productRepository, times(1)).findAll();
     }
 
@@ -172,8 +170,7 @@ class ProductServiceTest {
         List<ProductDTO> result = productService.getMyProducts("seller123");
 
         // Assert
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
+        assertThat(result).isNotNull().hasSize(1);
         verify(productRepository, times(1)).findByUserId("seller123");
     }
 

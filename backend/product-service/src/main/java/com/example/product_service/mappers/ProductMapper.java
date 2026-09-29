@@ -19,7 +19,7 @@ public class ProductMapper {
 
     public List<ProductDTO> fromProduct(List<Product> products) {
            return products.stream()
-                           .map(product -> fromProduct(product))
+                           .map(this::fromProduct)
                            .toList();
           
     }
