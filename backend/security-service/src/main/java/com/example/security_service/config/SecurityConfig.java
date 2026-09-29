@@ -22,8 +22,9 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import java.time.LocalDateTime;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Instant;
+
 
 @Configuration
 @EnableWebSecurity
@@ -88,7 +89,7 @@ public class SecurityConfig {
                     "message": "Username or password incorrect",
                     "timestamp": "%s"
                 }
-                """.formatted(LocalDateTime.now()));
+                """.formatted(Instant.now()));
         };
     }
 }
