@@ -74,8 +74,8 @@ class AuthControllerTest {
         request.setPassword("password123");
 
         AuthResponse response = AuthResponse.builder()
-                .acces_Token("access-token-123")
-                .refresh_Token("refresh-token-456")
+                .accessToken("access-token-123")
+                .refreshToken("refresh-token-456")
                 .build();
 
         when(authService.login(any(LoginRequest.class))).thenReturn(response);
@@ -84,8 +84,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.acces_Token").value("access-token-123"))
-                .andExpect(jsonPath("$.refresh_Token").value("refresh-token-456"));
+                .andExpect(jsonPath("$.accessToken").value("access-token-123"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token-456"));
 
         verify(authService).login(any(LoginRequest.class));
     }
@@ -94,16 +94,16 @@ class AuthControllerTest {
     void refresh_Success() throws Exception {
         String token = "valid-refresh-token";
         AuthResponse response = AuthResponse.builder()
-                .acces_Token("new-access-token")
-                .refresh_Token("new-refresh-token")
+                .accessToken("new-access-token")
+                .refreshToken("new-refresh-token")
                 .build();
 
         when(authService.refresh(token)).thenReturn(response);
 
         mockMvc.perform(post("/api/auth/refresh/{id}", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.acces_Token").value("new-access-token"))
-                .andExpect(jsonPath("$.refresh_Token").value("new-refresh-token"));
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"));
 
         verify(authService).refresh(token);
     }
