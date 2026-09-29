@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("null")
 public class UserEventConsumer {
 
-  private static final Logger log = LoggerFactory.getLogger(ProductEventConsumer.class);
+  private static final Logger log = LoggerFactory.getLogger(UserEventConsumer.class);
 
 
   @Bean
