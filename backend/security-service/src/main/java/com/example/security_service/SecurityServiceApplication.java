@@ -19,15 +19,6 @@ public class SecurityServiceApplication {
 		SpringApplication.run(SecurityServiceApplication.class, args);
 	}
 
-	// @Bean
-	CommandLineRunner run(AuthRepository AuthRepository) {
-		return args -> {
-			// System.out.println("Saving users to the database...");
-			// AuthRepository.save(new Auth("1", "user1","user1@gmail.com", "1234",Role.CLIENT,"kk"));
-			// AuthRepository.save(new Auth("2", "user2","user2@gmail.com", "1234",Role.CLIENT,"rrr"));
-		};
-	}
-
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
