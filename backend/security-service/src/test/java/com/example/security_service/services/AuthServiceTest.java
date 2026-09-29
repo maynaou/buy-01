@@ -154,8 +154,8 @@ class AuthServiceTest {
 
         AuthResponse response = authService.login(request);
 
-        assertThat(response.getAcces_Token()).isEqualTo("fake-access-token");
-        assertThat(response.getRefresh_Token()).isEqualTo("fake-refresh-token");
+        assertThat(response.getAccessToken()).isEqualTo("fake-access-token");
+        assertThat(response.getRefreshToken()).isEqualTo("fake-refresh-token");
     }
 
     @Test
@@ -184,8 +184,8 @@ class AuthServiceTest {
 
         AuthResponse response = authService.refresh("old-refresh-token");
 
-        assertThat(response.getAcces_Token()).isEqualTo("new-access-token");
-        assertThat(response.getRefresh_Token()).isEqualTo("new-refresh-token");
+        assertThat(response.getAccessToken()).isEqualTo("new-access-token");
+        assertThat(response.getRefreshToken()).isEqualTo("new-refresh-token");
         verify(refreshTokenRepository, times(1)).deleteById("old-token-id");
     }
 
