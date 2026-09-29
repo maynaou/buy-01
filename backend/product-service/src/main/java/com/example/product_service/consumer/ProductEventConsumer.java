@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 @Configuration
 public class ProductEventConsumer {
 
-    private static final Logger log = LoggerFactory.getLogger(MediaEventConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(ProductEventConsumer.class);
 
 
     @Bean
