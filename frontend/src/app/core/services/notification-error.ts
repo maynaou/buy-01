@@ -4,8 +4,8 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class NotificationError {
-  private message = signal<string | null>(null);
-  private color = signal<'red' | 'green'>('green');
+  private readonly message = signal<string | null>(null);
+  private readonly color = signal<'red' | 'green'>('green');
 
   show(message: string, color: 'red' | 'green' = 'green') {
 

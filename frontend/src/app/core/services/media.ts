@@ -9,7 +9,7 @@ import { ProductImage } from '../../features/products/models/product-image';
   providedIn: 'root',
 })
 export class MediaService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   private readonly mediaUrl = `${environment.apiUrl}/api/media`;
 

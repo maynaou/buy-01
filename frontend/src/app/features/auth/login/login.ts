@@ -15,11 +15,11 @@ import { NotificationError } from '../../../core/services/notification-error';
 })
 export class Login {
 
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private tokenService = inject(TokenService);
-  private router = inject(Router);
-  private notificationError = inject(NotificationError);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly tokenService = inject(TokenService);
+  private readonly router = inject(Router);
+  private readonly notificationError = inject(NotificationError);
 
 
   loginForm = this.fb.group({

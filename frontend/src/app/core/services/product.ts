@@ -8,7 +8,7 @@ import { Product, ProductRequest } from '../../features/products/models/product'
   providedIn: 'root',
 })
 export class ProductService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   private readonly productsUrl = `${environment.apiUrl}/api/products`;
 

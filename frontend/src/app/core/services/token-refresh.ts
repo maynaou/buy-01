@@ -8,8 +8,8 @@ import { TokenService } from './token';
   providedIn: 'root',
 })
 export class TokenRefreshService {
-  private authService = inject(AuthService);
-  private tokenService = inject(TokenService);
+  private readonly authService = inject(AuthService);
+  private readonly tokenService = inject(TokenService);
 
   private inFlight: Observable<string> | null = null;
   refresh(): Observable<string> {

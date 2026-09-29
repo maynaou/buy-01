@@ -8,7 +8,7 @@ import { UpdateProfileRequest, UserProfile } from '../../features/profile/models
   providedIn: 'root',
 })
 export class UserService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   private readonly usersUrl = `${environment.apiUrl}/api/users`;
 

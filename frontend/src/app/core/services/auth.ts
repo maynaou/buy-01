@@ -11,12 +11,12 @@ import { TokenService } from './token';
   providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient);
-  private tokenService = inject(TokenService);
+  private readonly http = inject(HttpClient);
+  private readonly tokenService = inject(TokenService);
 
   private readonly authUrl = `${environment.apiUrl}/api/auth`;
 
-  private authenticatedSignal = signal(this.tokenService.isAuthenticated());
+  private readonly authenticatedSignal = signal(this.tokenService.isAuthenticated());
 
   readonly isAuthenticated = this.authenticatedSignal.asReadonly();
 

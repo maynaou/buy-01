@@ -4,7 +4,6 @@ import { catchError, switchMap, throwError } from 'rxjs';
 
 import { TokenService } from '../services/token';
 import { TokenRefreshService } from '../services/token-refresh';
-import { NotificationError } from '../services/notification-error';
 
 function withToken(request: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
   return request.clone({
