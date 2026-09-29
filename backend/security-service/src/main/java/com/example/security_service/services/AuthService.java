@@ -82,11 +82,11 @@ public class AuthService {
           Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
           String scopes = "ROLE_" + user.getRole().toString();
           String accessToken = tokenService.generateToken(token.getUserId(), scopes);
-          RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
+          RefreshToken newRefreshToken = tokenService.createRefreshToken(user.getId());
           refreshTokenRepository.deleteById(token.getId());
           return AuthResponse.builder()
                              .accessToken(accessToken)
-                             .refreshToken(refreshToken.getToken())
+                             .refreshToken(newRefreshToken.getToken())
                              .build();
     }
 
