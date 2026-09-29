@@ -41,9 +41,7 @@ public class MediaEventConsumer {
                 mediaRepository.deleteAll(media);
             }
 
-            default -> {
-                log.warn("Unknown event type: {}", event.getEventType());
-            }
+             default -> log.warn("Unknown event type: {}", event.getEventType());
         }
     };
     }
