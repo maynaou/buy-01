@@ -68,11 +68,11 @@ public class AuthService {
           CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
           String scopes = user.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.joining(" "));
 
-          String accesToken = tokenService.generateToken(user.getId(), scopes);
+          String accessToken = tokenService.generateToken(user.getId(), scopes);
           RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
           return AuthResponse.builder()
-                             .accesToken(accesToken)
+                             .accessToken(accessToken)
                              .refreshToken(refreshToken.getToken())
                              .build();
     }
@@ -81,11 +81,11 @@ public class AuthService {
           RefreshToken token = tokenService.verifyToken(refreshToken);
           Auth user = authRepository.findById(token.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
           String scopes = "ROLE_" + user.getRole().toString();
-          String accesToken = tokenService.generateToken(token.getUserId(), scopes);
+          String accessToken = tokenService.generateToken(token.getUserId(), scopes);
           RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
           refreshTokenRepository.deleteById(token.getId());
           return AuthResponse.builder()
-                             .accesToken(accesToken)
+                             .accessToken(accessToken)
                              .refreshToken(refreshToken.getToken())
                              .build();
     }
