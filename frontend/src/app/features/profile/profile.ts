@@ -216,7 +216,7 @@ export class Profile {
 
   removeImage(): void {
       this.clearPendingPreview();
-      this.pendingPreviewUrl.set;
+      this.pendingPreviewUrl.set(null);
       this.uploading.set(false);
       this.pendingFile = null;
       this.pendingFileName.set('');

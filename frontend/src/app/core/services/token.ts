@@ -57,7 +57,7 @@ export class TokenService {
     }
 
     try {
-      const base64 = segments[1].replace(/-/g, '+').replace(/_/g, '/');
+      const base64 = segments[1].replaceAll('-', '+').replaceAll('_', '/');
       const padding = (4 - (base64.length % 4)) % 4;
       const payload: unknown = JSON.parse(atob(base64 + '='.repeat(padding)));
 

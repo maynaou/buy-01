@@ -18,8 +18,8 @@ public class ApiGatewayApplication {
 	}
 
 	// @Bean
-	DiscoveryClientRouteDefinitionLocator Locator(ReactiveDiscoveryClient rdc, DiscoveryLocatorProperties dlp) {
-           return new DiscoveryClientRouteDefinitionLocator(rdc, dlp);
-	}
+	// DiscoveryClientRouteDefinitionLocator Locator(ReactiveDiscoveryClient rdc, DiscoveryLocatorProperties dlp) {
+    //        return new DiscoveryClientRouteDefinitionLocator(rdc, dlp);
+	// }
 
 }
