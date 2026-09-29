@@ -23,6 +23,9 @@ import com.example.media_service.repository.ProductReferenceRepository;
 @Service
 public class MediaService {
 
+    private static final String MEDIA_PRODUCER_OUTPUT = "mediaProducer-out-0";
+
+
     MediaRepository mediaRepository;
 
     ProductReferenceRepository productReferenceRepository;
@@ -64,7 +67,7 @@ public class MediaService {
                     existingMedia.setImagePath(imagePath);
                     saved.add(this.mediaRepository.save(existingMedia));
 
-                    streamBridge.send("mediaProducer-out-0",
+                    streamBridge.send(MEDIA_PRODUCER_OUTPUT,
                             new MediaCreatedEvent(EventType.DELETED, productId, oldPath, MediaType.PRODUCT));
                 } else {
                     Media newMedia = new Media();
@@ -76,7 +79,7 @@ public class MediaService {
                 }
                 index++;
 
-                streamBridge.send("mediaProducer-out-0",
+                streamBridge.send(MEDIA_PRODUCER_OUTPUT,
                         new MediaCreatedEvent(EventType.CREATED, productId, imagePath, MediaType.PRODUCT));
 
             } catch (IOException e) {
@@ -91,7 +94,7 @@ public class MediaService {
             this.mediaRepository.deleteAll(removed);
 
             for (Media media : removed) {
-                streamBridge.send("mediaProducer-out-0",
+                streamBridge.send(MEDIA_PRODUCER_OUTPUT,
                         new MediaCreatedEvent(EventType.DELETED, productId, media.getImagePath(),
                                 MediaType.PRODUCT));
             }
@@ -121,7 +124,7 @@ public class MediaService {
                 saved = this.mediaRepository.save(newMedia);
             }
 
-            streamBridge.send("mediaProducer-out-0",
+            streamBridge.send(MEDIA_PRODUCER_OUTPUT,
                     new MediaCreatedEvent(EventType.CREATED, userId, imagePath, MediaType.AVATAR));
 
             return mediaMapper.fromMedia(saved);

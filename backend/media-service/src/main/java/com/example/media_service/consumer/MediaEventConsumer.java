@@ -11,10 +11,14 @@ import com.example.media_service.entities.Media;
 import com.example.media_service.entities.ProductReference;
 import com.example.media_service.repository.MediaRepository;
 import com.example.media_service.repository.ProductReferenceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Configuration
 public class MediaEventConsumer {
+
+    private static final Logger log = LoggerFactory.getLogger(MediaEventConsumer.class);
     
     @Bean
     public Consumer<ProductReferenceDTO> mediaConsumer(ProductReferenceRepository productReferenceRepository, MediaRepository mediaRepository ) {
@@ -30,20 +34,15 @@ public class MediaEventConsumer {
                                 .build();
 
                 productReferenceRepository.save(productReference);
-                break;
             }
 
             case DELETED -> {
                 List<Media> media = mediaRepository.findByEntityId(event.getProductId()).orElseThrow(() -> new RuntimeException("productId not found"));
                 mediaRepository.deleteAll(media);
-                break;
             }
 
             default -> {
-                System.out.println(
-                        "Unknown event type: " + event.getEventType()
-                );
-                break;
+                log.warn("Unknown event type: {}", event.getEventType());
             }
         }
     };

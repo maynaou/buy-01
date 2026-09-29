@@ -16,7 +16,7 @@ public class MediaMapper {
 
     public List<MediaDTO> fromMedia(List<Media> medias) {
         return medias.stream()
-                .map(media -> fromMedia(media))
+                .map(this::fromMedia)
                 .toList();
 
     }
