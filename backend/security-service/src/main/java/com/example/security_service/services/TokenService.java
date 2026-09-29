@@ -26,7 +26,7 @@ public class TokenService {
     
      public String generateToken(String subject, String scopes) {
            Instant now = Instant.now();
-           JwtClaimsSet Claim = JwtClaimsSet.builder()
+           JwtClaimsSet claim = JwtClaimsSet.builder()
                               .subject(subject)
                               .issuer("security-service")
                               .issuedAt(now)
@@ -34,7 +34,7 @@ public class TokenService {
                               .claim("scope", scopes)
                               .build();
 
-            return jwtEncoder.encode(JwtEncoderParameters.from(Claim)).getTokenValue();
+            return jwtEncoder.encode(JwtEncoderParameters.from(claim)).getTokenValue();
      }
 
      public RefreshToken createRefreshToken(String subject) {

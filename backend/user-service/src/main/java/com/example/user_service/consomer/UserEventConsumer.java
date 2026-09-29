@@ -9,10 +9,15 @@ import com.example.user_service.dto.UserConsumerAvatarDTO;
 import com.example.user_service.dto.UserConsumerDTO;
 import com.example.user_service.entities.User;
 import com.example.user_service.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @SuppressWarnings("null")
 public class UserEventConsumer {
+
+  private static final Logger log = LoggerFactory.getLogger(ProductEventConsumer.class);
+
 
   @Bean
   public Consumer<UserConsumerDTO> userConsumer(UserRepository userRepository) {
@@ -42,15 +47,9 @@ public class UserEventConsumer {
               .orElseThrow(() -> new RuntimeException("user not found"));
           user.setAvatar(event.getImagePath());
           userRepository.save(user);
-          break;
         }
 
-        default -> {
-
-          System.out.println(
-              "Unknown event type: " + event.getEventType());
-          break;
-        }
+        default -> log.warn("Unknown event type: {}", event.getEventType());
 
       }
 

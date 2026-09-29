@@ -24,7 +24,6 @@ public class AuthenticationFilter  extends OncePerRequestFilter {
         String userId = req.getHeader("X-User-Id");
         String role = req.getHeader("X-User-Role");
 
-        System.out.println("userId : " + userId + " role : " + role);
         if (userId != null && role != null) {
             SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(userId, null,
