@@ -14,7 +14,7 @@ cd backend
 
 # Démarre et ATTEND que tous les containers soient healthy.
 # Si un seul est unhealthy → la commande échoue → Jenkins lance le rollback.
-docker compose up -d --no-build --wait --wait-timeout 420
+IMAGE_TAG="$IMAGE_TAG" docker compose up -d --no-build --wait --wait-timeout 420
 
 docker compose ps
 
