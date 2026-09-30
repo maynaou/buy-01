@@ -33,6 +33,15 @@ module.exports = function (config) {
     useBrowserName: false
     },
 
+    coverageReporter: {
+    dir: 'coverage/',
+      reporters: [
+    { type: 'html', subdir: 'html' },
+    { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
+    { type: 'text-summary' }
+      ]
+    },
+
     restartOnFileChange: true
     
   });

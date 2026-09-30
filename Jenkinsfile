@@ -131,7 +131,7 @@ stage('SonarQube Analysis') {
             steps {
                 dir('frontend') {
                     sh 'npm ci'
-                    sh 'npm test -- --watch=false '
+                    sh 'npm test -- --watch=false'
                 }
             }
         }
@@ -147,6 +147,7 @@ stage('SonarQube Analysis') {
                             -Dsonar.projectName=buy-01-frontend \
                             -Dsonar.sources=src \
                             -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                         '''
                     }
                 timeout(time: 5, unit: 'MINUTES') {
