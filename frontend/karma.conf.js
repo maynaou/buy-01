@@ -25,7 +25,7 @@ module.exports = function (config) {
 
     browsers: ['ChromeHeadlessNoSandbox'],
 
-    reporters: ['progress', 'kjhtml', 'junit'],
+    reporters: ['progress', 'kjhtml', 'junit','coverage'],
     
     junitReporter: {
     outputDir: 'test-results',

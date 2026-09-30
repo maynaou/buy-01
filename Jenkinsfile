@@ -146,7 +146,7 @@ stage('SonarQube Analysis') {
                             -Dsonar.projectKey=buy-01-frontend \
                             -Dsonar.projectName=buy-01-frontend \
                             -Dsonar.sources=src \
-                            -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/** \
                             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                         '''
                     }
