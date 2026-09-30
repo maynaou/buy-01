@@ -339,11 +339,11 @@ describe('ProductGallery', () => {
 
       let emitted = false;
 
-      component.close.subscribe(() => {
+      component.galleryClosed.subscribe(() => {
         emitted = true;
       });
 
-      component.close.emit();
+      component.galleryClosed.emit();
 
       expect(emitted).toBeTrue();
     });
@@ -384,7 +384,7 @@ describe('ProductGallery', () => {
     it('should emit close when Escape is pressed', () => {
       let emitted = false;
 
-      component.close.subscribe(() => {
+      component.galleryClosed.subscribe(() => {
         emitted = true;
       });
 
