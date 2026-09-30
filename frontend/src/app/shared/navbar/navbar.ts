@@ -11,9 +11,9 @@ import { TokenService } from '../../core/services/token';
   styleUrl: './navbar.scss',
 })
 export class Navbar {
-  private authService = inject(AuthService);
-  private tokenService = inject(TokenService);
-  private router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly tokenService = inject(TokenService);
+  private readonly router = inject(Router);
 
   readonly isAuthenticated = this.authService.isAuthenticated;
 

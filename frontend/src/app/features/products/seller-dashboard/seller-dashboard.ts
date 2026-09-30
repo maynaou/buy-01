@@ -52,11 +52,11 @@ function wholeNumber(control: AbstractControl): ValidationErrors | null {
   styleUrl: './seller-dashboard.scss',
 })
 export class SellerDashboard {
-  private fb = inject(FormBuilder);
-  private productService = inject(ProductService);
-  private mediaService = inject(MediaService);
-  private router = inject(Router);
-  private notificationError = inject(NotificationError);
+  private readonly fb = inject(FormBuilder);
+  private readonly productService = inject(ProductService);
+  private readonly mediaService = inject(MediaService);
+  private readonly router = inject(Router);
+  private readonly notificationError = inject(NotificationError);
   
 
   readonly products = signal<Product[]>([]);

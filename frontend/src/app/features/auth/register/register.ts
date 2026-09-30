@@ -14,17 +14,17 @@ import { RegisterRequest } from '../models/register-request';
 })
 export class Register {
 
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private notificationError = inject(NotificationError);
-  private router = inject(Router)
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly notificationError = inject(NotificationError);
+  private readonly router = inject(Router);
 
   registerForm = this.fb.group({
     username: ['', [
       Validators.required,
       Validators.minLength(3),
       Validators.maxLength(20),
-      Validators.pattern(/^[a-zA-Z0-9_]+$/)
+      Validators.pattern(/^\w+$/)
     ]],
 
     email: ['', [

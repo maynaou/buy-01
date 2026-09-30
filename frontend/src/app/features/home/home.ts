@@ -15,9 +15,9 @@ import { NotificationError } from '../../core/services/notification-error';
   styleUrl: './home.scss',
 })
 export class Home {
-  private productService = inject(ProductService);
-  private authService = inject(AuthService);
-  private notificationError = inject(NotificationError);
+  private readonly productService = inject(ProductService);
+  private readonly authService = inject(AuthService);
+  private readonly notificationError = inject(NotificationError);
 
   readonly products = signal<Product[]>([]);
   readonly loading = signal(false);

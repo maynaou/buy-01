@@ -19,11 +19,11 @@ const MAX_AVATAR_BYTES = 1024 * 1024;
   styleUrl: './profile.scss',
 })
 export class Profile {
-  private fb = inject(FormBuilder);
-  private userService = inject(UserService);
-  private mediaService = inject(MediaService);
-  private tokenService = inject(TokenService);
-  private router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly mediaService = inject(MediaService);
+  private readonly tokenService = inject(TokenService);
+  private readonly router = inject(Router);
 
   readonly profile = signal<UserProfile | null>(null);
   readonly loading = signal(true);

@@ -46,7 +46,6 @@
             @if (pendingFileName()) {
               <p class="avatar-upload__file">{{ pendingFileName() }}</p>
                 @if (pendingPreviewUrl()) {
-                  <!-- <img class="thumbs__image" [src]="pendingPreviewUrl()" alt="Slected avatar previewe" /> -->
                           <li class="thumbs__item">
                 <img class="thumbs__image" [src]="pendingPreviewUrl()" alt="Selected avatar previewe" />
 
@@ -72,12 +71,6 @@
               </button>
             }
 
-            <!-- @if (avatarMessage()) {
-              <p class="profile__note profile__note--ok">{{ avatarMessage() }}</p>
-            } -->
-            <!-- @if (avatarError()) {
-              <p class="profile__note profile__note--error">{{ avatarError() }}</p>
-            } -->
           </div>
         }
       </aside>
