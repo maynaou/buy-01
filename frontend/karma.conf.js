@@ -33,6 +33,16 @@ module.exports = function (config) {
     useBrowserName: false
     },
 
-    restartOnFileChange: true
+    restartOnFileChange: true,
+
+    coverageReporter: {
+    dir: require('path').join(__dirname, './coverage'),
+    subdir: '.',
+    reporters: [
+        { type: 'html' },
+        { type: 'lcovonly' },
+        { type: 'text-summary' }
+    ]
+    }
   });
 };
