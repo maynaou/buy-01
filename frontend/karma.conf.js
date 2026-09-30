@@ -8,7 +8,8 @@ module.exports = function (config) {
       'karma-jasmine',
       'karma-chrome-launcher',
       'karma-jasmine-html-reporter',
-      'karma-junit-reporter'
+      'karma-junit-reporter',
+      'karma-coverage'
       
     ],
 
@@ -25,7 +26,7 @@ module.exports = function (config) {
 
     browsers: ['ChromeHeadlessNoSandbox'],
 
-    reporters: ['progress', 'kjhtml', 'junit','coverage'],
+    reporters: ['progress', 'kjhtml', 'junit'],
     
     junitReporter: {
     outputDir: 'test-results',
