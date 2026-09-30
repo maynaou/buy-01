@@ -9,7 +9,7 @@ import { Product } from '../models/product';
   templateUrl: './product-gallery.html',
   styleUrl: './product-gallery.scss',
   host: {
-    '(document:keydown.escape)': 'close.emit()',
+    '(document:keydown.escape)': 'galleryClosed.emit()',
     '(document:keydown.arrowright)': 'next()',
     '(document:keydown.arrowleft)': 'previous()',
   },
@@ -17,7 +17,7 @@ import { Product } from '../models/product';
 export class ProductGallery {
   readonly product = input.required<Product>();
 
-  readonly close = output<void>();
+  readonly galleryClosed = output<void>();
 
   readonly currentIndex = signal(0);
 

@@ -31,14 +31,12 @@ export class Profile {
   readonly loadError = signal('');
   readonly saveError = signal('');
   readonly savedMessage = signal('');
-  private notificationError = inject(NotificationError);
+  private readonly notificationError = inject(NotificationError);
 
 
   readonly avatarUrl = signal<string | null>(null);
   readonly pendingPreviewUrl = signal<string | null>(null);
   readonly uploading = signal(false);
-  // readonly avatarError = signal('');
-  // readonly avatarMessage = signal('');
   readonly pendingFileName = signal('');
 
   private pendingFile: File | null = null;
@@ -53,7 +51,7 @@ export class Profile {
         Validators.required,
         Validators.minLength(3),
         Validators.maxLength(20),
-        Validators.pattern(/^[a-zA-Z0-9_]+$/),
+        Validators.pattern(/^\w+$/),
       ],
     ],
     email: ['', [Validators.required, Validators.email]],
@@ -127,8 +125,6 @@ export class Profile {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
-    // this.avatarError.set('');
-    // this.avatarMessage.set('');
     this.pendingFile = null;
     this.pendingFileName.set('');
     this.clearPendingPreview();
@@ -138,13 +134,11 @@ export class Profile {
     }
 
     if (!file.type.startsWith('image/')) {
-      // this.avatarError.set('Please choose an image file.');
       this.notificationError.show('Please choose an image file.','red')
       return;
     }
 
     if (file.size > MAX_AVATAR_BYTES) {
-      // this.avatarError.set('Image is larger than 1 MB. Please choose a smaller one.');
        this.notificationError.show('Image is larger than 1 MB. Please choose a smaller one..', 'red');
       return;
     }
@@ -162,14 +156,11 @@ export class Profile {
 
     const userId = this.tokenService.getUserId();
     if (!userId) {
-      // this.avatarError.set('Could not identify your account. Please sign in again.');
       this.notificationError.show('Could not identify your account. Please sign in again.', 'red')
       return;
     }
 
     this.uploading.set(true);
-    // this.avatarError.set('');
-    // this.avatarMessage.set('');
 
     this.mediaService.uploadAvatar(userId, file).subscribe({
       next: (response) => {
@@ -178,7 +169,6 @@ export class Profile {
         this.pendingFile = null;
         this.pendingFileName.set('');
         this.clearPendingPreview();
-        // this.avatarMessage.set('Avatar updated.');
         this.notificationError.show('Avatar updated.','green')
       },
       error: (error: HttpErrorResponse) => {
@@ -187,11 +177,6 @@ export class Profile {
             ? 'You are not allowed to change this avatar.'
             : 'Upload failed. Please try again.'
         this.notificationError.show(message, 'red')
-        // this.avatarError.set(
-        //   error.status === 403
-        //     ? 'You are not allowed to change this avatar.'
-        //     : 'Upload failed. Please try again.',
-        // );
       },
     });
   }

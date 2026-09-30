@@ -57,7 +57,7 @@ export class SellerDashboard {
   private readonly mediaService = inject(MediaService);
   private readonly router = inject(Router);
   private readonly notificationError = inject(NotificationError);
-  
+
 
   readonly products = signal<Product[]>([]);
   readonly loading = signal(true);
@@ -119,7 +119,7 @@ export class SellerDashboard {
         // A 401 here means the interceptor could not refresh the session.
         if (error.status === 401) {
           this.router.navigate(['/login']);
-          
+
           this.notificationError.show(error.error.message, 'red')
           return;
         }
@@ -150,11 +150,11 @@ export class SellerDashboard {
       quantity: product.quantity,
     });
     this.openForm();
-    
+
     window.scrollTo({
-       top: 0,
-       behavior: 'smooth'
-       });
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 
   closeForm(): void {
@@ -192,12 +192,18 @@ export class SellerDashboard {
         this.saving.set(false);
 
 
-        const message = error.status === 403
-            ? 'You are not allowed to save this product.'
-            : error.status === 400
-              ? 'The server rejected these details. Please review the fields.'
-              : 'Could not save the product. Please try again.'
-        this.notificationError.show(message,'red')
+
+        let message: string;
+
+        if (error.status === 403) {
+          message = 'You are not allowed to save this product.';
+        } else if (error.status === 400) {
+          message = 'The server rejected these details. Please review the fields.';
+        } else {
+          message = 'Could not save the product. Please try again.';
+        }
+
+        this.notificationError.show(message, 'red');
 
       },
     });
@@ -264,15 +270,15 @@ export class SellerDashboard {
         this.products.update((products) => products.filter((p) => p.id !== product.id));
         this.deleting.set(null);
         this.deleteTarget.set(null);
-        this.notificationError.show(`“${product.name}” was deleted.`,'green');
+        this.notificationError.show(`“${product.name}” was deleted.`, 'green');
       },
       error: (error: HttpErrorResponse) => {
         this.deleting.set(null);
         this.deleteTarget.set(null);
-          const message = error.status === 403
-            ? 'You can only delete your own products.'
-            : 'Could not delete the product. Please try again.';
-          this.notificationError.show(message,'red');   
+        const message = error.status === 403
+          ? 'You can only delete your own products.'
+          : 'Could not delete the product. Please try again.';
+        this.notificationError.show(message, 'red');
       },
     });
   }
@@ -322,11 +328,11 @@ export class SellerDashboard {
       error: (error: HttpErrorResponse) => {
         // The product itself saved — keep it, and scope the failure to images.
         this.finishSave(product, isCreate, '');
-       const message = error.status === 403
-            ? `“${product.name}” was saved, but the image upload was not authorised yet. Open Edit and upload again in a moment.`
-            : `“${product.name}” was saved, but its images could not be uploaded. Open Edit to try again.`;
+        const message = error.status === 403
+          ? `“${product.name}” was saved, but the image upload was not authorised yet. Open Edit and upload again in a moment.`
+          : `“${product.name}” was saved, but its images could not be uploaded. Open Edit to try again.`;
 
-        this.notificationError.show(message,'red')
+        this.notificationError.show(message, 'red')
       },
     });
   }
@@ -362,6 +368,6 @@ export class SellerDashboard {
 
     this.saving.set(false);
     this.closeForm();
-    this.notificationError.show(message,'green')
+    this.notificationError.show(message, 'green')
   }
 }
