@@ -1,5 +1,5 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
-<div class="gallery" role="presentation" (click)="close.emit()">
+<div class="gallery" role="presentation" (click)="galleryClosed.emit()">
   <div
     class="gallery__dialog"
     role="dialog"
@@ -7,7 +7,7 @@
     [attr.aria-label]="product().name"
     (click)="$event.stopPropagation()"
   >
-    <button type="button" class="gallery__close" (click)="close.emit()" aria-label="Close">
+    <button type="button" class="gallery__close" (click)="galleryClosed.emit()" aria-label="Close">
       &#10005;
     </button>
 
