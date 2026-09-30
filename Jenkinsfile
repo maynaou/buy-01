@@ -131,7 +131,7 @@ stage('SonarQube Analysis') {
             steps {
                 dir('frontend') {
                     sh 'npm ci'
-                    sh 'npm test -- --watch=false --code-coverage'
+                    sh 'npm test -- --watch=false '
                 }
             }
         }
@@ -141,17 +141,13 @@ stage('SonarQube Analysis') {
             steps {
                 dir('frontend') {
                     withSonarQubeEnv('SonarQube') {
-                       sh '''
-    npx sonar-scanner \
-    -Dsonar.projectKey=buy-01-frontend \
-    -Dsonar.projectName=buy-01-frontend \
-    -Dsonar.sources=src \
-    -Dsonar.tests=src \
-    -Dsonar.test.inclusions=**/*.spec.ts \
-    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.ts \
-    -Dsonar.coverage.exclusions=**/*.spec.ts,**/environments/** \
-    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-'''
+                        sh '''
+                            npx sonar-scanner \
+                            -Dsonar.projectKey=buy-01-frontend \
+                            -Dsonar.projectName=buy-01-frontend \
+                            -Dsonar.sources=src \
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/**
+                        '''
                     }
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
