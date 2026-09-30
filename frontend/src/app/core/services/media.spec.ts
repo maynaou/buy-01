@@ -64,7 +64,7 @@ describe('MediaService', () => {
       const req = httpTestingController.expectOne(`${mediaUrl}/image`);
 
       expect(req.request.method).toBe('POST');
-      expect(req.request.body.getAll('imgUrl').length).toBe(2);
+      expect(req.request.body.getAll('imgUrl')).toHaveSize(2);
       expect(req.request.body.get('productId')).toBe(productId);
 
       req.flush([]);
