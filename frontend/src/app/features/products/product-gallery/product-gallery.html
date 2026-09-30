@@ -1,7 +1,5 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
-<div class="gallery" role="presentation" tabindex="0" (click)="galleryClosed.emit()"
-                                                      (keydown.enter)="galleryClosed.emit()"
-                                                      (keydown.space)="galleryClosed.emit()">
+<div class="gallery" role="presentation" (click)="galleryClosed.emit()">
 <div
   class="gallery__dialog"
   role="dialog"
