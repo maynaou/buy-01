@@ -1,5 +1,12 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
-<div class="gallery" role="presentation" (click)="galleryClosed.emit()">
+<div class="gallery" role="presentation">
+  <button
+    type="button"
+    (click)="galleryClosed.emit()"
+    aria-label="Close gallery">
+    ×
+  </button>
+</div>
 <div
   class="gallery__dialog"
   role="dialog"
