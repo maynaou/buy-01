@@ -6,6 +6,7 @@
   aria-modal="true"
   [attr.aria-label]="product().name"
   (click)="$event.stopPropagation()"
+  (keydown.escape)="$event.stopPropagation();"
 >
     <button type="button" class="gallery__close" (click)="galleryClosed.emit()" aria-label="Close">
       &#10005;
