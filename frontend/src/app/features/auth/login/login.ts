@@ -41,8 +41,8 @@ export class Login {
     this.authService.login(request).subscribe({
       next: (response) => {
         this.tokenService.setTokens(
-          response.acces_Token,
-          response.refresh_Token
+          response.accessToken,
+          response.refreshToken
         );
         this.authService.setAuthenticated();
         this.notificationError.show('User registered successfully', 'green');

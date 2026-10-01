@@ -66,8 +66,8 @@ describe('TokenRefreshService', () => {
       const refreshToken = 'old-refresh-token';
 
       const response = {
-        acces_Token: 'new-access-token',
-        refresh_Token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
       };
 
       tokenService.getRefreshToken.and.returnValue(refreshToken);
@@ -132,8 +132,8 @@ describe('TokenRefreshService', () => {
 
     it('should clear the in-flight request after a successful refresh', () => {
       const response = {
-        acces_Token: 'new-access-token',
-        refresh_Token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
       };
 
       tokenService.getRefreshToken.and.returnValue('refresh-token');
@@ -154,8 +154,8 @@ describe('TokenRefreshService', () => {
       authService.refresh.and.returnValues(
         throwError(() => new Error('First refresh failed')),
         of({
-          acces_Token: 'new-access-token',
-          refresh_Token: 'new-refresh-token',
+          accessToken: 'new-access-token',
+          refreshToken: 'new-refresh-token',
         }),
       );
 
@@ -170,8 +170,8 @@ describe('TokenRefreshService', () => {
 
     it('should return the same in-flight observable while a refresh is running', () => {
       const refreshSubject = new Subject<{
-        acces_Token: string;
-        refresh_Token: string;
+        accessToken: string;
+        refreshToken: string;
       }>();
 
       tokenService.getRefreshToken.and.returnValue('refresh-token');
@@ -187,8 +187,8 @@ describe('TokenRefreshService', () => {
       expect(authService.refresh).toHaveBeenCalledTimes(1);
 
       refreshSubject.next({
-        acces_Token: 'new-access-token',
-        refresh_Token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
       });
 
       refreshSubject.complete();
@@ -196,8 +196,8 @@ describe('TokenRefreshService', () => {
 
     it('should share the refresh result with multiple subscribers', () => {
       const refreshSubject = new Subject<{
-        acces_Token: string;
-        refresh_Token: string;
+        accessToken: string;
+        refreshToken: string;
       }>();
 
       tokenService.getRefreshToken.and.returnValue('refresh-token');
@@ -220,8 +220,8 @@ describe('TokenRefreshService', () => {
       expect(authService.refresh).toHaveBeenCalledTimes(1);
 
       refreshSubject.next({
-        acces_Token: 'new-access-token',
-        refresh_Token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
       });
 
       refreshSubject.complete();
@@ -232,8 +232,8 @@ describe('TokenRefreshService', () => {
 
     it('should get the refresh token only when there is no in-flight request', () => {
       const refreshSubject = new Subject<{
-        acces_Token: string;
-        refresh_Token: string;
+        accessToken: string;
+        refreshToken: string;
       }>();
 
       tokenService.getRefreshToken.and.returnValue('refresh-token');
@@ -248,8 +248,8 @@ describe('TokenRefreshService', () => {
       expect(tokenService.getRefreshToken).toHaveBeenCalledTimes(1);
 
       refreshSubject.next({
-        acces_Token: 'new-access-token',
-        refresh_Token: 'new-refresh-token',
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
       });
 
       refreshSubject.complete();
@@ -257,8 +257,8 @@ describe('TokenRefreshService', () => {
 
     it('should set authenticated after successful refresh', () => {
       const response = {
-        acces_Token: 'access-token',
-        refresh_Token: 'refresh-token',
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
       };
 
       tokenService.getRefreshToken.and.returnValue('refresh-token');

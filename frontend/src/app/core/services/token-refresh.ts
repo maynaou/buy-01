@@ -25,9 +25,9 @@ export class TokenRefreshService {
 
     const request = this.authService.refresh(refreshToken).pipe(
       map((response) => {
-        this.tokenService.setTokens(response.acces_Token, response.refresh_Token);
+        this.tokenService.setTokens(response.accessToken, response.refreshToken);
         this.authService.setAuthenticated();
-        return response.acces_Token;
+        return response.accessToken;
       }),
       tap({
         next: () => {

@@ -147,8 +147,8 @@ describe('Login', () => {
 
   it('should call AuthService.login with the correct request', () => {
     const response: AuthResponse = {
-      acces_Token: 'access-token',
-      refresh_Token: 'refresh-token',
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
     };
 
     authService.login.and.returnValue(of(response));
@@ -170,8 +170,8 @@ describe('Login', () => {
 
   it('should save the tokens after successful login', () => {
     const response: AuthResponse = {
-      acces_Token: 'access-token',
-      refresh_Token: 'refresh-token',
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
     };
 
     authService.login.and.returnValue(of(response));
@@ -193,8 +193,8 @@ describe('Login', () => {
 
   it('should set the user as authenticated after successful login', () => {
     const response: AuthResponse = {
-      acces_Token: 'access-token',
-      refresh_Token: 'refresh-token',
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
     };
 
     authService.login.and.returnValue(of(response));
@@ -211,8 +211,8 @@ describe('Login', () => {
 
   it('should show a success notification after successful login', () => {
     const response: AuthResponse = {
-      acces_Token: 'access-token',
-      refresh_Token: 'refresh-token',
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
     };
 
     authService.login.and.returnValue(of(response));
@@ -234,8 +234,8 @@ describe('Login', () => {
     jasmine.clock().install();
 
     const response: AuthResponse = {
-      acces_Token: 'access-token',
-      refresh_Token: 'refresh-token',
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
     };
 
     authService.login.and.returnValue(of(response));

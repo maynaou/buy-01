@@ -187,8 +187,8 @@ describe('AuthService', () => {
       expect(req.request.body).toEqual(request);
 
       req.flush({
-        acces_Token: 'access123',
-        refresh_Token: 'refresh123',
+        accessToken: 'access123',
+        refreshToken: 'refresh123',
       });
     });
 
@@ -199,8 +199,8 @@ describe('AuthService', () => {
       };
 
       const response: AuthResponse = {
-        acces_Token: 'access123',
-        refresh_Token: 'refresh123',
+        accessToken: 'access123',
+        refreshToken: 'refresh123',
       };
 
       service.login(request).subscribe((result) => {
@@ -309,8 +309,8 @@ describe('AuthService', () => {
       expect(req.request.body).toBeNull();
 
       req.flush({
-        acces_Token: 'new-access',
-        refresh_Token: 'new-refresh',
+        accessToken: 'new-access',
+        refreshToken: 'new-refresh',
       });
     });
 
@@ -327,8 +327,8 @@ describe('AuthService', () => {
       expect(req.request.method).toBe('POST');
 
       req.flush({
-        acces_Token: 'new-access',
-        refresh_Token: 'new-refresh',
+        accessToken: 'new-access',
+        refreshToken: 'new-refresh',
       });
     });
 
@@ -336,8 +336,8 @@ describe('AuthService', () => {
       const refreshToken = 'refresh123';
 
       const response: AuthResponse = {
-        acces_Token: 'new-access',
-        refresh_Token: 'new-refresh',
+        accessToken: 'new-access',
+        refreshToken: 'new-refresh',
       };
 
       service.refresh(refreshToken).subscribe((result) => {
