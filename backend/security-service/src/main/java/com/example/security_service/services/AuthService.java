@@ -30,6 +30,9 @@ public class AuthService {
     RefreshTokenRepository refreshTokenRepository;
     StreamBridge streamBridge;
 
+        private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
+
     public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             TokenService tokenService, RefreshTokenRepository refreshTokenRepository, StreamBridge streamBridge) {
@@ -71,8 +74,8 @@ public class AuthService {
           String accessToken = tokenService.generateToken(user.getId(), scopes);
           RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
-          System.out.println("Access Token: " + accessToken);
-          System.out.println("Refresh Token: " + refreshToken.getToken());
+          log.info("Access Token: {}", accessToken);
+          log.info("Refresh Token: {}", refreshToken.getToken());
 
           return AuthResponse.builder()
                              .accessToken(accessToken)
@@ -86,7 +89,7 @@ public class AuthService {
           String scopes = "ROLE_" + user.getRole().toString();
           String accessToken = tokenService.generateToken(token.getUserId(), scopes);
           RefreshToken newRefreshToken = tokenService.createRefreshToken(user.getId());
-          System.out.println("New Refresh Token: " + newRefreshToken.getToken());
+          log.info("New Refresh Token: {}", newRefreshToken.getToken());
           refreshTokenRepository.deleteById(token.getId());
           return AuthResponse.builder()
                              .accessToken(accessToken)
