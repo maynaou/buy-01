@@ -76,13 +76,19 @@
           },
           "defaultConfiguration": "development"
         },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "runner": "karma",
-            "runnerConfig": "karma.conf.js"
-          }
-        }
+"test": {
+  "builder": "@angular/build:unit-test",
+  "options": {
+    "runner": "karma",
+    "runnerConfig": "karma.conf.js",
+    "coverage": true,
+    "coverageReporters": [
+      "html",
+      "lcov",
+      "text-summary"
+    ]
+  }
+}
       }
     }
   }

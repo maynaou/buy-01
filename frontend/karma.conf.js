@@ -7,10 +7,8 @@ module.exports = function (config) {
     plugins: [
       'karma-jasmine',
       'karma-chrome-launcher',
-      'karma-jasmine-html-reporter',
       'karma-junit-reporter',
       'karma-coverage'
-      
     ],
 
     customLaunchers: {
@@ -26,24 +24,24 @@ module.exports = function (config) {
 
     browsers: ['ChromeHeadlessNoSandbox'],
 
-    reporters: ['progress', 'kjhtml', 'junit'],
-    
+    reporters: ['progress', 'junit', 'coverage'],
+
     junitReporter: {
-    outputDir: 'test-results',
-    outputFile: 'karma-results.xml',
-    useBrowserName: false
+      outputDir: 'test-results',
+      outputFile: 'karma-results.xml',
+      useBrowserName: false
     },
 
     coverageReporter: {
-    dir: 'coverage/',
+      dir: require('path').join(__dirname, './coverage'),
+      subdir: '.',
       reporters: [
-    { type: 'html', subdir: 'html' },
-    { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
-    { type: 'text-summary' }
+        { type: 'html' },
+        { type: 'lcovonly' },
+        { type: 'text-summary' }
       ]
     },
 
     restartOnFileChange: true
-    
   });
 };
