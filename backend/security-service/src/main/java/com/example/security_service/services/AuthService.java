@@ -18,6 +18,8 @@ import com.example.security_service.exception.UserAlreadyExistsException;
 import com.example.security_service.exception.UserNotFoundException;
 import com.example.security_service.repository.AuthRepository;
 import com.example.security_service.repository.RefreshTokenRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @SuppressWarnings("null")
