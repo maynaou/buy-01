@@ -1,18 +1,11 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
-<div class="gallery" role="presentation">
-  <button
-    type="button"
-    (click)="galleryClosed.emit()"
-    aria-label="Close gallery">
-    ×
-  </button>
+<div class="gallery" role="presentation" (click)="galleryClosed.emit()">
 <div
   class="gallery__dialog"
   role="dialog"
   aria-modal="true"
   [attr.aria-label]="product().name"
   (click)="$event.stopPropagation()"
-  (keydown)="$event.stopPropagation()"
 >
     <button type="button" class="gallery__close" (click)="galleryClosed.emit()" aria-label="Close">
       &#10005;
