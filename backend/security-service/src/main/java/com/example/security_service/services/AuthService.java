@@ -71,6 +71,9 @@ public class AuthService {
           String accessToken = tokenService.generateToken(user.getId(), scopes);
           RefreshToken refreshToken = tokenService.createRefreshToken(user.getId());
 
+          System.out.println("Access Token: " + accessToken);
+          System.out.println("Refresh Token: " + refreshToken.getToken());
+
           return AuthResponse.builder()
                              .accessToken(accessToken)
                              .refreshToken(refreshToken.getToken())
@@ -83,6 +86,7 @@ public class AuthService {
           String scopes = "ROLE_" + user.getRole().toString();
           String accessToken = tokenService.generateToken(token.getUserId(), scopes);
           RefreshToken newRefreshToken = tokenService.createRefreshToken(user.getId());
+          System.out.println("New Refresh Token: " + newRefreshToken.getToken());
           refreshTokenRepository.deleteById(token.getId());
           return AuthResponse.builder()
                              .accessToken(accessToken)
