@@ -62,5 +62,5 @@
 </section>
 
 @if (selectedProduct(); as product) {
-  <app-product-gallery [product]="product" (close)="closeGallery()" />
+  <app-product-gallery [product]="product" (galleryClosed)="closeGallery()" />
 }
