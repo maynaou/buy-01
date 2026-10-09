@@ -20,3 +20,7 @@ spring:
               uri: lb://MEDIA-SERVICE
               predicates:
                 Path=/api/media/**
+            - id: r4
+              uri: lb://ORDER-SERVICE
+              predicates:
+                Path=/api/orders/**

@@ -189,6 +189,35 @@ services:
       start_period: 60s
 
 
+  order-service:
+    build:
+      context: ./order-service
+    image: backend-order-service:${IMAGE_TAG:-latest}
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    container_name: order-service
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:8080/actuator/health || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -210,6 +239,8 @@ services:
       product-service:
         condition: service_healthy
       media-service:
+        condition: service_healthy
+      order-service:
         condition: service_healthy
 
     healthcheck:
