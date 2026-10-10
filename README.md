@@ -112,3 +112,7 @@ Le fichier `Jenkinsfile` inclut un pipeline de livraison continue structuré de 
 4. **Dockerization** : Création des images Docker et déploiement automatisé.
 
 Consultez le fichier [`Mr-Jenkins.md`](./Mr-Jenkins.md) pour les détails relatifs à la configuration des agents Jenkins.
+
+Consultez le fichier [`Mr-SonarQube.md`](./Mr-SonarQube.md) pour les détails relatifs à la configuration et à l’intégration de SonarQube.
+
+Consultez le fichier [`.env.example`](./.env.example) pour la liste des variables d’environnement nécessaires au projet.
