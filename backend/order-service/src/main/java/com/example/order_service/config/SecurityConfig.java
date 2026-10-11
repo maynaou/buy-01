@@ -8,10 +8,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import java.time.Instant;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -19,15 +19,14 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 public class SecurityConfig {
     
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { 
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationFilter authentication) throws Exception { 
 
         return http
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).permitAll()
-                                                  .requestMatchers("/actuator/health/**").permitAll()
+               .authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health/**").permitAll()
                                                   .anyRequest().authenticated())
-               //.addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
+               .addFilterBefore(authentication, UsernamePasswordAuthenticationFilter.class)
                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler()))
                .build();
 

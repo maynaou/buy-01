@@ -60,6 +60,36 @@
           <span class="gallery__stock gallery__stock--out">Out of stock</span>
         }
       </div>
+@if ( authService.isAuthenticated() && isClient()) {
+
+      <div class="gallery__cart">
+  <label for="cart-quantity">Quantity</label>
+
+  <input
+    id="cart-quantity"
+    type="number"
+    min="1"
+    [max]="product().quantity"
+    [value]="quantity()"
+    (input)="quantity.set(+$any($event.target).value)"
+    [disabled]="product().quantity <= 0"
+  />
+
+  <button
+    type="button"
+    class="gallery__add-cart"
+    [disabled]="
+      product().quantity <= 0 ||
+      quantity() < 1 ||
+      quantity() > product().quantity
+    "
+    (click)="addProductToCart()"
+  >
+    Add to Cart
+  </button>
+</div>
+
+}
 
       @if (hasMultiple()) {
         <ul class="gallery__thumbs">

@@ -75,4 +75,16 @@ public class ProductService {
 
         streamBridge.send("productProducer-out-0", new ProductCreatedEvent(EventType.DELETED,id,""));
     }
+
+
+    public List<ProductDTO> getProductsByIds(List<String> ids) {
+    if (ids == null || ids.isEmpty()) {
+        return List.of();
+    }
+
+    return productRepository.findByIdIn(ids)
+            .stream()
+            .map(productMapper::fromProduct)
+            .toList();
+}
 }

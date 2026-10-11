@@ -65,4 +65,14 @@ public class ProductController {
         return ResponseEntity.noContent().build();  
     }
 
+    @PostMapping("/product/by-ids")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
+    public ResponseEntity<List<ProductDTO>> getProductsByIds(
+        @RequestBody List<String> ids) {
+
+    return ResponseEntity.ok(
+            productService.getProductsByIds(ids)
+    );
+    }
+
 }

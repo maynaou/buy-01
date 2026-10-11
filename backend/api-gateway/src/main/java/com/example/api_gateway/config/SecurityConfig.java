@@ -39,7 +39,6 @@ public class SecurityConfig {
               .authorizeExchange(authorize -> authorize.pathMatchers("/actuator/health/**").permitAll()
                                                        .pathMatchers("/api/auth/**").permitAll()
                                                        .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                                                       .pathMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
               )
               .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
               .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder()))

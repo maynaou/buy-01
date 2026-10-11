@@ -49,6 +49,16 @@
                 <span class="product-card__stock product-card__stock--out">Out of stock</span>
               }
             </div>
+
+            @if (authService.isAuthenticated() && isClient() && product.quantity > 0) {
+  <button
+    type="button"
+    class="product-card__cart"
+    (click)="onAddToCart(product, $event)"
+  >
+    🛒 Add to Cart
+  </button>
+}
           </div>
 
           <!-- Stretched over the whole card so the card itself is the button. -->
@@ -60,7 +70,7 @@
     </ul>
   }
 </section>
-
+ 
 @if (selectedProduct(); as product) {
-  <app-product-gallery [product]="product" (galleryClosed)="closeGallery()" />
+  <app-product-gallery [product]="product" (galleryClosed)="closeGallery()" (addToCart)="addToCartFromGallery($event)"/>
 }

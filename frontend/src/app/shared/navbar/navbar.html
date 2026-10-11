@@ -12,6 +12,17 @@
             Dashboard
           </a>
         }
+        @if (isClient()) {
+  <a
+    class="navbar__link navbar__cart"
+    routerLink="/cart"
+    routerLinkActive="navbar__link--active"
+    aria-label="Shopping cart"
+  >
+    <span aria-hidden="true">🛒</span>
+    <span>Cart</span>
+  </a>
+}
         <a class="navbar__link" routerLink="/profile" routerLinkActive="navbar__link--active">
           Profile
         </a>

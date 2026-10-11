@@ -192,6 +192,28 @@
   color: var(--sm-danger);
 }
 
+.product-card__cart {
+  position: relative;
+  z-index: 2;
+  margin-top: 12px;
+  border: 0;
+  border-radius: var(--sm-radius);
+  background-color: var(--sm-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.product-card__cart:hover {
+  background-color: var(--sm-accent-dark);
+}
+
+.product-card__cart:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 @media (max-width: 480px) {
   .hero {
     aspect-ratio: 1 / 1;

@@ -18,6 +18,8 @@ export class Navbar {
   readonly isAuthenticated = this.authService.isAuthenticated;
 
   readonly isSeller = computed(() => this.isAuthenticated() && this.tokenService.isSeller());
+  readonly isClient = computed(() => this.isAuthenticated() && this.tokenService.isClient());
+;
 
   onLogout(): void {
     this.authService.logout();

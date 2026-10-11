@@ -1,0 +1,92 @@
+<section class="cart-page">
+  <header class="cart-header">
+    <h1>My Cart</h1>
+    <p>Review your products before checkout.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="cart-status">Loading your cart...</p>
+  } @else if (errorMessage()) {
+    <div class="cart-status cart-error">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" (click)="loadCart()">Try again</button>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="cart-empty">
+      <h2>Your cart is empty</h2>
+      <p>Discover our products and add your favourites.</p>
+      <a routerLink="/">Continue shopping</a>
+    </div>
+  } @else {
+    <div class="cart-layout">
+      <div class="cart-items">
+        @for (item of items(); track item.productId) {
+          <article class="cart-item">
+@if (item.product.imagePaths?.[0]; as image) {
+  <img class="cart-item__image" [src]="image" [alt]="item.product.name" />
+} @else {
+  <div class="cart-item__image cart-item__placeholder">No image</div>
+}
+
+            <div class="cart-item__details">
+              <h2>{{ item.product.name }}</h2>
+              <p>{{ item.product.price | currency }}</p>
+
+              <div class="cart-item__quantity">
+                <button
+                  type="button"
+                  [disabled]="item.quantity <= 1"
+                  (click)="changeQuantity(item.productId, item.quantity - 1)"
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
+
+                <span>{{ item.quantity }}</span>
+
+                <button
+                  type="button"
+                  [disabled]="item.quantity >= item.product.quantity"
+                  (click)="changeQuantity(item.productId, item.quantity + 1)"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+<button
+  type="button"
+  class="cart-item__remove"
+  (click)="removeItem(item.productId)"
+>
+  <span aria-hidden="true">🗑</span>
+  Remove
+</button>
+            </div>
+
+            <strong class="cart-item__subtotal">
+              {{ item.product.price * item.quantity | currency }}
+            </strong>
+          </article>
+        }
+      </div>
+
+      <aside class="cart-summary">
+        <h2>Order summary</h2>
+
+        <div class="cart-summary__row">
+          <span>Items</span>
+          <span>{{ items().length }}</span>
+        </div>
+
+        <div class="cart-summary__row cart-summary__total">
+          <span>Total</span>
+          <strong>{{ total() | currency }}</strong>
+        </div>
+
+        <button type="button" class="cart-summary__checkout" disabled>
+          Checkout coming soon
+        </button>
+      </aside>
+    </div>
+  }
+</section>

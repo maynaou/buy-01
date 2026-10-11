@@ -31,4 +31,11 @@ export class ProductService {
   deleteProduct(id: string) {
     return this.http.delete<void>(`${this.productsUrl}/product/${id}`);
   }
+
+  getProductsByIds(ids: string[]) {
+  return this.http.post<Product[]>(
+    `${this.productsUrl}/product/by-ids`,
+    ids
+  );
+}
 }

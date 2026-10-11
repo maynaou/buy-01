@@ -68,6 +68,12 @@
     background-color var(--sm-transition);
 }
 
+.navbar__cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .navbar__link:hover {
   background-color: #f1f5f9;
   color: var(--sm-ink);

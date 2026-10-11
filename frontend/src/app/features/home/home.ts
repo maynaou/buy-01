@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -7,6 +7,8 @@ import { ProductService } from '../../core/services/product';
 import { Product } from '../products/models/product';
 import { ProductGallery } from '../products/product-gallery/product-gallery';
 import { NotificationError } from '../../core/services/notification-error';
+import { CartService } from '../../core/services/cart';
+import { TokenService } from '../../core/services/token';
 
 @Component({
   selector: 'app-home',
@@ -16,8 +18,16 @@ import { NotificationError } from '../../core/services/notification-error';
 })
 export class Home {
   private readonly productService = inject(ProductService);
-  private readonly authService = inject(AuthService);
+  readonly authService = inject(AuthService);
   private readonly notificationError = inject(NotificationError);
+  private readonly cartService = inject(CartService);
+
+  // home.ts
+private readonly tokenService = inject(TokenService);
+readonly isClient = computed(
+  () => this.authService.isAuthenticated() && this.tokenService.isClient()
+);
+  
 
   readonly products = signal<Product[]>([]);
   readonly loading = signal(false);
@@ -58,6 +68,48 @@ export class Home {
     });
   }
 
+
+
+// Add to cart from a product card
+onAddToCart(product: Product, event: MouseEvent): void {
+  event.stopPropagation();
+
+ console.log('Adding product to cart:', product.id);
+
+  this.cartService.addToCart({
+    productId: product.id,
+    quantity: 1,
+  }).subscribe({
+    next: () => {
+      console.log('Product added to cart');
+
+      this.notificationError.show('Product added to cart', 'green');
+
+
+    },
+    error: (error) => {
+      console.error('Unable to add product to cart', error);
+    },
+  });
+}
+
+// Add to cart from the product gallery
+addToCartFromGallery(event: {
+  productId: string;
+  quantity: number;
+}): void {
+  this.cartService.addToCart(event).subscribe({
+    next: () => {
+      console.log('Product added to cart');
+      this.notificationError.show('Product added to cart', 'green');
+       this.selectedProduct.set(null);
+    },
+    error: (error) => {
+      console.error('Unable to add product to cart', error);
+    },
+  });
+}
+
   openGallery(product: Product): void {
     this.selectedProduct.set(product);
   }
@@ -66,7 +118,6 @@ export class Home {
     this.selectedProduct.set(null);
   }
 
-  /** First image of a product, or null when it has none. */
   coverImage(product: Product): string | null {
     return product.imagePaths?.[0] ?? null;
   }
