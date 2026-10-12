@@ -54,7 +54,6 @@ services:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
       - ./jenkins:/var/jenkins_home/casc_configs:ro
-      - ./secrets:/run/secrets:ro
     depends_on:
       - jenkins-docker
       - sonarqube
