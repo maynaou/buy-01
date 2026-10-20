@@ -1,11 +1,17 @@
 package com.example.order_service.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.example.order_service.dto.CheckoutRequest;
@@ -26,20 +32,60 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final ProductRestClient productRestClient;
+    private final MongoTemplate mongoTemplate;
 
     public OrderService(OrderRepository orderRepository, CartRepository cartRepository,
-                        ProductRestClient productRestClient) {
+                        ProductRestClient productRestClient, MongoTemplate mongoTemplate) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.productRestClient = productRestClient;
+        this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Order> getOrdersBySeller(String sellerId) {
-        return orderRepository.findBySellerId(sellerId);
+    public List<Order> getOrdersBySeller(
+            String sellerId, String search, OrderStatus status, LocalDate dateFrom, LocalDate dateTo) {
+        return findOrders("sellerId", sellerId, search, status, dateFrom, dateTo, false);
     }
 
-    public List<Order> getOrdersByBuyer(String buyerId) {
-        return orderRepository.findByBuyerIdAndHiddenByBuyerFalse(buyerId);
+    public List<Order> getOrdersByBuyer(
+            String buyerId, String search, OrderStatus status, LocalDate dateFrom, LocalDate dateTo) {
+        return findOrders("buyerId", buyerId, search, status, dateFrom, dateTo, true);
+    }
+
+    @SuppressWarnings("null")
+    private List<Order> findOrders(
+            String ownerField, String ownerId, String search, OrderStatus status,
+            LocalDate dateFrom, LocalDate dateTo, boolean excludeHidden) {
+        List<Criteria> filters = new ArrayList<>();
+        filters.add(Criteria.where(ownerField).is(ownerId));
+        if (excludeHidden) {
+            filters.add(Criteria.where("hiddenByBuyer").ne(true));
+        }
+        if (status != null) {
+            filters.add(Criteria.where("status").is(status));
+        }
+        if (search != null && !search.isBlank()) {
+            String literalSearch = java.util.regex.Pattern.quote(search.trim());
+            Criteria searchCriteria = new Criteria().orOperator(
+                    Criteria.where("id").regex(literalSearch, "i"),
+                    Criteria.where("fullName").regex(literalSearch, "i"),
+                    Criteria.where("items.productName").regex(literalSearch, "i"));
+            filters.add(searchCriteria);
+        }
+        if (dateFrom != null || dateTo != null) {
+            Criteria dateCriteria = Criteria.where("createdAt");
+            if (dateFrom != null) {
+                dateCriteria.gte(dateFrom.atStartOfDay().toInstant(ZoneOffset.UTC));
+            }
+            if (dateTo != null) {
+                dateCriteria.lt(dateTo.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC));
+            }
+            filters.add(dateCriteria);
+        }
+
+        Query query = Query.query(new Criteria().andOperator(filters.toArray(Criteria[]::new)));
+        query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
+        return mongoTemplate.find(query, Order.class);
     }
 
     public Order cancelOrderByBuyer(String orderId, String buyerId) {

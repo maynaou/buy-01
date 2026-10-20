@@ -15,7 +15,13 @@ import { Observable, retry, throwError, timer } from 'rxjs';
 import { MediaService } from '../../../core/services/media';
 import { ProductService } from '../../../core/services/product';
 import { OrderService } from '../../../core/services/order';
-import { Product, ProductRequest } from '../models/product';
+import {
+  PRODUCT_CATEGORIES,
+  Product,
+  ProductCategory,
+  ProductRequest,
+  productCategoryLabel,
+} from '../models/product';
 import { ProductImage } from '../models/product-image';
 import { NotificationError } from '../../../core/services/notification-error';
 import { Order, OrderStatus } from '../../checkout/models/order';
@@ -87,32 +93,18 @@ export class SellerDashboard {
   readonly isEditing = computed(() => this.editingId() !== null);
 
   readonly maxImageKb = Math.round(MAX_IMAGE_BYTES / 1024);
+  readonly productCategories = PRODUCT_CATEGORIES;
 
   // ── Orders signals ──────────────────────────────────────────────────────────
   readonly orders = signal<Order[]>([]);
+  readonly filteredOrders = signal<Order[]>([]);
   readonly ordersLoading = signal(false);
   readonly ordersError = signal('');
   readonly updatingOrderId = signal<string | null>(null);
   readonly orderFilter = signal<OrderStatus | 'ALL'>('ALL');
   readonly orderSearch = signal<string>('');
-
-  readonly filteredOrders = computed(() => {
-    const filter = this.orderFilter();
-    const query = this.orderSearch().trim().toLowerCase();
-    let list = this.orders();
-    if (filter !== 'ALL') {
-      list = list.filter((o) => o.status === filter);
-    }
-    if (query) {
-      list = list.filter(
-        (o) =>
-          o.id.toLowerCase().includes(query) ||
-          o.fullName?.toLowerCase().includes(query) ||
-          o.items.some((i) => i.productName.toLowerCase().includes(query))
-      );
-    }
-    return list;
-  });
+  readonly orderDateFrom = signal('');
+  readonly orderDateTo = signal('');
 
   readonly totalRevenue = computed(() =>
     this.orders()
@@ -139,6 +131,7 @@ export class SellerDashboard {
       '',
       [Validators.required, Validators.minLength(10), Validators.maxLength(500)],
     ],
+    category: this.fb.control<ProductCategory | null>(null, Validators.required),
     price: [
       null as number | null,
       [Validators.required, greaterThanZero, Validators.max(MAX_PRICE)],
@@ -166,13 +159,22 @@ export class SellerDashboard {
   loadSellerOrders(): void {
     this.ordersLoading.set(true);
     this.ordersError.set('');
-    this.orderService.getSellerOrders().subscribe({
+    const status = this.selectedOrderStatus();
+    this.orderService.getSellerOrders({
+      search: this.orderSearch(),
+      status,
+      dateFrom: this.orderDateFrom(),
+      dateTo: this.orderDateTo(),
+    }).subscribe({
       next: (orders) => {
         // Dernières commandes en premier (tri décroissant par date)
         const sorted = [...orders].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        this.orders.set(sorted);
+        this.filteredOrders.set(sorted);
+        if (this.hasNoActiveOrderFilters()) {
+          this.orders.set(sorted);
+        }
         this.ordersLoading.set(false);
       },
       error: () => {
@@ -180,6 +182,27 @@ export class SellerDashboard {
         this.ordersError.set('Unable to load orders. Please try again.');
       },
     });
+  }
+
+  private hasNoActiveOrderFilters(): boolean {
+    return this.orderFilter() === 'ALL'
+      && !this.orderSearch().trim()
+      && !this.orderDateFrom()
+      && !this.orderDateTo();
+  }
+
+  applyOrderFilters(): void {
+    this.loadSellerOrders();
+  }
+
+  setOrderFilter(status: OrderStatus | 'ALL'): void {
+    this.orderFilter.set(status);
+    this.loadSellerOrders();
+  }
+
+  private selectedOrderStatus(): OrderStatus | undefined {
+    const status = this.orderFilter();
+    return status === 'ALL' ? undefined : status;
   }
 
   countByStatus(status: OrderStatus): number {
@@ -216,11 +239,15 @@ export class SellerDashboard {
         this.orders.update((orders) =>
           orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
         );
+        this.filteredOrders.update((orders) =>
+          orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
         this.updatingOrderId.set(null);
         this.notificationError.show(
           `Order #${this.shortId(order.id)} updated to ${nextStatus}.`,
           'green'
         );
+        this.loadSellerOrders();
       },
       error: (err) => {
         this.updatingOrderId.set(null);
@@ -263,7 +290,13 @@ export class SellerDashboard {
   startCreate(): void {
     this.editingId.set(null);
     this.editingImages.set([]);
-    this.productForm.reset({ name: '', description: '', price: null, quantity: null });
+    this.productForm.reset({
+      name: '',
+      description: '',
+      category: null,
+      price: null,
+      quantity: null,
+    });
     this.openForm();
   }
 
@@ -273,6 +306,7 @@ export class SellerDashboard {
     this.productForm.reset({
       name: product.name,
       description: product.description,
+      category: product.category ?? null,
       price: product.price,
       quantity: product.quantity,
     });
@@ -297,11 +331,18 @@ export class SellerDashboard {
       return;
     }
 
+    const category = this.productForm.controls.category.value;
+    if (!category) {
+      this.productForm.controls.category.markAsTouched();
+      return;
+    }
+
     const request: ProductRequest = {
       name: this.productForm.value.name!.trim(),
       description: this.productForm.value.description!.trim(),
       price: Number(this.productForm.value.price),
       quantity: Number(this.productForm.value.quantity),
+      category,
     };
 
     const editingId = this.editingId();
@@ -413,6 +454,10 @@ export class SellerDashboard {
 
   coverImage(product: Product): string | null {
     return product.imagePaths?.[0] ?? null;
+  }
+
+  categoryLabel(category: ProductCategory | null | undefined): string {
+    return productCategoryLabel(category);
   }
 
   imageCount(product: Product): number {

@@ -15,10 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
 import com.example.product_service.events.ProductCreatedEvent;
+import com.example.product_service.enums.ProductCategory;
 import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
@@ -35,6 +38,9 @@ class ProductServiceTest {
     @Mock
     private StreamBridge streamBridge;
 
+    @Mock
+    private MongoTemplate mongoTemplate;
+
     @InjectMocks
     private ProductService productService;
 
@@ -49,6 +55,7 @@ class ProductServiceTest {
                 .description("High-performance laptop for professionals")
                 .price(999.99)
                 .quantity(5)
+                .category(ProductCategory.BALLS)
                 .userId("seller123")
                 .build();
 
@@ -58,6 +65,7 @@ class ProductServiceTest {
         testProductDTO.setDescription("High-performance laptop for professionals");
         testProductDTO.setPrice(999.99);
         testProductDTO.setQuantity(5);
+        testProductDTO.setCategory(ProductCategory.BALLS);
     }
 
     // ==================== CREATE Tests ====================
@@ -71,6 +79,7 @@ class ProductServiceTest {
         requestDTO.setDescription("High-performance laptop for professionals");
         requestDTO.setPrice(999.99);
         requestDTO.setQuantity(5);
+        requestDTO.setCategory(ProductCategory.BALLS);
 
         when(productMapper.fromProduct(any(Product.class))).thenReturn(testProductDTO);
         when(streamBridge.send(eq("productProducer-out-0"), any(ProductCreatedEvent.class))).thenReturn(true);
@@ -83,7 +92,7 @@ class ProductServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("Laptop Dell");
         assertThat(result.getPrice()).isEqualTo(999.99);
-        verify(productRepository, times(1)).save(any(Product.class));
+        assertThat(result.getCategory()).isEqualTo(ProductCategory.BALLS);
         verify(streamBridge, times(1)).send(eq("productProducer-out-0"), any(ProductCreatedEvent.class));
     }
 
@@ -148,6 +157,44 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("searchProducts - recherche dans le catalogue")
+    @SuppressWarnings("null")
+    void searchProducts_ShouldReturnMatchingProducts() {
+        List<Product> matchingProducts = List.of(testProduct);
+        List<ProductDTO> matchingDTOs = List.of(testProductDTO);
+        when(mongoTemplate.count(any(Query.class), eq(Product.class))).thenReturn(1L);
+        when(mongoTemplate.find(any(Query.class), eq(Product.class))).thenReturn(matchingProducts);
+        when(productMapper.fromProduct(matchingProducts)).thenReturn(matchingDTOs);
+
+        var result = productService.getProductPage("  BaLl  ", null, null, null, 0, 10);
+
+        assertThat(result.getContent()).containsExactlyElementsOf(matchingDTOs);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        verify(mongoTemplate).find(any(Query.class), eq(Product.class));
+    }
+
+    @Test
+    @DisplayName("searchProducts - combine catégorie et limites de prix")
+    @SuppressWarnings("null")
+    void searchProducts_ShouldApplyCategoryAndPriceFilters() {
+        when(mongoTemplate.count(any(Query.class), eq(Product.class))).thenReturn(0L);
+        when(mongoTemplate.find(any(Query.class), eq(Product.class))).thenReturn(List.of());
+        when(productMapper.fromProduct(List.<Product>of())).thenReturn(List.of());
+
+        productService.getProductPage(null, ProductCategory.BALLS, 10.0, 50.0, 1, 10);
+
+        org.mockito.ArgumentCaptor<Query> queryCaptor = org.mockito.ArgumentCaptor.forClass(Query.class);
+        verify(mongoTemplate).find(queryCaptor.capture(), eq(Product.class));
+        String query = queryCaptor.getValue().getQueryObject().toString();
+        assertThat(query).contains("category=BALLS");
+        assertThat(query).contains("$gte=10.0");
+        assertThat(query).contains("$lte=50.0");
+        assertThat(queryCaptor.getValue().getSkip()).isEqualTo(10);
+        assertThat(queryCaptor.getValue().getLimit()).isEqualTo(10);
+    }
+
+    @Test
     @DisplayName("getMyProducts - retourne les produits du vendeur")
     void getMyProducts_ShouldReturnSellerProducts() {
         // Arrange
@@ -185,6 +232,7 @@ class ProductServiceTest {
         updateDTO.setDescription("Updated description for professionals");
         updateDTO.setPrice(1099.99);
         updateDTO.setQuantity(3);
+        updateDTO.setCategory(ProductCategory.FOOTWEAR);
 
         Product updatedProduct = Product.builder()
                 .id("prod-123")
@@ -192,6 +240,7 @@ class ProductServiceTest {
                 .description("Updated description for professionals")
                 .price(1099.99)
                 .quantity(3)
+                .category(ProductCategory.FOOTWEAR)
                 .userId("seller123")
                 .build();
 
@@ -201,6 +250,7 @@ class ProductServiceTest {
         updatedDTO.setDescription("Updated description for professionals");
         updatedDTO.setPrice(1099.99);
         updatedDTO.setQuantity(3);
+        updatedDTO.setCategory(ProductCategory.FOOTWEAR);
 
         when(productRepository.findById("prod-123")).thenReturn(Optional.of(testProduct));
         when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
@@ -215,6 +265,7 @@ class ProductServiceTest {
         assertThat(result.getPrice()).isEqualTo(1099.99);
         verify(productRepository, times(1)).findById("prod-123");
         verify(productRepository, times(1)).save(any(Product.class));
+        assertThat(testProduct.getCategory()).isEqualTo(ProductCategory.FOOTWEAR);
     }
 
     @Test

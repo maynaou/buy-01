@@ -23,29 +23,14 @@ export class MyOrdersPage {
   private readonly router = inject(Router);
 
   readonly orders = signal<Order[]>([]);
+  readonly filteredOrders = signal<Order[]>([]);
   readonly loading = signal(true);
   readonly errorMessage = signal('');
   readonly actionOrderId = signal<string | null>(null);
   readonly orderFilter = signal<OrderStatus | 'ALL'>('ALL');
   readonly orderSearch = signal<string>('');
-
-  // Dernières commandes en premier avec filtre optionnel et recherche
-  readonly filteredOrders = computed(() => {
-    const filter = this.orderFilter();
-    const query = this.orderSearch().trim().toLowerCase();
-    let list = this.orders();
-    if (filter !== 'ALL') {
-      list = list.filter((o) => o.status === filter);
-    }
-    if (query) {
-      list = list.filter(
-        (o) =>
-          o.id.toLowerCase().includes(query) ||
-          o.items.some((i) => i.productName.toLowerCase().includes(query))
-      );
-    }
-    return list;
-  });
+  readonly orderDateFrom = signal('');
+  readonly orderDateTo = signal('');
 
   // Statistiques pour le client (total dépensé, en cours, pertes/annulées)
   readonly totalOrdersCount = computed(() => this.orders().length);
@@ -80,13 +65,22 @@ export class MyOrdersPage {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.orderService.getMyOrders().subscribe({
+    const status = this.orderFilter();
+    this.orderService.getMyOrders({
+      search: this.orderSearch(),
+      status: status === 'ALL' ? undefined : status,
+      dateFrom: this.orderDateFrom(),
+      dateTo: this.orderDateTo(),
+    }).subscribe({
       next: (orders) => {
         // Dernières commandes en haut (tri décroissant par date)
         const sorted = [...orders].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        this.orders.set(sorted);
+        this.filteredOrders.set(sorted);
+        if (this.hasNoActiveFilters()) {
+          this.orders.set(sorted);
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -94,6 +88,22 @@ export class MyOrdersPage {
         this.errorMessage.set('Impossible de charger vos commandes.');
       },
     });
+  }
+
+  private hasNoActiveFilters(): boolean {
+    return this.orderFilter() === 'ALL'
+      && !this.orderSearch().trim()
+      && !this.orderDateFrom()
+      && !this.orderDateTo();
+  }
+
+  applyOrderFilters(): void {
+    this.loadOrders();
+  }
+
+  setOrderFilter(status: OrderStatus | 'ALL'): void {
+    this.orderFilter.set(status);
+    this.loadOrders();
   }
 
   countByStatus(status: OrderStatus): number {
@@ -115,8 +125,12 @@ export class MyOrdersPage {
         this.orders.update((list) =>
           list.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
         );
+        this.filteredOrders.update((list) =>
+          list.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
         this.actionOrderId.set(null);
         this.notification.show('Commande annulée avec succès.', 'green');
+        this.loadOrders();
       },
       error: (err) => {
         this.actionOrderId.set(null);
@@ -138,6 +152,7 @@ export class MyOrdersPage {
     this.orderService.deleteOrder(order.id).subscribe({
       next: () => {
         this.orders.update((list) => list.filter((o) => o.id !== order.id));
+        this.filteredOrders.update((list) => list.filter((o) => o.id !== order.id));
         this.actionOrderId.set(null);
         this.notification.show('Commande retirée de votre historique.', 'green');
       },

@@ -7,7 +7,8 @@ import { Home } from './home';
 import { ProductService } from '../../core/services/product';
 import { AuthService } from '../../core/services/auth';
 import { NotificationError } from '../../core/services/notification-error';
-import { Product } from '../products/models/product';
+import { CatalogSearchState } from '../../core/services/catalog-search-state';
+import { Product, ProductPage } from '../products/models/product';
 
 describe('Home', () => {
   let component: Home;
@@ -16,6 +17,7 @@ describe('Home', () => {
   let productService: jasmine.SpyObj<ProductService>;
   let authService: jasmine.SpyObj<AuthService>;
   let notificationError: jasmine.SpyObj<NotificationError>;
+  let catalogSearchState: CatalogSearchState;
 
   const products: Product[] = [
     {
@@ -39,10 +41,23 @@ describe('Home', () => {
     },
   ];
 
+  const productPage = (
+    content: Product[],
+    page = 0,
+    totalPages = 1,
+    totalElements = content.length,
+  ): ProductPage => ({
+    content,
+    page,
+    size: 10,
+    totalPages,
+    totalElements,
+  });
+
   beforeEach(async () => {
     productService = jasmine.createSpyObj<ProductService>(
       'ProductService',
-      ['getProducts'],
+      ['getProducts', 'searchProducts'],
     );
 
     authService = jasmine.createSpyObj<AuthService>(
@@ -61,9 +76,8 @@ describe('Home', () => {
      * Therefore getProducts() must have a value before
      * TestBed.createComponent(Home).
      */
-    productService.getProducts.and.returnValue(
-      of(products),
-    );
+    productService.getProducts.and.returnValue(of(productPage(products)));
+    productService.searchProducts.and.returnValue(of(productPage(products)));
 
     await TestBed.configureTestingModule({
       imports: [Home],
@@ -93,6 +107,7 @@ describe('Home', () => {
 
     fixture = TestBed.createComponent(Home);
     component = fixture.componentInstance;
+    catalogSearchState = TestBed.inject(CatalogSearchState);
 
     fixture.detectChanges();
   });
@@ -125,15 +140,23 @@ describe('Home', () => {
     expect(component.selectedProduct()).toBeNull();
   });
 
+  it('should keep the search panel closed until requested', () => {
+    expect(component.searchPanelOpen()).toBeFalse();
+
+    catalogSearchState.open();
+
+    expect(component.searchPanelOpen()).toBeTrue();
+  });
+
   // --------------------------------------------------
   // loadProducts - success
   // --------------------------------------------------
 
   it('should set loading to true while products are loading', () => {
-    let emitProducts!: (products: Product[]) => void;
+    let emitProducts!: (page: ProductPage) => void;
 
     productService.getProducts.and.returnValue(
-      new Observable<Product[]>((subscriber) => {
+      new Observable<ProductPage>((subscriber) => {
         emitProducts = (value) => subscriber.next(value);
       }),
     );
@@ -142,7 +165,7 @@ describe('Home', () => {
 
     expect(component.loading()).toBeTrue();
 
-    emitProducts(products);
+    emitProducts(productPage(products));
 
     expect(component.loading()).toBeFalse();
   });
@@ -150,7 +173,7 @@ describe('Home', () => {
   it('should clear the previous error message when loading products', () => {
     component.errorMessage.set('Previous error');
 
-    productService.getProducts.and.returnValue(of(products));
+    productService.getProducts.and.returnValue(of(productPage(products)));
 
     component.loadProducts();
 
@@ -169,11 +192,95 @@ describe('Home', () => {
       },
     ];
 
-    productService.getProducts.and.returnValue(of(newProducts));
+    productService.getProducts.and.returnValue(of(productPage(newProducts)));
 
     component.loadProducts();
 
     expect(component.products()).toEqual(newProducts);
+  });
+
+  it('should search products using a trimmed keyword', () => {
+    const matchingProducts = [products[0]];
+    productService.searchProducts.and.returnValue(of(productPage(matchingProducts)));
+    component.searchTerm.set('  ball  ');
+
+    component.searchProducts();
+
+    expect(productService.searchProducts).toHaveBeenCalledWith(
+      'ball',
+      null,
+      0,
+      10,
+      undefined,
+      undefined,
+    );
+    expect(component.searchTerm()).toBe('ball');
+    expect(component.hasSearched()).toBeTrue();
+    expect(component.searchPanelOpen()).toBeFalse();
+    expect(component.products()).toEqual(matchingProducts);
+  });
+
+  it('should combine keyword, category, and price filters', () => {
+    component.searchTerm.set('  ballon ');
+    component.categoryFilter.set('BALLS');
+    component.minPriceFilter.set('10');
+    component.maxPriceFilter.set('50');
+
+    component.searchProducts();
+
+    expect(productService.searchProducts).toHaveBeenCalledWith(
+      'ballon',
+      'BALLS',
+      0,
+      10,
+      10,
+      50,
+    );
+  });
+
+  it('should preserve active filters when navigating to another page', () => {
+    productService.searchProducts.and.returnValue(
+      of(productPage([products[1]], 1, 3, 25)),
+    );
+    component.searchTerm.set('ballon');
+    component.categoryFilter.set('BALLS');
+    component.minPriceFilter.set('10');
+    component.maxPriceFilter.set('50');
+    component.totalPages.set(3);
+
+    component.goToPage(1);
+
+    expect(productService.searchProducts).toHaveBeenCalledWith(
+      'ballon',
+      'BALLS',
+      1,
+      10,
+      10,
+      50,
+    );
+    expect(component.currentPage()).toBe(1);
+    expect(component.totalElements()).toBe(25);
+  });
+
+  it('should reject an invalid price range without searching', () => {
+    component.minPriceFilter.set('50');
+    component.maxPriceFilter.set('10');
+
+    component.searchProducts();
+
+    expect(component.filterError()).toContain('prix minimum');
+    expect(productService.searchProducts).not.toHaveBeenCalled();
+  });
+
+  it('should reload the full catalogue when clearing search', () => {
+    component.searchTerm.set('ball');
+    component.hasSearched.set(true);
+
+    component.clearSearch();
+
+    expect(productService.getProducts).toHaveBeenCalledTimes(2);
+    expect(component.searchTerm()).toBe('');
+    expect(component.hasSearched()).toBeFalse();
   });
 
   // --------------------------------------------------
@@ -255,7 +362,7 @@ describe('Home', () => {
             },
           }),
       ),
-      of(products),
+      of(productPage(products)),
     );
 
     productService.getProducts.calls.reset();
@@ -277,7 +384,7 @@ describe('Home', () => {
             },
           }),
       ),
-      of(products),
+      of(productPage(products)),
     );
 
     productService.getProducts.calls.reset();
@@ -299,7 +406,7 @@ describe('Home', () => {
             },
           }),
       ),
-      of(products),
+      of(productPage(products)),
     );
 
     productService.getProducts.calls.reset();
@@ -321,7 +428,7 @@ describe('Home', () => {
             },
           }),
       ),
-      of(products),
+      of(productPage(products)),
     );
 
     productService.getProducts.calls.reset();
@@ -343,7 +450,7 @@ describe('Home', () => {
             },
           }),
       ),
-      of(products),
+      of(productPage(products)),
     );
 
     productService.getProducts.calls.reset();

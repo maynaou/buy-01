@@ -127,55 +127,5 @@
       </button>
     </form>
   </div>
-
-  <!-- ── Client Analytics Section ─────────────────────────────────────────── -->
-  @if (!isSeller()) {
-    <div class="profile__analytics">
-      <h2 class="profile__analytics-title">&#127914; Mes achats SportMarket</h2>
-
-      <div class="profile__analytics-stats">
-        <div class="profile__analytics-stat">
-          <span class="profile__analytics-stat__value">{{ totalOrdersCount() }}</span>
-          <span class="profile__analytics-stat__label">Commandes passées</span>
-        </div>
-        <div class="profile__analytics-stat profile__analytics-stat--success">
-          <span class="profile__analytics-stat__value">{{ totalSpent() | currency }}</span>
-          <span class="profile__analytics-stat__label">Total dépensé (livré)</span>
-        </div>
-        <div class="profile__analytics-stat profile__analytics-stat--accent">
-          <span class="profile__analytics-stat__value">{{ deliveredCount() }}</span>
-          <span class="profile__analytics-stat__label">Commandes livrées</span>
-        </div>
-      </div>
-
-      @if (ordersLoading()) {
-        <p class="profile__analytics-loading">Chargement des données…</p>
-      } @else if (topBoughtProducts().length > 0) {
-        <div class="profile__analytics-card">
-          <h3 class="profile__analytics-card-title">&#127947; Mes produits favoris</h3>
-          <ul class="profile__analytics-list">
-            @for (p of topBoughtProducts(); track p.name; let i = $index) {
-              <li class="profile__analytics-item">
-                <span class="profile__analytics-item__rank">#{{ i + 1 }}</span>
-                <span class="profile__analytics-item__name">{{ p.name }}</span>
-                <span class="profile__analytics-item__meta">{{ p.quantity }} achetés</span>
-                <span class="profile__analytics-item__spent">{{ p.spent | currency }}</span>
-                <div class="profile__analytics-bar-wrap">
-                  <div
-                    class="profile__analytics-bar"
-                    [style.width.%]="(p.quantity / topBoughtProducts()[0].quantity) * 100"
-                  ></div>
-                </div>
-              </li>
-            }
-          </ul>
-        </div>
-      } @else if (!ordersLoading()) {
-        <p class="profile__analytics-empty">
-          &#128230; Aucun achat livré pour le moment. Découvrez notre catalogue !
-        </p>
-      }
-    </div>
-  }
   }
 </section>

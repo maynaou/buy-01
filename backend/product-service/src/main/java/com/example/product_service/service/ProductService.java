@@ -3,16 +3,20 @@ package com.example.product_service.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.example.product_service.dto.ProductDTO;
+import com.example.product_service.dto.ProductPageDTO;
 import com.example.product_service.entities.Product;
 import com.example.product_service.enums.EventType;
+import com.example.product_service.enums.ProductCategory;
 import com.example.product_service.events.ProductCreatedEvent;
 import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.mappers.ProductMapper;
@@ -41,6 +45,7 @@ public class ProductService {
                                          .description(productRequest.getDescription())
                                          .price(productRequest.getPrice())
                                          .quantity(productRequest.getQuantity())
+                                         .category(productRequest.getCategory())
                                          .userId(userId)
                                          .imagePaths(new ArrayList<>())
                                          .build();
@@ -62,6 +67,43 @@ public class ProductService {
           return productMapper.fromProduct(products);
     }
 
+    public ProductPageDTO getProductPage(
+            String keyword, ProductCategory category, Double minPrice, Double maxPrice,
+            int page, int size) {
+        List<Criteria> filters = new ArrayList<>();
+        if (keyword != null && !keyword.isBlank()) {
+            String literalKeyword = Pattern.quote(keyword.trim());
+            filters.add(new Criteria().orOperator(
+                    Criteria.where("name").regex(literalKeyword, "i"),
+                    Criteria.where("description").regex(literalKeyword, "i")));
+        }
+        if (category != null) {
+            filters.add(Criteria.where("category").is(category));
+        }
+        if (minPrice != null || maxPrice != null) {
+            Criteria priceCriteria = Criteria.where("price");
+            if (minPrice != null) {
+                priceCriteria.gte(minPrice);
+            }
+            if (maxPrice != null) {
+                priceCriteria.lte(maxPrice);
+            }
+            filters.add(priceCriteria);
+        }
+
+        Query query = filters.isEmpty()
+                ? new Query()
+                : Query.query(new Criteria().andOperator(filters.toArray(Criteria[]::new)));
+        long totalElements = mongoTemplate.count(query, Product.class);
+        query.with(Sort.by(Sort.Direction.ASC, "id"))
+                .skip((long) page * size)
+                .limit(size);
+        List<Product> products = mongoTemplate.find(query, Product.class);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return new ProductPageDTO(
+                productMapper.fromProduct(products), page, size, totalElements, totalPages);
+    }
+
     /** The products owned by one seller — backs the seller dashboard. */
     public List<ProductDTO> getMyProducts(String userId) {
           return productMapper.fromProduct(productRepository.findByUserId(userId));
@@ -73,6 +115,7 @@ public class ProductService {
            product.setDescription(productDTO.getDescription());
            product.setPrice(productDTO.getPrice());
            product.setQuantity(productDTO.getQuantity());
+           product.setCategory(productDTO.getCategory());
            return productMapper.fromProduct(productRepository.save(product));
     }
 

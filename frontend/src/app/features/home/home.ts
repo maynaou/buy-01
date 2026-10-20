@@ -1,18 +1,25 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../core/services/auth';
 import { ProductService } from '../../core/services/product';
-import { Product } from '../products/models/product';
+import {
+  Product,
+  ProductCategory,
+  PRODUCT_CATEGORIES,
+  productCategoryLabel,
+} from '../products/models/product';
 import { ProductGallery } from '../products/product-gallery/product-gallery';
 import { NotificationError } from '../../core/services/notification-error';
 import { CartService } from '../../core/services/cart';
 import { TokenService } from '../../core/services/token';
+import { CatalogSearchState } from '../../core/services/catalog-search-state';
 
 @Component({
   selector: 'app-home',
-  imports: [CurrencyPipe, ProductGallery],
+  imports: [CurrencyPipe, FormsModule, ProductGallery],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -21,6 +28,7 @@ export class Home {
   readonly authService = inject(AuthService);
   private readonly notificationError = inject(NotificationError);
   private readonly cartService = inject(CartService);
+  private readonly catalogSearchState = inject(CatalogSearchState);
 
   // home.ts
 private readonly tokenService = inject(TokenService);
@@ -30,8 +38,26 @@ readonly isClient = computed(
   
 
   readonly products = signal<Product[]>([]);
+  readonly currentPage = signal(0);
+  readonly pageSize = 10;
+  readonly totalElements = signal(0);
+  readonly totalPages = signal(0);
+  readonly visiblePageNumbers = computed(() => {
+    const total = this.totalPages();
+    const start = Math.max(0, Math.min(this.currentPage() - 2, total - 5));
+    const end = Math.min(total, start + 5);
+    return Array.from({ length: end - start }, (_, index) => start + index);
+  });
   readonly loading = signal(false);
   readonly errorMessage = signal('');
+  readonly searchTerm = signal('');
+  readonly hasSearched = signal(false);
+  readonly searchPanelOpen = this.catalogSearchState.isOpen;
+  readonly productCategories = PRODUCT_CATEGORIES;
+  readonly categoryFilter = signal<ProductCategory | null>(null);
+  readonly minPriceFilter = signal('');
+  readonly maxPriceFilter = signal('');
+  readonly filterError = signal('');
 
   readonly selectedProduct = signal<Product | null>(null);
 
@@ -43,13 +69,39 @@ readonly isClient = computed(
     }
   }
 
-  loadProducts(retryOnAuthError = true): void {
+  loadProducts(
+    retryOnAuthError = true,
+    page = this.currentPage(),
+    keyword = '',
+    category: ProductCategory | null = null,
+    minPrice?: number,
+    maxPrice?: number,
+  ): void {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.products.set(products);
+    const hasFilters =
+      keyword.length > 0 ||
+      category !== null ||
+      minPrice !== undefined ||
+      maxPrice !== undefined;
+    const request = hasFilters
+      ? this.productService.searchProducts(
+          keyword,
+          category,
+          page,
+          this.pageSize,
+          minPrice,
+          maxPrice,
+        )
+      : this.productService.getProducts(page, this.pageSize);
+
+    request.subscribe({
+      next: (result) => {
+        this.products.set(result.content);
+        this.currentPage.set(result.page);
+        this.totalElements.set(result.totalElements);
+        this.totalPages.set(result.totalPages);
         this.loading.set(false);
       },
       error: (error: HttpErrorResponse) => {
@@ -60,7 +112,7 @@ readonly isClient = computed(
         // as an anonymous request so products still load.
         if ((error.status === 401 || error.status === 403) && retryOnAuthError) {
           this.authService.logout();
-          this.loadProducts(false);
+          this.loadProducts(false, page, keyword, category, minPrice, maxPrice);
           console.log(error);
           
            this.notificationError.show(error.error.message, 'red')
@@ -70,6 +122,111 @@ readonly isClient = computed(
         this.errorMessage.set('Unable to load products. Please try again.');
       },
     });
+  }
+
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  onCategoryInput(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.categoryFilter.set(value ? (value as ProductCategory) : null);
+  }
+
+  onMinPriceInput(event: Event): void {
+    this.minPriceFilter.set((event.target as HTMLInputElement).value);
+  }
+
+  onMaxPriceInput(event: Event): void {
+    this.maxPriceFilter.set((event.target as HTMLInputElement).value);
+  }
+
+  searchProducts(): void {
+    const keyword = this.searchTerm().trim();
+    const minPrice = this.parsePrice(this.minPriceFilter());
+    const maxPrice = this.parsePrice(this.maxPriceFilter());
+    this.filterError.set('');
+
+    if (minPrice === null || maxPrice === null) {
+      this.filterError.set('Entrez un prix valide entre 0 et 999 999,99.');
+      return;
+    }
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+      this.filterError.set('Le prix minimum doit être inférieur ou égal au prix maximum.');
+      return;
+    }
+
+    this.searchTerm.set(keyword);
+    this.currentPage.set(0);
+    this.hasSearched.set(
+      keyword.length > 0 ||
+        this.categoryFilter() !== null ||
+        minPrice !== undefined ||
+        maxPrice !== undefined,
+    );
+    this.catalogSearchState.close();
+    this.loadProducts(true, 0, keyword, this.categoryFilter(), minPrice, maxPrice);
+  }
+
+  retryCurrentPage(): void {
+    const minPrice = this.parsePrice(this.minPriceFilter());
+    const maxPrice = this.parsePrice(this.maxPriceFilter());
+    this.loadProducts(
+      true,
+      this.currentPage(),
+      this.searchTerm().trim(),
+      this.categoryFilter(),
+      minPrice ?? undefined,
+      maxPrice ?? undefined,
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm.set('');
+    this.categoryFilter.set(null);
+    this.minPriceFilter.set('');
+    this.maxPriceFilter.set('');
+    this.hasSearched.set(false);
+    this.filterError.set('');
+    this.catalogSearchState.close();
+    this.currentPage.set(0);
+    this.loadProducts(true, 0);
+  }
+
+  goToPage(page: number): void {
+    if (this.loading() || page < 0 || page >= this.totalPages()) return;
+
+    const minPrice = this.parsePrice(this.minPriceFilter());
+    const maxPrice = this.parsePrice(this.maxPriceFilter());
+    if (minPrice === null || maxPrice === null) {
+      this.filterError.set('Entrez un prix valide entre 0 et 999 999,99.');
+      this.catalogSearchState.open();
+      return;
+    }
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
+      this.filterError.set('Le prix minimum doit être inférieur ou égal au prix maximum.');
+      this.catalogSearchState.open();
+      return;
+    }
+
+    this.filterError.set('');
+    this.currentPage.set(page);
+    this.loadProducts(
+      true,
+      page,
+      this.searchTerm().trim(),
+      this.categoryFilter(),
+      minPrice,
+      maxPrice,
+    );
+  }
+
+  private parsePrice(value: string): number | undefined | null {
+    if (!value.trim()) return undefined;
+    const price = Number(value);
+    return Number.isFinite(price) && price >= 0 && price <= 999999.99
+      ? price
+      : null;
   }
 
 
@@ -128,6 +285,10 @@ addToCartFromGallery(event: {
 
   imageCount(product: Product): number {
     return product.imagePaths?.length ?? 0;
+  }
+
+  categoryLabel(category: ProductCategory | null | undefined): string {
+    return productCategoryLabel(category);
   }
 
 

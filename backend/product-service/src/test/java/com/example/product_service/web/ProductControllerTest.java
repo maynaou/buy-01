@@ -3,6 +3,7 @@ package com.example.product_service.web;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -22,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.example.product_service.dto.ProductDTO;
+import com.example.product_service.dto.ProductPageDTO;
+import com.example.product_service.enums.ProductCategory;
 import com.example.product_service.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,6 +65,7 @@ class ProductControllerTest {
         requestDTO.setDescription("High-performance laptop for professionals");
         requestDTO.setPrice(999.99);
         requestDTO.setQuantity(5);
+        requestDTO.setCategory(ProductCategory.BALLS);
 
         ProductDTO createdDTO = new ProductDTO();
         createdDTO.setId("prod-123");
@@ -69,6 +73,7 @@ class ProductControllerTest {
         createdDTO.setDescription("High-performance laptop for professionals");
         createdDTO.setPrice(999.99);
         createdDTO.setQuantity(5);
+        createdDTO.setCategory(ProductCategory.BALLS);
 
         when(productService.createProduct(requestDTO, "seller123")).thenReturn(createdDTO);
 
@@ -79,7 +84,8 @@ class ProductControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("prod-123"))
                 .andExpect(jsonPath("$.name").value("Laptop Dell"))
-                .andExpect(jsonPath("$.price").value(999.99));
+                .andExpect(jsonPath("$.price").value(999.99))
+                .andExpect(jsonPath("$.category").value("BALLS"));
 
         verify(productService, times(1)).createProduct(requestDTO, "seller123");
     }
@@ -133,6 +139,79 @@ class ProductControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/products/catalog - retourne une page de produits")
+    void getProductPage_ShouldReturnPageMetadata() throws Exception {
+        ProductPageDTO page = new ProductPageDTO(List.of(), 1, 10, 25, 3);
+        when(productService.getProductPage(null, null, null, null, 1, 10)).thenReturn(page);
+
+        mockMvc.perform(get("/api/products/catalog").param("page", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(25))
+                .andExpect(jsonPath("$.totalPages").value(3));
+
+        verify(productService).getProductPage(null, null, null, null, 1, 10);
+    }
+
+    @Test
+    @DisplayName("GET /api/products/catalog - refuse les pages invalides")
+    void getProductPage_ShouldRejectInvalidPageParameters() throws Exception {
+        mockMvc.perform(get("/api/products/catalog").param("page", "-1"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/products/catalog").param("size", "49"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
+    }
+
+    @Test
+    @DisplayName("GET /api/products/search - recherche par mot-clé")
+    void searchProducts_ShouldReturnMatchingProducts() throws Exception {
+        ProductDTO product = new ProductDTO();
+        product.setId("ball-1");
+        product.setName("Ballon de football");
+        ProductPageDTO matches = new ProductPageDTO(List.of(product), 0, 10, 1, 1);
+        when(productService.getProductPage("ballon", null, null, null, 0, 10)).thenReturn(matches);
+
+        mockMvc.perform(get("/api/products/search").param("keyword", "ballon"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value("ball-1"))
+                .andExpect(jsonPath("$.content[0].name").value("Ballon de football"));
+
+        verify(productService).getProductPage("ballon", null, null, null, 0, 10);
+    }
+
+    @Test
+    @DisplayName("GET /api/products/search - combine catégorie et plage de prix")
+    void searchProducts_ShouldPassFiltersToService() throws Exception {
+        mockMvc.perform(get("/api/products/search")
+                        .param("category", "BALLS")
+                        .param("minPrice", "10")
+                        .param("maxPrice", "50")
+                        .param("page", "2")
+                        .param("size", "24"))
+                .andExpect(status().isOk());
+
+        verify(productService).getProductPage(null, ProductCategory.BALLS, 10.0, 50.0, 2, 24);
+    }
+
+    @Test
+    @DisplayName("GET /api/products/search - refuse les critères invalides")
+    void searchProducts_ShouldRejectInvalidKeyword() throws Exception {
+        mockMvc.perform(get("/api/products/search").param("keyword", "  "))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/products/search").param("keyword", "x".repeat(101)))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/products/search").param("minPrice", "-1"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/products/search").param("minPrice", "50").param("maxPrice", "10"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
+    }
+
+    @Test
     @DisplayName("GET /api/products/my-products - retourne les produits du vendeur")
     void getMyProducts_ShouldReturnSellerProducts() throws Exception {
         setupAuthenticationMock();
@@ -171,6 +250,7 @@ class ProductControllerTest {
         updateDTO.setDescription("Updated description for professionals");
         updateDTO.setPrice(1099.99);
         updateDTO.setQuantity(3);
+        updateDTO.setCategory(ProductCategory.FOOTWEAR);
 
         ProductDTO updatedDTO = new ProductDTO();
         updatedDTO.setId("prod-123");
@@ -178,6 +258,7 @@ class ProductControllerTest {
         updatedDTO.setDescription("Updated description for professionals");
         updatedDTO.setPrice(1099.99);
         updatedDTO.setQuantity(3);
+        updatedDTO.setCategory(ProductCategory.FOOTWEAR);
 
         when(productService.updateProduct("prod-123", updateDTO)).thenReturn(updatedDTO);
 
@@ -188,7 +269,8 @@ class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("prod-123"))
                 .andExpect(jsonPath("$.name").value("Updated Laptop"))
-                .andExpect(jsonPath("$.price").value(1099.99));
+                .andExpect(jsonPath("$.price").value(1099.99))
+                .andExpect(jsonPath("$.category").value("FOOTWEAR"));
 
         verify(productService, times(1)).updateProduct("prod-123", updateDTO);
     }

@@ -1,6 +1,7 @@
 package com.example.order_service.web;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,11 +14,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.example.order_service.dto.CheckoutRequest;
 import com.example.order_service.dto.UpdateOrderStatusRequest;
 import com.example.order_service.entities.Order;
+import com.example.order_service.entities.OrderStatus;
 import com.example.order_service.service.OrderService;
 
 import jakarta.validation.Valid;
@@ -44,8 +48,17 @@ public class OrderController {
     /** Client retrieves all their orders (not hidden). */
     @GetMapping("/my-orders")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<List<Order>> getMyBuyerOrders(Authentication authentication) {
-        return ResponseEntity.ok(orderService.getOrdersByBuyer(authentication.getName()));
+    public ResponseEntity<List<Order>> getMyBuyerOrders(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            Authentication authentication) {
+        if (!isValidFilters(search, dateFrom, dateTo)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(orderService.getOrdersByBuyer(
+                authentication.getName(), search, status, dateFrom, dateTo));
     }
 
     /** Client cancels their pending order. */
@@ -69,8 +82,22 @@ public class OrderController {
     /** Seller retrieves all orders that contain their products. */
     @GetMapping("/seller")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<List<Order>> getMyOrders(Authentication authentication) {
-        return ResponseEntity.ok(orderService.getOrdersBySeller(authentication.getName()));
+    public ResponseEntity<List<Order>> getMyOrders(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            Authentication authentication) {
+        if (!isValidFilters(search, dateFrom, dateTo)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(orderService.getOrdersBySeller(
+                authentication.getName(), search, status, dateFrom, dateTo));
+    }
+
+    private boolean isValidFilters(String search, LocalDate dateFrom, LocalDate dateTo) {
+        return (search == null || search.length() <= 100)
+                && (dateFrom == null || dateTo == null || !dateFrom.isAfter(dateTo));
     }
 
     /** Seller updates order status (e.g. PENDING -> CONFIRMED -> SHIPPED -> DELIVERED, or CANCELLED). */

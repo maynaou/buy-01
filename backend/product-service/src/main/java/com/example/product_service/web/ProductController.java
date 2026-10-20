@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.product_service.dto.ProductDTO;
+import com.example.product_service.dto.ProductPageDTO;
+import com.example.product_service.enums.ProductCategory;
 import com.example.product_service.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -47,6 +49,45 @@ public class ProductController {
     @GetMapping("/product")
     public ResponseEntity<List<ProductDTO>> getProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
+    }
+
+    @GetMapping("/catalog")
+    public ResponseEntity<ProductPageDTO> getProductPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (!isValidPage(page, size)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(productService.getProductPage(null, null, null, null, page, size));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ProductPageDTO> searchProducts(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "category", required = false) ProductCategory category,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        String normalizedKeyword = keyword == null ? null : keyword.trim();
+        if ((normalizedKeyword != null
+                    && (normalizedKeyword.isEmpty() || normalizedKeyword.length() > 100))
+                || !isValidPrice(minPrice)
+                || !isValidPrice(maxPrice)
+                || (minPrice != null && maxPrice != null && minPrice > maxPrice)
+                || !isValidPage(page, size)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(
+                productService.getProductPage(normalizedKeyword, category, minPrice, maxPrice, page, size));
+    }
+
+    private boolean isValidPage(int page, int size) {
+        return page >= 0 && size >= 1 && size <= 48;
+    }
+
+    private boolean isValidPrice(Double price) {
+        return price == null || (Double.isFinite(price) && price >= 0 && price <= 999999.99);
     }
 
     @GetMapping("/my-products")

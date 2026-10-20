@@ -47,27 +47,47 @@
       </div>
     </div>
 
-    <!-- Filtres par statut colorés
-    <div class="order-search-bar">
-      <span class="order-search-bar__icon" aria-hidden="true">&#128269;</span>
-      <input
-        type="text"
-        class="order-search-bar__input"
-        placeholder="Rechercher par ID ou nom du produit…"
-        [ngModel]="orderSearch()"
-        (ngModelChange)="orderSearch.set($event)"
-      />
-      @if (orderSearch()) {
-        <button type="button" class="order-search-bar__clear" (click)="orderSearch.set('')" aria-label="Effacer">&#10005;</button>
-      }
-    </div> -->
+    <div class="order-list-controls">
+      <label class="order-list-controls__search">
+        <span aria-hidden="true">&#128269;</span>
+        <span class="visually-hidden">Rechercher une commande</span>
+        <input
+          type="search"
+          maxlength="100"
+          placeholder="Rechercher par ID ou produit…"
+          [ngModel]="orderSearch()"
+          (ngModelChange)="orderSearch.set($event)"
+        />
+      </label>
+      <label class="order-list-controls__date">
+        <span>Du</span>
+        <input
+          type="date"
+          aria-label="Date de début"
+          [ngModel]="orderDateFrom()"
+          (ngModelChange)="orderDateFrom.set($event)"
+        />
+      </label>
+      <label class="order-list-controls__date">
+        <span>Au</span>
+        <input
+          type="date"
+          aria-label="Date de fin"
+          [ngModel]="orderDateTo()"
+          (ngModelChange)="orderDateTo.set($event)"
+        />
+      </label>
+      <button type="button" class="orders-btn order-list-controls__apply" (click)="applyOrderFilters()">
+        Appliquer
+      </button>
+    </div>
 
     <div class="order-status-filters" role="group" aria-label="Filtrer par statut">
       <button
         type="button"
         class="status-pill status-pill--all"
         [class.status-pill--active]="orderFilter() === 'ALL'"
-        (click)="orderFilter.set('ALL')"
+        (click)="setOrderFilter('ALL')"
       >
         Toutes ({{ orders().length }})
       </button>
@@ -75,7 +95,7 @@
         type="button"
         class="status-pill status-pill--pending"
         [class.status-pill--active]="orderFilter() === 'PENDING'"
-        (click)="orderFilter.set('PENDING')"
+        (click)="setOrderFilter('PENDING')"
       >
         En attente ({{ countByStatus('PENDING') }})
       </button>
@@ -83,7 +103,7 @@
         type="button"
         class="status-pill status-pill--confirmed"
         [class.status-pill--active]="orderFilter() === 'CONFIRMED'"
-        (click)="orderFilter.set('CONFIRMED')"
+        (click)="setOrderFilter('CONFIRMED')"
       >
         Confirmées ({{ countByStatus('CONFIRMED') }})
       </button>
@@ -91,7 +111,7 @@
         type="button"
         class="status-pill status-pill--shipped"
         [class.status-pill--active]="orderFilter() === 'SHIPPED'"
-        (click)="orderFilter.set('SHIPPED')"
+        (click)="setOrderFilter('SHIPPED')"
       >
         Expédiées ({{ countByStatus('SHIPPED') }})
       </button>
@@ -99,7 +119,7 @@
         type="button"
         class="status-pill status-pill--delivered"
         [class.status-pill--active]="orderFilter() === 'DELIVERED'"
-        (click)="orderFilter.set('DELIVERED')"
+        (click)="setOrderFilter('DELIVERED')"
       >
         Livrées ({{ countByStatus('DELIVERED') }})
       </button>
@@ -107,7 +127,7 @@
         type="button"
         class="status-pill status-pill--cancelled"
         [class.status-pill--active]="orderFilter() === 'CANCELLED'"
-        (click)="orderFilter.set('CANCELLED')"
+        (click)="setOrderFilter('CANCELLED')"
       >
         Annulées ({{ countByStatus('CANCELLED') }})
       </button>
