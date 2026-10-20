@@ -13,14 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.order_service.dto.CartRequest;
-import com.example.order_service.entities.Cart;
+import com.example.order_service.dto.CartResponse;
 import com.example.order_service.service.CartService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/orders")
 public class CartController {
 
-    private CartService cartService;
+    private final CartService cartService;
 
     public CartController(CartService cartService) {
         this.cartService = cartService;
@@ -28,29 +30,32 @@ public class CartController {
     
     @PostMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<String> addItem(@RequestBody CartRequest cartRequest , Authentication authentication) {
-        cartService.addItemToCart(cartRequest, authentication.getName());
-        return ResponseEntity.ok("Item added to cart");
+    public ResponseEntity<CartResponse> addItem(@Valid @RequestBody CartRequest cartRequest, Authentication authentication) {
+        return ResponseEntity.ok(cartService.addItemToCart(cartRequest, authentication.getName()));
     }
 
     @GetMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<Cart> getCartByUserId(Authentication authentication) {
-        Cart cart = cartService.getCartByUserId(authentication.getName());
-        return ResponseEntity.ok(cart);
+    public ResponseEntity<CartResponse> getCartByUserId(Authentication authentication) {
+        return ResponseEntity.ok(cartService.getCartByUserId(authentication.getName()));
     }
 
     @PutMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<Cart> updateCart(@RequestBody CartRequest cartRequest, Authentication authentication) {
+    public ResponseEntity<CartResponse> updateCart(@Valid @RequestBody CartRequest cartRequest, Authentication authentication) {
         return ResponseEntity.ok(cartService.updateCart(cartRequest, authentication.getName()));
     }
 
     @DeleteMapping("/cart/{productId}")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<Void> removeItemFromCart(@PathVariable String productId, Authentication authentication) {
-        cartService.removeItemFromCart(productId, authentication.getName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CartResponse> removeItemFromCart(@PathVariable String productId, Authentication authentication) {
+        return ResponseEntity.ok(cartService.removeItemFromCart(productId, authentication.getName()));
+    }
+
+    @DeleteMapping("/cart/clear")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
+    public ResponseEntity<CartResponse> clearCart(Authentication authentication) {
+        return ResponseEntity.ok(cartService.clearCart(authentication.getName()));
     }
     
 }

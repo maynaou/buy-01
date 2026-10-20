@@ -37,6 +37,10 @@ readonly isClient = computed(
 
   constructor() {
     this.loadProducts();
+
+    if (this.isClient()) {
+        this.cartService.getCart().subscribe();
+    }
   }
 
   loadProducts(retryOnAuthError = true): void {
@@ -125,4 +129,18 @@ addToCartFromGallery(event: {
   imageCount(product: Product): number {
     return product.imagePaths?.length ?? 0;
   }
+
+
+// ✅ Cherche la quantité réelle dans le panier du client
+getCartQuantity(productId: string): number {
+  const item = this.cartService.cart()?.items?.find(
+    (item) => item.productId === productId
+  );
+  return item?.quantity ?? 0;
+}
+// ✅ Vérifie si le stock maximal est atteint
+isStockReached(product: Product): boolean {
+  if (product.quantity <= 0) return true;
+  return this.getCartQuantity(product.id) >= product.quantity;
+}
 }

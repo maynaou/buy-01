@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import com.example.product_service.dto.ProductDTO;
 import com.example.product_service.entities.Product;
@@ -21,10 +25,13 @@ public class ProductService {
     ProductRepository productRepository;
     ProductMapper productMapper;
     StreamBridge streamBridge;
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper , StreamBridge streamBridge) {
+    MongoTemplate mongoTemplate;
+
+    public ProductService(ProductRepository productRepository, ProductMapper productMapper , StreamBridge streamBridge, MongoTemplate mongoTemplate) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
         this.streamBridge = streamBridge;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public ProductDTO createProduct(ProductDTO productRequest, String userId) {
@@ -82,9 +89,25 @@ public class ProductService {
         return List.of();
     }
 
-    return productRepository.findByIdIn(ids)
+       return productRepository.findByIdIn(ids)
             .stream()
             .map(productMapper::fromProduct)
             .toList();
+    }
+
+    public boolean decreaseStock(String productId, int qty) {
+    Query query = new Query(Criteria.where("id").is(productId)
+            .and("quantity").gte(qty));
+    Update update = new Update().inc("quantity", -qty);
+    return mongoTemplate.updateFirst(query, update, Product.class)
+            .getModifiedCount() == 1;
 }
+
+public void increaseStock(String productId, int qty) {
+    mongoTemplate.updateFirst(
+            Query.query(Criteria.where("id").is(productId)),
+            new Update().inc("quantity", qty), Product.class);
+}
+
+    
 }

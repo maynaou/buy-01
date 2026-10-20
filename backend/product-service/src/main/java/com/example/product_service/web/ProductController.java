@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.product_service.dto.ProductDTO;
@@ -23,22 +24,24 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-     
+
     ProductService productService;
 
     public ProductController(ProductService productService) {
-              this.productService = productService;
+        this.productService = productService;
     }
-    
+
     @PostMapping("/product")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest, Authentication authentication) {
-           return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest,
+            Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.createProduct(productRequest, authentication.getName()));
     }
 
     @GetMapping("/product/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable String id) {
-            return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
     @GetMapping("/product")
@@ -54,25 +57,44 @@ public class ProductController {
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody @Valid ProductDTO productDTO) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id,productDTO));
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id,
+            @RequestBody @Valid ProductDTO productDTO) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id, productDTO));
     }
 
     @DeleteMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-              productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();  
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/product/by-ids")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public ResponseEntity<List<ProductDTO>> getProductsByIds(
-        @RequestBody List<String> ids) {
+            @RequestBody List<String> ids) {
 
-    return ResponseEntity.ok(
-            productService.getProductsByIds(ids)
-    );
+        return ResponseEntity.ok(
+                productService.getProductsByIds(ids));
+    }
+
+    @PostMapping("/{id}/stock/decrease")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT','ROLE_SELLER')")
+    public ResponseEntity<Void> decrease(@PathVariable String id, @RequestParam int quantity) {
+        if (quantity < 1)
+            return ResponseEntity.badRequest().build();
+        boolean ok = productService.decreaseStock(id, quantity);
+        return ok ? ResponseEntity.ok().build()
+                : ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PostMapping("/{id}/stock/increase")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT','ROLE_SELLER')")
+    public ResponseEntity<Void> increase(@PathVariable String id, @RequestParam int quantity) {
+        if (quantity < 1)
+            return ResponseEntity.badRequest().build();
+        productService.increaseStock(id, quantity);
+        return ResponseEntity.ok().build();
     }
 
 }

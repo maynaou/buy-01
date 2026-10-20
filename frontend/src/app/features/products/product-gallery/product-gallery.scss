@@ -166,6 +166,12 @@
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius);
   font: inherit;
+  transition: border-color var(--sm-transition);
+
+  &:focus {
+    border-color: var(--sm-accent);
+    outline: none;
+  }
 }
 
 .gallery__add-cart {
@@ -177,15 +183,22 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-}
+  transition:
+    background-color var(--sm-transition),
+    transform var(--sm-transition);
 
-.gallery__add-cart:hover:not(:disabled) {
-  background-color: var(--sm-accent-dark);
-}
+  &:hover:not(:disabled) {
+    background-color: var(--sm-accent-dark);
+  }
 
-.gallery__add-cart:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
 @media (max-width: 480px) {

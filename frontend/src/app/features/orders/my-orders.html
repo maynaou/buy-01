@@ -1,0 +1,258 @@
+<section class="orders-page">
+  <header class="orders-header">
+    <div>
+      <h1 class="orders-header__title">Mes commandes</h1>
+      <p class="orders-header__subtitle">Suivez l'état de vos achats et gérez vos commandes.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="orders-status">
+      <div class="orders-spinner" aria-hidden="true"></div>
+      <p>Chargement de vos commandes…</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="orders-status orders-status--error">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="orders-btn" (click)="loadOrders()">Réessayer</button>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="orders-empty">
+      <div class="orders-empty__icon" aria-hidden="true">&#128230;</div>
+      <h2>Vous n'avez aucune commande</h2>
+      <p>Découvrez nos équipements sportifs et passez votre première commande.</p>
+      <a routerLink="/" class="orders-btn">Découvrir les produits</a>
+    </div>
+  } @else {
+    <!-- Statistiques des commandes du client -->
+    <div class="orders-stats">
+      <div class="orders-stat">
+        <span class="orders-stat__value">{{ totalOrdersCount() }}</span>
+        <span class="orders-stat__label">Total Commandes</span>
+      </div>
+
+      <div class="orders-stat orders-stat--success">
+        <span class="orders-stat__value">{{ totalDeliveredAmount() | currency }}</span>
+        <span class="orders-stat__label">Total Livré & Payé</span>
+      </div>
+
+      <div class="orders-stat orders-stat--pending">
+        <span class="orders-stat__value">{{ totalActiveCount() }}</span>
+        <span class="orders-stat__label">En cours</span>
+      </div>
+
+      <div class="orders-stat orders-stat--danger">
+        <span class="orders-stat__value">{{ totalCancelledAmount() | currency }}</span>
+        <span class="orders-stat__label">Total Annulé ({{ totalCancelledCount() }})</span>
+      </div>
+    </div>
+
+    <!-- Filtres par statut colorés
+    <div class="order-search-bar">
+      <span class="order-search-bar__icon" aria-hidden="true">&#128269;</span>
+      <input
+        type="text"
+        class="order-search-bar__input"
+        placeholder="Rechercher par ID ou nom du produit…"
+        [ngModel]="orderSearch()"
+        (ngModelChange)="orderSearch.set($event)"
+      />
+      @if (orderSearch()) {
+        <button type="button" class="order-search-bar__clear" (click)="orderSearch.set('')" aria-label="Effacer">&#10005;</button>
+      }
+    </div> -->
+
+    <div class="order-status-filters" role="group" aria-label="Filtrer par statut">
+      <button
+        type="button"
+        class="status-pill status-pill--all"
+        [class.status-pill--active]="orderFilter() === 'ALL'"
+        (click)="orderFilter.set('ALL')"
+      >
+        Toutes ({{ orders().length }})
+      </button>
+      <button
+        type="button"
+        class="status-pill status-pill--pending"
+        [class.status-pill--active]="orderFilter() === 'PENDING'"
+        (click)="orderFilter.set('PENDING')"
+      >
+        En attente ({{ countByStatus('PENDING') }})
+      </button>
+      <button
+        type="button"
+        class="status-pill status-pill--confirmed"
+        [class.status-pill--active]="orderFilter() === 'CONFIRMED'"
+        (click)="orderFilter.set('CONFIRMED')"
+      >
+        Confirmées ({{ countByStatus('CONFIRMED') }})
+      </button>
+      <button
+        type="button"
+        class="status-pill status-pill--shipped"
+        [class.status-pill--active]="orderFilter() === 'SHIPPED'"
+        (click)="orderFilter.set('SHIPPED')"
+      >
+        Expédiées ({{ countByStatus('SHIPPED') }})
+      </button>
+      <button
+        type="button"
+        class="status-pill status-pill--delivered"
+        [class.status-pill--active]="orderFilter() === 'DELIVERED'"
+        (click)="orderFilter.set('DELIVERED')"
+      >
+        Livrées ({{ countByStatus('DELIVERED') }})
+      </button>
+      <button
+        type="button"
+        class="status-pill status-pill--cancelled"
+        [class.status-pill--active]="orderFilter() === 'CANCELLED'"
+        (click)="orderFilter.set('CANCELLED')"
+      >
+        Annulées ({{ countByStatus('CANCELLED') }})
+      </button>
+    </div>
+
+    <!-- Liste des commandes (Dernières commandes en premier) -->
+    @if (filteredOrders().length === 0) {
+      <div class="orders-status">
+        <p>Aucune commande trouvée pour ce statut.</p>
+      </div>
+    } @else {
+      <div class="orders-list">
+        @for (order of filteredOrders(); track order.id) {
+          <article [class]="'client-order-card ' + orderCardClass(order.status)">
+          <!-- Card Header -->
+          <div class="client-order-card__head">
+            <div class="client-order-card__meta">
+              <span class="client-order-card__id" [title]="order.id">#{{ shortId(order.id) }}</span>
+              <span class="client-order-card__date">{{ order.createdAt | date:'dd MMM yyyy à HH:mm' }}</span>
+            </div>
+
+            <div class="client-order-card__status-wrap">
+              <span class="client-order-card__status" [class]="statusClass(order.status)">
+                {{ statusLabel(order.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Items list -->
+          <div class="client-order-card__items">
+            @for (item of order.items; track item.productId) {
+              <div class="client-order-card__item">
+                @if (item.image) {
+                  <img class="client-order-card__img" [src]="item.image" [alt]="item.productName" />
+                } @else {
+                  <div class="client-order-card__img client-order-card__placeholder">
+                    <span aria-hidden="true">&#9917;</span>
+                  </div>
+                }
+
+                <div class="client-order-card__info">
+                  <span class="client-order-card__name">{{ item.productName }}</span>
+                  <span class="client-order-card__qty">
+                    Qté : {{ item.quantity }} &times; {{ item.unitPrice | currency }}
+                  </span>
+                </div>
+
+                <span class="client-order-card__item-price">
+                  {{ item.unitPrice * item.quantity | currency }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Delivery info & total -->
+          <div class="client-order-card__foot">
+            <div class="client-order-card__delivery">
+              <span aria-hidden="true">&#128205;</span>
+              <span>{{ order.address }}</span>
+              <span class="client-order-card__sep">·</span>
+              <span aria-hidden="true">&#128222;</span>
+              <span>{{ order.phone }}</span>
+            </div>
+
+            <div class="client-order-card__total">
+              Total payé à la livraison : <strong>{{ order.total | currency }}</strong>
+            </div>
+          </div>
+
+          <!-- Actions according to status rules -->
+          <footer class="client-order-card__actions">
+            <!-- PENDING: Annuler -->
+            @if (order.status === 'PENDING') {
+              <button
+                type="button"
+                class="client-action-btn client-action-btn--cancel"
+                [disabled]="actionOrderId() === order.id"
+                (click)="cancelOrder(order)"
+              >
+                <span aria-hidden="true">&#10005;</span> Annuler la commande
+              </button>
+            }
+
+            <!-- CONFIRMED: Message d'information (aucune action) -->
+            @if (order.status === 'CONFIRMED') {
+              <span class="client-order-card__info-note">
+                <span aria-hidden="true">&#128230;</span> Commande validée par le vendeur, préparation en cours.
+              </span>
+            }
+
+            <!-- SHIPPED: Message d'information (aucune action) -->
+            @if (order.status === 'SHIPPED') {
+              <span class="client-order-card__info-note client-order-card__info-note--shipped">
+                <span aria-hidden="true">&#128666;</span> Votre colis est en cours de livraison.
+              </span>
+            }
+
+            <!-- DELIVERED & CANCELLED: Supprimer et Refaire -->
+            @if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+              <button
+                type="button"
+                class="client-action-btn client-action-btn--reorder"
+                [disabled]="actionOrderId() === order.id"
+                (click)="reorder(order)"
+              >
+                <span aria-hidden="true">&#8635;</span> Refaire la commande
+              </button>
+
+              <button
+                type="button"
+                class="client-action-btn client-action-btn--delete"
+                [disabled]="actionOrderId() === order.id"
+                (click)="deleteOrder(order)"
+              >
+                <span aria-hidden="true">&#128465;</span> Supprimer
+              </button>
+            }
+          </footer>
+
+          <!-- Status History Timeline -->
+          @if (order.statusHistory && order.statusHistory.length > 0) {
+            <details class="status-timeline">
+              <summary class="status-timeline__toggle">
+                <span aria-hidden="true">&#128337;</span> Historique du statut
+              </summary>
+              <ol class="status-timeline__list">
+                @for (change of order.statusHistory; track change.changedAt) {
+                  <li class="status-timeline__item">
+                    <span class="status-timeline__dot" [class]="statusClass(change.status)"></span>
+                    <div class="status-timeline__info">
+                      <span class="status-timeline__status" [class]="statusClass(change.status)">
+                        {{ statusLabel(change.status) }}
+                      </span>
+                      <span class="status-timeline__date">
+                        {{ change.changedAt | date:'dd MMM yyyy à HH:mm' }}
+                      </span>
+                    </div>
+                  </li>
+                }
+              </ol>
+            </details>
+          }
+        </article>
+      }
+    </div>
+  }
+}
+</section>

@@ -1,5 +1,6 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   AbstractControl,
   FormBuilder,
@@ -13,9 +14,11 @@ import { Observable, retry, throwError, timer } from 'rxjs';
 
 import { MediaService } from '../../../core/services/media';
 import { ProductService } from '../../../core/services/product';
+import { OrderService } from '../../../core/services/order';
 import { Product, ProductRequest } from '../models/product';
 import { ProductImage } from '../models/product-image';
 import { NotificationError } from '../../../core/services/notification-error';
+import { Order, OrderStatus } from '../../checkout/models/order';
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 
@@ -47,7 +50,7 @@ function wholeNumber(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-seller-dashboard',
-  imports: [ReactiveFormsModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, CurrencyPipe, DatePipe, FormsModule],
   templateUrl: './seller-dashboard.html',
   styleUrl: './seller-dashboard.scss',
 })
@@ -55,10 +58,15 @@ export class SellerDashboard {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly mediaService = inject(MediaService);
+  private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
   private readonly notificationError = inject(NotificationError);
 
+  // ── Tab ────────────────────────────────────────────────────────────────────
+  readonly activeTab = signal<'products' | 'orders'>('products');
 
+
+  // ── Products signals ────────────────────────────────────────────────────────
   readonly products = signal<Product[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal('');
@@ -79,6 +87,50 @@ export class SellerDashboard {
   readonly isEditing = computed(() => this.editingId() !== null);
 
   readonly maxImageKb = Math.round(MAX_IMAGE_BYTES / 1024);
+
+  // ── Orders signals ──────────────────────────────────────────────────────────
+  readonly orders = signal<Order[]>([]);
+  readonly ordersLoading = signal(false);
+  readonly ordersError = signal('');
+  readonly updatingOrderId = signal<string | null>(null);
+  readonly orderFilter = signal<OrderStatus | 'ALL'>('ALL');
+  readonly orderSearch = signal<string>('');
+
+  readonly filteredOrders = computed(() => {
+    const filter = this.orderFilter();
+    const query = this.orderSearch().trim().toLowerCase();
+    let list = this.orders();
+    if (filter !== 'ALL') {
+      list = list.filter((o) => o.status === filter);
+    }
+    if (query) {
+      list = list.filter(
+        (o) =>
+          o.id.toLowerCase().includes(query) ||
+          o.fullName?.toLowerCase().includes(query) ||
+          o.items.some((i) => i.productName.toLowerCase().includes(query))
+      );
+    }
+    return list;
+  });
+
+  readonly totalRevenue = computed(() =>
+    this.orders()
+      .filter((order) => order.status === 'DELIVERED')
+      .reduce((sum, order) => sum + (order.total || 0), 0)
+  );
+  readonly pendingOrdersCount = computed(() =>
+    this.orders().filter((order) => order.status === 'PENDING').length
+  );
+
+  /** Total units sold across all DELIVERED orders */
+  readonly totalUnitsSold = computed(() =>
+    this.orders()
+      .filter((o) => o.status === 'DELIVERED')
+      .flatMap((o) => o.items)
+      .reduce((sum, item) => sum + item.quantity, 0)
+  );
+
 
   // Mirrors the backend ProductDTO constraints.
   productForm = this.fb.group({
@@ -103,6 +155,81 @@ export class SellerDashboard {
     // Preview URLs are only valid while this component lives.
     inject(DestroyRef).onDestroy(() => this.clearPendingImages());
   }
+
+  switchTab(tab: 'products' | 'orders'): void {
+    this.activeTab.set(tab);
+    if (tab === 'orders' && this.orders().length === 0 && !this.ordersLoading()) {
+      this.loadSellerOrders();
+    }
+  }
+
+  loadSellerOrders(): void {
+    this.ordersLoading.set(true);
+    this.ordersError.set('');
+    this.orderService.getSellerOrders().subscribe({
+      next: (orders) => {
+        // Dernières commandes en premier (tri décroissant par date)
+        const sorted = [...orders].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        this.orders.set(sorted);
+        this.ordersLoading.set(false);
+      },
+      error: () => {
+        this.ordersLoading.set(false);
+        this.ordersError.set('Unable to load orders. Please try again.');
+      },
+    });
+  }
+
+  countByStatus(status: OrderStatus): number {
+    return this.orders().filter((o) => o.status === status).length;
+  }
+
+  orderStatusClass(status: string): string {
+    switch (status) {
+      case 'PENDING':    return 'status--pending';
+      case 'CONFIRMED':  return 'status--confirmed';
+      case 'SHIPPED':    return 'status--shipped';
+      case 'DELIVERED':  return 'status--delivered';
+      case 'CANCELLED':  return 'status--cancelled';
+      default:           return '';
+    }
+  }
+
+  orderCardClass(status: string): string {
+    return 'order-card--' + status.toLowerCase();
+  }
+
+  shortId(id: string): string {
+    return id.length > 8 ? '…' + id.slice(-8) : id;
+  }
+
+  updateStatus(order: Order, nextStatus: OrderStatus): void {
+    if (this.updatingOrderId() === order.id) {
+      return;
+    }
+
+    this.updatingOrderId.set(order.id);
+    this.orderService.updateOrderStatus(order.id, nextStatus).subscribe({
+      next: (updatedOrder) => {
+        this.orders.update((orders) =>
+          orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
+        this.updatingOrderId.set(null);
+        this.notificationError.show(
+          `Order #${this.shortId(order.id)} updated to ${nextStatus}.`,
+          'green'
+        );
+      },
+      error: (err) => {
+        this.updatingOrderId.set(null);
+        const msg = err?.error?.message || 'Failed to update order status.';
+        this.notificationError.show(msg, 'red');
+      },
+    });
+  }
+
 
   loadProducts(): void {
     this.loading.set(true);

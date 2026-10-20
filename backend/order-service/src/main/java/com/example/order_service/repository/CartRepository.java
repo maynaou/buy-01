@@ -9,6 +9,5 @@ import com.example.order_service.entities.Cart;
 
 @Repository 
 public interface CartRepository extends MongoRepository<Cart,String> {
-
     Optional<Cart> findByUserId(String userId);
 }

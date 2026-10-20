@@ -32,5 +32,6 @@ public class ProductDTO {
      @NotNull(message = "Quantity is required")
      @Min(value = 0, message = "Quantity cannot be negative")
      private Integer quantity;
+     private String userId;
      private List<String> imagePaths;
 }

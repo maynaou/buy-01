@@ -1,91 +1,133 @@
 <section class="cart-page">
   <header class="cart-header">
-    <h1>My Cart</h1>
-    <p>Review your products before checkout.</p>
+    <div class="cart-header__text">
+      <h1 class="cart-header__title">My Cart</h1>
+      <p class="cart-header__subtitle">Review and manage your sports gear before checkout.</p>
+    </div>
+
+    @if (items().length > 0) {
+      <button
+        type="button"
+        class="cart-header__clear"
+        [disabled]="isClearing()"
+        (click)="clearCart()"
+      >
+        <span aria-hidden="true">&#128465;</span>
+        {{ isClearing() ? 'Clearing...' : 'Clear Cart' }}
+      </button>
+    }
   </header>
 
   @if (loading()) {
-    <p class="cart-status">Loading your cart...</p>
+    <div class="cart-status">
+      <div class="cart-status__spinner" aria-hidden="true"></div>
+      <p>Loading your cart...</p>
+    </div>
   } @else if (errorMessage()) {
-    <div class="cart-status cart-error">
+    <div class="cart-status cart-status--error">
       <p>{{ errorMessage() }}</p>
-      <button type="button" (click)="loadCart()">Try again</button>
+      <button type="button" class="cart-btn" (click)="loadCart()">Try again</button>
     </div>
   } @else if (items().length === 0) {
     <div class="cart-empty">
+      <div class="cart-empty__icon" aria-hidden="true">&#128722;</div>
       <h2>Your cart is empty</h2>
-      <p>Discover our products and add your favourites.</p>
-      <a routerLink="/">Continue shopping</a>
+      <p>Explore our sports collection and add your favourite products.</p>
+      <a routerLink="/" class="cart-btn">Discover Products</a>
     </div>
   } @else {
     <div class="cart-layout">
       <div class="cart-items">
         @for (item of items(); track item.productId) {
           <article class="cart-item">
-@if (item.product.imagePaths?.[0]; as image) {
-  <img class="cart-item__image" [src]="image" [alt]="item.product.name" />
-} @else {
-  <div class="cart-item__image cart-item__placeholder">No image</div>
-}
+            @if (item.imagePaths?.[0]; as image) {
+              <img class="cart-item__image" [src]="image" [alt]="item.productName" />
+            } @else {
+              <div class="cart-item__image cart-item__placeholder">No image</div>
+            }
 
             <div class="cart-item__details">
-              <h2>{{ item.product.name }}</h2>
-              <p>{{ item.product.price | currency }}</p>
+              <h2 class="cart-item__name">{{ item.productName }}</h2>
+              <p class="cart-item__price">{{ item.unitPrice | currency }}</p>
 
-              <div class="cart-item__quantity">
+              <div class="cart-item__controls">
+                <div class="cart-item__quantity">
+                  <button
+                    type="button"
+                    class="cart-item__qty-btn"
+                    [disabled]="item.quantity <= 1 || updatingProductId() === item.productId"
+                    (click)="changeQuantity(item.productId, item.quantity - 1)"
+                    aria-label="Decrease quantity"
+                  >
+                    &minus;
+                  </button>
+
+                  <span class="cart-item__qty-value">{{ item.quantity }}</span>
+
+                  <button
+                    type="button"
+                    class="cart-item__qty-btn"
+                    [disabled]="item.quantity >= item.availableStock || updatingProductId() === item.productId"
+                    (click)="changeQuantity(item.productId, item.quantity + 1)"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+
                 <button
                   type="button"
-                  [disabled]="item.quantity <= 1"
-                  (click)="changeQuantity(item.productId, item.quantity - 1)"
-                  aria-label="Decrease quantity"
+                  class="cart-item__remove"
+                  [disabled]="updatingProductId() === item.productId"
+                  (click)="removeItem(item.productId)"
                 >
-                  −
-                </button>
-
-                <span>{{ item.quantity }}</span>
-
-                <button
-                  type="button"
-                  [disabled]="item.quantity >= item.product.quantity"
-                  (click)="changeQuantity(item.productId, item.quantity + 1)"
-                  aria-label="Increase quantity"
-                >
-                  +
+                  <span aria-hidden="true">&#128465;</span>
+                  Remove
                 </button>
               </div>
-<button
-  type="button"
-  class="cart-item__remove"
-  (click)="removeItem(item.productId)"
->
-  <span aria-hidden="true">🗑</span>
-  Remove
-</button>
             </div>
 
-            <strong class="cart-item__subtotal">
-              {{ item.product.price * item.quantity | currency }}
-            </strong>
+            <div class="cart-item__total-wrap">
+              <span class="cart-item__subtotal-label">Subtotal</span>
+              <strong class="cart-item__subtotal">
+                {{ item.subtotal | currency }}
+              </strong>
+            </div>
           </article>
         }
       </div>
 
       <aside class="cart-summary">
-        <h2>Order summary</h2>
+        <h2 class="cart-summary__title">Order Summary</h2>
 
         <div class="cart-summary__row">
-          <span>Items</span>
-          <span>{{ items().length }}</span>
+          <span>Total Items</span>
+          <span class="cart-summary__value">{{ totalItems() }}</span>
+        </div>
+
+        <div class="cart-summary__row">
+          <span>Subtotal</span>
+          <span class="cart-summary__value">{{ subtotal() | currency }}</span>
+        </div>
+
+        <div class="cart-summary__row">
+          <span>Shipping</span>
+          <span class="cart-summary__free">{{ shipping() === 0 ? 'Free' : (shipping() | currency) }}</span>
         </div>
 
         <div class="cart-summary__row cart-summary__total">
-          <span>Total</span>
-          <strong>{{ total() | currency }}</strong>
+          <span>Estimated Total</span>
+          <strong class="cart-summary__price">{{ total() | currency }}</strong>
         </div>
 
-        <button type="button" class="cart-summary__checkout" disabled>
-          Checkout coming soon
-        </button>
+        <a routerLink="/checkout" class="cart-summary__checkout">
+          <span aria-hidden="true">&#10003;</span> Proceed to Checkout
+        </a>
+
+        <div class="cart-summary__guarantees">
+          <p><span aria-hidden="true">&#128274;</span> Secure checkout powered by SportMarket</p>
+          <p><span aria-hidden="true">&#9889;</span> Free delivery on all orders</p>
+        </div>
       </aside>
     </div>
   }

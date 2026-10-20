@@ -2,19 +2,22 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
 
 import { MediaService } from '../../core/services/media';
 import { TokenService } from '../../core/services/token';
 import { UserService } from '../../core/services/user';
+import { OrderService } from '../../core/services/order';
 import { UserProfile } from './models/user-profile';
 import { NotificationError } from '../../core/services/notification-error';
+import { Order } from '../checkout/models/order';
 
 /** Spring Boot's default `spring.servlet.multipart.max-file-size`. */
 const MAX_AVATAR_BYTES = 1024 * 1024;
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CurrencyPipe],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -23,6 +26,7 @@ export class Profile {
   private readonly userService = inject(UserService);
   private readonly mediaService = inject(MediaService);
   private readonly tokenService = inject(TokenService);
+  private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
 
   readonly profile = signal<UserProfile | null>(null);
@@ -43,6 +47,46 @@ export class Profile {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isSeller = computed(() => this.profile()?.role === 'SELLER');
+
+  // ── Client Analytics ────────────────────────────────────────────────────────
+  /** All buyer orders (loaded on init for CLIENT accounts) */
+  readonly myOrders = signal<Order[]>([]);
+  readonly ordersLoading = signal(false);
+
+  readonly totalSpent = computed(() =>
+    this.myOrders()
+      .filter((o) => o.status === 'DELIVERED')
+      .reduce((sum, o) => sum + (o.total || 0), 0)
+  );
+
+  readonly totalOrdersCount = computed(() => this.myOrders().length);
+  readonly deliveredCount = computed(
+    () => this.myOrders().filter((o) => o.status === 'DELIVERED').length
+  );
+
+  /** Top 5 most bought products (by quantity across DELIVERED orders) */
+  readonly topBoughtProducts = computed(() => {
+    const map = new Map<string, { name: string; quantity: number; spent: number }>();
+    this.myOrders()
+      .filter((o) => o.status === 'DELIVERED')
+      .flatMap((o) => o.items)
+      .forEach((item) => {
+        const existing = map.get(item.productId);
+        if (existing) {
+          existing.quantity += item.quantity;
+          existing.spent += item.unitPrice * item.quantity;
+        } else {
+          map.set(item.productId, {
+            name: item.productName,
+            quantity: item.quantity,
+            spent: item.unitPrice * item.quantity,
+          });
+        }
+      });
+    return [...map.values()]
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
+  });
 
   profileForm = this.fb.group({
     username: [
@@ -70,6 +114,10 @@ export class Profile {
       next: (profile) => {
         this.applyProfile(profile);
         this.loading.set(false);
+        // Load orders only for CLIENT accounts (for analytics)
+        if (profile.role === 'CLIENT') {
+          this.loadClientOrders();
+        }
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
@@ -82,6 +130,20 @@ export class Profile {
         }
 
         this.loadError.set('Unable to load your profile. Please try again.');
+      },
+    });
+  }
+
+  private loadClientOrders(): void {
+    this.ordersLoading.set(true);
+    this.orderService.getMyOrders().subscribe({
+      next: (orders) => {
+        this.myOrders.set(orders);
+        this.ordersLoading.set(false);
+      },
+      error: () => {
+        this.ordersLoading.set(false);
+        // Silent fail — analytics are optional, don't break the profile page
       },
     });
   }

@@ -3,15 +3,27 @@ export interface CartRequest {
   quantity: number;
 }
 
-export interface CartItem {
+export interface CartItemResponse {
   productId: string;
+  productName: string;
+  productDescription?: string;
+  unitPrice: number;
   quantity: number;
+  subtotal: number;
+  availableStock: number;
+  imagePaths?: string[];
 }
 
-export interface Cart {
-  id: string;
+export interface CartResponse {
+  id?: string;
   userId: string;
-  items: CartItem[];
-  createdAt: string;
-  updatedAt?: string;
+  items: CartItemResponse[];
+  totalItems: number;
+  subtotalPrice: number;
+  shippingPrice: number;
+  totalPrice: number;
 }
+
+// Backward-compatible aliases
+export type Cart = CartResponse;
+export type CartItem = CartItemResponse;

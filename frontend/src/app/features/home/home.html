@@ -54,9 +54,14 @@
   <button
     type="button"
     class="product-card__cart"
+    [disabled]="isStockReached(product)"
     (click)="onAddToCart(product, $event)"
   >
-    🛒 Add to Cart
+  @if (isStockReached(product)) {
+      🚫 Max atteint ({{ product.quantity }})
+    } @else {
+      🛒 Add to Cart ({{ getCartQuantity(product.id) }}/{{ product.quantity }})
+    }
   </button>
 }
           </div>

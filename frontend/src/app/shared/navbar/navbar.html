@@ -13,16 +13,22 @@
           </a>
         }
         @if (isClient()) {
-  <a
-    class="navbar__link navbar__cart"
-    routerLink="/cart"
-    routerLinkActive="navbar__link--active"
-    aria-label="Shopping cart"
-  >
-    <span aria-hidden="true">🛒</span>
-    <span>Cart</span>
-  </a>
-}
+          <a
+            class="navbar__link navbar__cart"
+            routerLink="/cart"
+            routerLinkActive="navbar__link--active"
+            aria-label="Shopping cart"
+          >
+            <span aria-hidden="true">&#128722;</span>
+            <span>Cart</span>
+            @if (cartCount() > 0) {
+              <span class="navbar__badge">{{ cartCount() }}</span>
+            }
+          </a>
+          <a class="navbar__link" routerLink="/orders" routerLinkActive="navbar__link--active">
+            My Orders
+          </a>
+        }
         <a class="navbar__link" routerLink="/profile" routerLinkActive="navbar__link--active">
           Profile
         </a>

@@ -7,6 +7,9 @@ import { SellerDashboard } from './features/products/seller-dashboard/seller-das
 import { authGuard } from './core/guards/auth-guard';
 import { sellerGuard } from './core/guards/seller-guard';
 import { CartPage } from './features/cart/cart';
+import { CheckoutPage } from './features/checkout/checkout';
+import { OrderConfirmationPage } from './features/order-confirmation/order-confirmation';
+import { MyOrdersPage } from './features/orders/my-orders';
 
 export const routes: Routes = [
   {
@@ -34,6 +37,21 @@ export const routes: Routes = [
   {
     path: 'cart',
     component: CartPage,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'checkout',
+    component: CheckoutPage,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'order/confirmation',
+    component: OrderConfirmationPage,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'orders',
+    component: MyOrdersPage,
     canActivate: [authGuard],
   },
   {
