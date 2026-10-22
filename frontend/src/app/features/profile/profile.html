@@ -126,6 +126,68 @@
         {{ saving() ? 'Saving…' : 'Save changes' }}
       </button>
     </form>
+
+    @if (isClient()) {
+    <section class="profile__card profile__analytics" aria-labelledby="purchase-analytics-title">
+      <h2 id="purchase-analytics-title" class="profile__analytics-title">Purchase statistics</h2>
+      <p class="profile__analytics-subtitle">Based on your delivered orders.</p>
+
+      @if (analyticsLoading()) {
+      <p class="profile__analytics-message" role="status">Loading your statistics…</p>
+      } @else if (analyticsError()) {
+      <div class="profile__analytics-message profile__analytics-message--error" role="alert">
+        <p>{{ analyticsError() }}</p>
+        <button type="button" class="profile__btn" (click)="loadBuyerAnalytics()">Retry</button>
+      </div>
+      } @else if (analytics(); as stats) {
+      <div class="profile__spent">
+        <span class="profile__spent-label">Total spent</span>
+        <strong>{{ stats.totalSpent | currency }}</strong>
+      </div>
+
+      <div class="profile__analytics-grid">
+        <section aria-labelledby="most-bought-title">
+          <h3 id="most-bought-title" class="profile__analytics-heading">Most purchased products</h3>
+          @if (stats.mostBoughtProducts.length) {
+          <ol class="profile__analytics-list">
+            @for (product of stats.mostBoughtProducts; track product.productId) {
+            <li class="profile__analytics-item">
+              <span class="profile__analytics-name">{{ product.name }}</span>
+              <span class="profile__analytics-meta">{{ product.units }} unit(s)</span>
+              <span class="profile__analytics-amount">{{ product.amountSpent | currency }}</span>
+            </li>
+            }
+          </ol>
+          } @else {
+          <p class="profile__analytics-message">No delivered purchases yet.</p>
+          }
+        </section>
+
+        <section aria-labelledby="top-categories-title">
+          <h3 id="top-categories-title" class="profile__analytics-heading">Top categories</h3>
+          @if (stats.topCategories.length) {
+          <ul class="profile__category-list">
+            @for (category of stats.topCategories; track category.category) {
+            <li class="profile__category-item">
+              <div class="profile__category-label">
+                <span>{{ category.category }}</span>
+                <span>{{ category.units }} unit(s)</span>
+              </div>
+              <div class="profile__category-track" aria-hidden="true">
+                <span [style.width]="categoryBarWidth(category.units, stats.topCategories)"></span>
+              </div>
+              <span class="profile__analytics-amount">{{ category.amountSpent | currency }}</span>
+            </li>
+            }
+          </ul>
+          } @else {
+          <p class="profile__analytics-message">No category data yet.</p>
+          }
+        </section>
+      </div>
+      }
+    </section>
+    }
   </div>
   }
 </section>

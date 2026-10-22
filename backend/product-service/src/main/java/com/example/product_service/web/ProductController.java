@@ -46,11 +46,6 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
-    @GetMapping("/product")
-    public ResponseEntity<List<ProductDTO>> getProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
-    }
-
     @GetMapping("/catalog")
     public ResponseEntity<ProductPageDTO> getProductPage(
             @RequestParam(defaultValue = "0") int page,
@@ -108,15 +103,6 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/product/by-ids")
-    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<List<ProductDTO>> getProductsByIds(
-            @RequestBody List<String> ids) {
-
-        return ResponseEntity.ok(
-                productService.getProductsByIds(ids));
     }
 
     @PostMapping("/{id}/stock/decrease")

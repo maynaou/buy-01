@@ -112,33 +112,6 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/products/product - retourne tous les produits")
-    void getProducts_ShouldReturnProductList() throws Exception {
-        ProductDTO product1 = new ProductDTO();
-        product1.setId("prod-1");
-        product1.setName("Laptop");
-        product1.setPrice(999.99);
-
-        ProductDTO product2 = new ProductDTO();
-        product2.setId("prod-2");
-        product2.setName("Mouse");
-        product2.setPrice(29.99);
-
-        List<ProductDTO> products = Arrays.asList(product1, product2);
-
-        when(productService.getProducts()).thenReturn(products);
-
-        mockMvc.perform(get("/api/products/product"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("prod-1"))
-                .andExpect(jsonPath("$[0].name").value("Laptop"))
-                .andExpect(jsonPath("$[1].id").value("prod-2"))
-                .andExpect(jsonPath("$[1].name").value("Mouse"));
-
-        verify(productService, times(1)).getProducts();
-    }
-
-    @Test
     @DisplayName("GET /api/products/catalog - retourne une page de produits")
     void getProductPage_ShouldReturnPageMetadata() throws Exception {
         ProductPageDTO page = new ProductPageDTO(List.of(), 1, 10, 25, 3);

@@ -526,6 +526,109 @@
   margin-top: 4px;
 }
 
+.analytics-card {
+  margin-bottom: 24px;
+  padding: 22px;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius-lg);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+}
+
+.analytics-card__title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.analytics-card__title span {
+  color: #bd8b18;
+}
+
+.analytics-card__message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  color: var(--sm-ink-soft);
+  font-size: 0.88rem;
+}
+
+.analytics-card__message--error {
+  color: var(--sm-danger);
+}
+
+.analytics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytics-item {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.analytics-item__rank {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #edf6ef;
+  color: var(--sm-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.analytics-item__name {
+  overflow: hidden;
+  color: var(--sm-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-item__meta {
+  color: var(--sm-ink-soft);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.analytics-item__revenue {
+  color: var(--sm-accent);
+  font-size: 0.86rem;
+  font-weight: 750;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.analytics-bar-wrap {
+  grid-column: 2 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf1ee;
+}
+
+.analytics-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sm-accent), #79c84a);
+  transition: width 0.25s ease;
+}
+
 .order-list-controls {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, 190px));
@@ -863,6 +966,33 @@
 
   .order-list-controls__search {
     grid-column: 1 / -1;
+  }
+
+  .analytics-card {
+    padding: 18px 14px;
+  }
+
+  .analytics-item {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 5px 8px;
+  }
+
+  .analytics-item__rank {
+    width: 25px;
+    height: 25px;
+  }
+
+  .analytics-item__meta {
+    grid-column: 2;
+  }
+
+  .analytics-item__revenue {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .analytics-bar-wrap {
+    grid-column: 2 / -1;
   }
 
   .orders-stats {

@@ -123,9 +123,6 @@ public class CartService {
 
 
                     double unitPrice = product.price() != null ? product.price() : 0.0;
-
-                    System.out.println("Unit Price: " + unitPrice + ", Quantity: " + item.getQuantity() + ", Product ID: " + product.id());
-
                     
                     double subtotal = Math.round(unitPrice * item.getQuantity() * 100.0) / 100.0;
 

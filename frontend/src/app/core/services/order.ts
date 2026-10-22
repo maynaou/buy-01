@@ -1,15 +1,23 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { CheckoutRequest, Order, OrderStatus } from '../../features/checkout/models/order';
+import { CustomerProfileAnalytics } from '../../features/profile/models/customer-profile-analytics';
 
 export interface OrderSearchFilters {
   search?: string;
   status?: OrderStatus;
   dateFrom?: string;
   dateTo?: string;
+}
+
+export interface TopSellingProduct {
+  productId: string;
+  name: string;
+  units: number;
+  revenue: number;
 }
 
 @Injectable({
@@ -31,13 +39,15 @@ export class OrderService {
   }
 
   /**
-   * GET /api/orders/seller
+   * POST /api/orders/seller
    * Returns all orders containing the authenticated seller's products.
    */
   getSellerOrders(filters: OrderSearchFilters = {}): Observable<Order[]> {
-    return this.http.get<Order[]>(this.orderUrl + '/seller', {
-      params: this.toHttpParams(filters),
-    });
+    return this.http.post<Order[]>(this.orderUrl + '/seller', filters);
+  }
+
+  getSellerTopProducts(): Observable<TopSellingProduct[]> {
+    return this.http.get<TopSellingProduct[]>(`${this.orderUrl}/seller/top-products`);
   }
 
   /**
@@ -49,13 +59,15 @@ export class OrderService {
   }
 
   /**
-   * GET /api/orders/my-orders
+   * POST /api/orders/my-orders
    * Returns all active orders placed by the current client.
    */
   getMyOrders(filters: OrderSearchFilters = {}): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.orderUrl}/my-orders`, {
-      params: this.toHttpParams(filters),
-    });
+    return this.http.post<Order[]>(`${this.orderUrl}/my-orders`, filters);
+  }
+
+  getMyAnalytics(): Observable<CustomerProfileAnalytics> {
+    return this.http.get<CustomerProfileAnalytics>(`${this.orderUrl}/my-analytics`);
   }
 
   /**
@@ -74,12 +86,4 @@ export class OrderService {
     return this.http.delete<void>(`${this.orderUrl}/${orderId}`);
   }
 
-  private toHttpParams(filters: OrderSearchFilters): HttpParams {
-    let params = new HttpParams();
-    if (filters.search?.trim()) params = params.set('search', filters.search.trim());
-    if (filters.status) params = params.set('status', filters.status);
-    if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
-    if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
-    return params;
-  }
 }

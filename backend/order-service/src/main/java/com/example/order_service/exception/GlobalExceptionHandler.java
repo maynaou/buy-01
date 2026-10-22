@@ -67,4 +67,11 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.BAD_REQUEST)
                                 .body(new ApiError("INVALID_STATE", ex.getMessage()));
         }
+
+        @ExceptionHandler(InvalidOrderStateException.class)
+        public ResponseEntity<ApiError> handleInvalidOrderState(InvalidOrderStateException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.CONFLICT)
+                                .body(new ApiError("INVALID_ORDER_STATE", ex.getMessage()));
+        }
 }

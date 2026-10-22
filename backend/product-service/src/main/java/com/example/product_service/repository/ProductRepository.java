@@ -9,7 +9,5 @@ import com.example.product_service.entities.Product;
 
 @Repository
 public interface ProductRepository extends MongoRepository<Product,String> {
-
     List<Product> findByUserId(String userId);
-    List<Product> findByIdIn(List<String> ids);
 }

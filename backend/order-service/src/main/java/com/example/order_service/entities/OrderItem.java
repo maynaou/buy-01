@@ -15,4 +15,5 @@ public class OrderItem {
     private double unitPrice;
     private int quantity;
     private String image;
+    private String category;
 }

@@ -1,3 +1,4 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -6,6 +7,8 @@ import { Router } from '@angular/router';
 import { MediaService } from '../../core/services/media';
 import { TokenService } from '../../core/services/token';
 import { UserService } from '../../core/services/user';
+import { OrderService } from '../../core/services/order';
+import { CustomerProfileAnalytics } from './models/customer-profile-analytics';
 import { UserProfile } from './models/user-profile';
 import { NotificationError } from '../../core/services/notification-error';
 
@@ -14,13 +17,14 @@ const MAX_AVATAR_BYTES = 1024 * 1024;
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [CurrencyPipe, ReactiveFormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
+  private readonly orderService = inject(OrderService);
   private readonly mediaService = inject(MediaService);
   private readonly tokenService = inject(TokenService);
   private readonly router = inject(Router);
@@ -31,6 +35,9 @@ export class Profile {
   readonly loadError = signal('');
   readonly saveError = signal('');
   readonly savedMessage = signal('');
+  readonly analytics = signal<CustomerProfileAnalytics | null>(null);
+  readonly analyticsLoading = signal(false);
+  readonly analyticsError = signal('');
   private readonly notificationError = inject(NotificationError);
 
 
@@ -43,6 +50,7 @@ export class Profile {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isSeller = computed(() => this.profile()?.role === 'SELLER');
+  readonly isClient = computed(() => this.profile()?.role === 'CLIENT');
 
   profileForm = this.fb.group({
     username: [
@@ -70,6 +78,9 @@ export class Profile {
       next: (profile) => {
         this.applyProfile(profile);
         this.loading.set(false);
+        if (profile.role === 'CLIENT') {
+          this.loadBuyerAnalytics();
+        }
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
@@ -84,6 +95,30 @@ export class Profile {
         this.loadError.set('Unable to load your profile. Please try again.');
       },
     });
+  }
+
+  loadBuyerAnalytics(): void {
+    if (!this.isClient()) {
+      return;
+    }
+
+    this.analyticsLoading.set(true);
+    this.analyticsError.set('');
+    this.orderService.getMyAnalytics().subscribe({
+      next: (analytics) => {
+        this.analytics.set(analytics);
+        this.analyticsLoading.set(false);
+      },
+      error: () => {
+        this.analyticsLoading.set(false);
+        this.analyticsError.set('Unable to load your purchase statistics. Please try again.');
+      },
+    });
+  }
+
+  categoryBarWidth(units: number, categories: CustomerProfileAnalytics['topCategories']): string {
+    const maxUnits = Math.max(...categories.map((category) => category.units), 0);
+    return `${maxUnits === 0 ? 0 : (units / maxUnits) * 100}%`;
   }
 
   onSubmit(): void {

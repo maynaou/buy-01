@@ -5,6 +5,7 @@ import { Observable, of, throwError } from 'rxjs';
 
 import { Profile } from './profile';
 import { UserService } from '../../core/services/user';
+import { OrderService } from '../../core/services/order';
 import { MediaService } from '../../core/services/media';
 import { TokenService } from '../../core/services/token';
 import { NotificationError } from '../../core/services/notification-error';
@@ -17,6 +18,7 @@ describe('Profile', () => {
     let fixture: ComponentFixture<Profile>;
 
     let userService: jasmine.SpyObj<UserService>;
+    let orderService: jasmine.SpyObj<OrderService>;
     let mediaService: jasmine.SpyObj<MediaService>;
     let tokenService: jasmine.SpyObj<TokenService>;
     let router: jasmine.SpyObj<Router>;
@@ -47,6 +49,16 @@ describe('Profile', () => {
             'UserService',
             ['getProfile', 'updateProfile'],
         );
+
+        orderService = jasmine.createSpyObj<OrderService>(
+            'OrderService',
+            ['getMyAnalytics'],
+        );
+        orderService.getMyAnalytics.and.returnValue(of({
+            totalSpent: 0,
+            mostBoughtProducts: [],
+            topCategories: [],
+        }));
 
         mediaService = jasmine.createSpyObj<MediaService>(
             'MediaService',
@@ -81,6 +93,10 @@ describe('Profile', () => {
                 {
                     provide: UserService,
                     useValue: userService,
+                },
+                {
+                    provide: OrderService,
+                    useValue: orderService,
                 },
                 {
                     provide: MediaService,

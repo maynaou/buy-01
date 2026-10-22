@@ -14,7 +14,7 @@ import { Observable, retry, throwError, timer } from 'rxjs';
 
 import { MediaService } from '../../../core/services/media';
 import { ProductService } from '../../../core/services/product';
-import { OrderService } from '../../../core/services/order';
+import { OrderService, TopSellingProduct } from '../../../core/services/order';
 import {
   PRODUCT_CATEGORIES,
   Product,
@@ -100,6 +100,10 @@ export class SellerDashboard {
   readonly filteredOrders = signal<Order[]>([]);
   readonly ordersLoading = signal(false);
   readonly ordersError = signal('');
+  readonly topProducts = signal<TopSellingProduct[]>([]);
+  readonly topProductsLoading = signal(false);
+  readonly topProductsError = signal('');
+  readonly topProductsLoaded = signal(false);
   readonly updatingOrderId = signal<string | null>(null);
   readonly orderFilter = signal<OrderStatus | 'ALL'>('ALL');
   readonly orderSearch = signal<string>('');
@@ -121,6 +125,9 @@ export class SellerDashboard {
       .filter((o) => o.status === 'DELIVERED')
       .flatMap((o) => o.items)
       .reduce((sum, item) => sum + item.quantity, 0)
+  );
+  readonly highestProductRevenue = computed(() =>
+    Math.max(0, ...this.topProducts().map((product) => product.revenue))
   );
 
 
@@ -154,6 +161,31 @@ export class SellerDashboard {
     if (tab === 'orders' && this.orders().length === 0 && !this.ordersLoading()) {
       this.loadSellerOrders();
     }
+    if (tab === 'orders' && !this.topProductsLoaded() && !this.topProductsLoading()
+        && !this.topProductsError()) {
+      this.loadSellerTopProducts();
+    }
+  }
+
+  loadSellerTopProducts(): void {
+    this.topProductsLoading.set(true);
+    this.topProductsError.set('');
+    this.orderService.getSellerTopProducts().subscribe({
+      next: (products) => {
+        this.topProducts.set(products);
+        this.topProductsLoaded.set(true);
+        this.topProductsLoading.set(false);
+      },
+      error: () => {
+        this.topProductsLoading.set(false);
+        this.topProductsError.set('Unable to load best-selling products. Please try again.');
+      },
+    });
+  }
+
+  topProductBarWidth(revenue: number): number {
+    const maximum = this.highestProductRevenue();
+    return maximum > 0 ? (revenue / maximum) * 100 : 0;
   }
 
   loadSellerOrders(): void {
@@ -248,6 +280,7 @@ export class SellerDashboard {
           'green'
         );
         this.loadSellerOrders();
+        this.loadSellerTopProducts();
       },
       error: (err) => {
         this.updatingOrderId.set(null);

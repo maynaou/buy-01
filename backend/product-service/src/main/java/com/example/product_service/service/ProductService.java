@@ -21,6 +21,7 @@ import com.example.product_service.events.ProductCreatedEvent;
 import com.example.product_service.exception.ProductNotFoundException;
 import com.example.product_service.mappers.ProductMapper;
 import com.example.product_service.repository.ProductRepository;
+import com.mongodb.client.result.UpdateResult;
 
 @Service
 @SuppressWarnings("null")
@@ -60,11 +61,6 @@ public class ProductService {
     public ProductDTO getProductById(String id) {
          Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Produc not found"));
           return productMapper.fromProduct(product);
-    }
-
-    public List<ProductDTO>  getProducts() {
-          List<Product> products = productRepository.findAll();
-          return productMapper.fromProduct(products);
     }
 
     public ProductPageDTO getProductPage(
@@ -127,24 +123,15 @@ public class ProductService {
     }
 
 
-    public List<ProductDTO> getProductsByIds(List<String> ids) {
-    if (ids == null || ids.isEmpty()) {
-        return List.of();
-    }
-
-       return productRepository.findByIdIn(ids)
-            .stream()
-            .map(productMapper::fromProduct)
-            .toList();
-    }
-
     public boolean decreaseStock(String productId, int qty) {
     Query query = new Query(Criteria.where("id").is(productId)
             .and("quantity").gte(qty));
+
     Update update = new Update().inc("quantity", -qty);
+
     return mongoTemplate.updateFirst(query, update, Product.class)
             .getModifiedCount() == 1;
-}
+    }
 
 public void increaseStock(String productId, int qty) {
     mongoTemplate.updateFirst(

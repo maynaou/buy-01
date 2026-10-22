@@ -9,5 +9,6 @@ public record ProductResponse(
     Double price,
     Integer quantity,
     String userId,
-    List<String> imagePaths
+    List<String> imagePaths,
+    String category
 ) {}

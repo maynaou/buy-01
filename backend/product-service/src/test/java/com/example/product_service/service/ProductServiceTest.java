@@ -130,33 +130,6 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("getProducts - retourne tous les produits")
-    void getProducts_ShouldReturnAllProducts() {
-        // Arrange
-        Product product2 = Product.builder()
-                .id("prod-2")
-                .name("Mouse")
-                .description("Wireless mouse for computers")
-                .price(29.99)
-                .quantity(50)
-                .userId("seller123")
-                .build();
-
-        List<Product> products = Arrays.asList(testProduct, product2);
-        List<ProductDTO> productDTOs = Arrays.asList(testProductDTO);
-
-        when(productRepository.findAll()).thenReturn(products);
-        when(productMapper.fromProduct(products)).thenReturn(productDTOs);
-
-        // Act
-        List<ProductDTO> result = productService.getProducts();
-
-        // Assert
-        assertThat(result).isNotNull().hasSize(1);
-        verify(productRepository, times(1)).findAll();
-    }
-
-    @Test
     @DisplayName("searchProducts - recherche dans le catalogue")
     @SuppressWarnings("null")
     void searchProducts_ShouldReturnMatchingProducts() {

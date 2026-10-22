@@ -352,28 +352,40 @@
         </div>
       </div>
 
-      <!-- Analytics: Top Products
-      @if (topProducts().length > 0) {
-        <div class="analytics-card">
-          <h3 class="analytics-card__title">&#127942; Top Selling Products</h3>
-          <ul class="analytics-list">
-            @for (p of topProducts(); track p.name; let i = $index) {
+      <section class="analytics-card" aria-labelledby="top-products-title">
+        <h3 id="top-products-title" class="analytics-card__title">
+          <span aria-hidden="true">&#127942;</span> Meilleures ventes
+        </h3>
+        @if (topProductsLoading()) {
+          <p class="analytics-card__message" role="status">Chargement des meilleures ventes…</p>
+        } @else if (topProductsError()) {
+          <div class="analytics-card__message analytics-card__message--error">
+            <span>{{ topProductsError() }}</span>
+            <button type="button" class="dashboard__btn" (click)="loadSellerTopProducts()">
+              Réessayer
+            </button>
+          </div>
+        } @else if (topProducts().length === 0) {
+          <p class="analytics-card__message">Aucune vente livrée pour le moment.</p>
+        } @else {
+          <ol class="analytics-list">
+            @for (product of topProducts(); track product.productId; let i = $index) {
               <li class="analytics-item">
-                <span class="analytics-item__rank">#{{ i + 1 }}</span>
-                <span class="analytics-item__name">{{ p.name }}</span>
-                <span class="analytics-item__meta">{{ p.units }} units</span>
-                <span class="analytics-item__revenue">{{ p.revenue | currency }}</span>
-                <div class="analytics-bar-wrap">
+                <span class="analytics-item__rank">{{ i + 1 }}</span>
+                <span class="analytics-item__name">{{ product.name }}</span>
+                <span class="analytics-item__meta">{{ product.units }} vendu(s)</span>
+                <span class="analytics-item__revenue">{{ product.revenue | currency }}</span>
+                <div class="analytics-bar-wrap" aria-hidden="true">
                   <div
                     class="analytics-bar"
-                    [style.width.%]="(p.revenue / topProducts()[0].revenue) * 100"
+                    [style.width.%]="topProductBarWidth(product.revenue)"
                   ></div>
                 </div>
               </li>
             }
-          </ul>
-        </div>
-      } -->
+          </ol>
+        }
+      </section>
 
       <div class="order-list-controls">
         <label class="order-list-controls__search">
