@@ -64,9 +64,6 @@ public class OrderService {
         for (CartItem item : cart.getItems()) {
             ProductResponse p = productRestClient.getProductById(item.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("Product not found: " + item.getProductId()));
-            if (p.userId() == null) {
-                throw new IllegalStateException("Product has no owner: " + p.id());
-            }
 
             if (p.quantity() == null || p.quantity() < item.getQuantity()) {
                 throw new InsufficientStockException("Not enough stock for " + p.name());

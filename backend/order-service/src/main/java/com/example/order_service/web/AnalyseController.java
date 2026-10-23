@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.order_service.dto.CustomerProfileAnalyticsDTO;
+import com.example.order_service.dto.ProfileAnalyticsDTO;
 import com.example.order_service.dto.TopSellingProductDTO;
 import com.example.order_service.service.AnalyseService;
 import org.springframework.security.core.Authentication;
@@ -23,7 +23,7 @@ public class AnalyseController {
 
     @GetMapping("/my-analytics")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
-    public ResponseEntity<CustomerProfileAnalyticsDTO> getMyAnalytics(Authentication authentication) {
+    public ResponseEntity<ProfileAnalyticsDTO> getMyAnalytics(Authentication authentication) {
         return ResponseEntity.ok(analyseService.getBuyerAnalytics(authentication.getName()));
     }
 
