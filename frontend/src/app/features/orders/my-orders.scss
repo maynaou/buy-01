@@ -1,19 +1,19 @@
 .orders-page {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 36px 20px 56px;
+  padding: 42px 28px 72px;
 }
 
 .orders-header {
   margin-bottom: 28px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--sm-border);
+  border-bottom: 1px solid var(--sm-accent);
 }
 
 .orders-header__title {
-  font-size: 1.7rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
 }
 
 .orders-header__subtitle {
@@ -28,7 +28,7 @@
   flex-direction: column;
   align-items: center;
   padding: 56px 20px;
-  border: 1px dashed var(--sm-border);
+  border: 1px dashed var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
   text-align: center;
@@ -47,7 +47,7 @@
   width: 36px;
   height: 36px;
   margin-bottom: 14px;
-  border: 3px solid var(--sm-border);
+  border: 3px solid var(--sm-accent);
   border-top-color: var(--sm-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -96,7 +96,7 @@
 
 .order-list-controls {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, 190px));
+  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, 190px)) auto;
   gap: 12px;
   margin: 0 0 16px;
 }
@@ -109,7 +109,7 @@
   min-width: 0;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--sm-border);
+  border: 1px solid var(--sm-accent);
   border-radius: var(--sm-radius);
   background: var(--sm-surface);
   color: var(--sm-ink-soft);
@@ -134,16 +134,20 @@
 .order-list-controls__search:focus-within,
 .order-list-controls__date:focus-within {
   border-color: var(--sm-accent);
-  box-shadow: 0 0 0 2px rgb(4 150 57 / 10%);
+  box-shadow: 0 0 0 2px rgb(7 132 61 / 12%);
 }
 
 .order-list-controls__apply {
+  display: inline-flex;
+  align-items: center;
   min-height: 42px;
   justify-content: center;
+  justify-self: start;
+  padding: 0 16px;
 }
 
 .client-order-card {
-  border: 1px solid var(--sm-border);
+  border: 1px solid var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
   box-shadow: var(--sm-shadow);
@@ -155,8 +159,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  background: #f8fafc;
-  border-bottom: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  border-bottom: 1px solid var(--sm-accent);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -234,8 +238,9 @@
   width: 52px;
   height: 52px;
   border-radius: var(--sm-radius);
-  object-fit: cover;
-  border: 1px solid var(--sm-border);
+  object-fit: contain;
+  border: 1px solid var(--sm-accent);
+  background: #f3f6f3;
 }
 
 .client-order-card__placeholder {
@@ -269,8 +274,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  background: #f8fafc;
-  border-top: 1px solid var(--sm-border);
+  background: var(--sm-surface);
+  border-top: 1px solid var(--sm-accent);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -304,8 +309,8 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 12px 20px;
-  background: #fff;
-  border-top: 1px dashed var(--sm-border);
+  background: var(--sm-surface);
+  border-top: 1px dashed var(--sm-accent);
   flex-wrap: wrap;
 }
 
@@ -371,13 +376,17 @@
     border-color: var(--sm-border);
 
     &:hover:not(:disabled) {
-      background: #f1f5f9;
+      background: var(--sm-danger);
       color: var(--sm-ink);
     }
   }
 }
 
 @media (max-width: 600px) {
+  .orders-page {
+    padding: 28px 16px 48px;
+  }
+
   .order-list-controls {
     grid-template-columns: 1fr 1fr;
   }
@@ -431,7 +440,7 @@
   display: flex;
   flex-direction: column;
   padding: 16px 18px;
-  border: 1px solid var(--sm-border);
+  border: 1px solid var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
   box-shadow: var(--sm-shadow);
@@ -477,7 +486,7 @@
   align-items: center;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid var(--sm-border);
+  border: 1px solid var(--sm-accent);
   background: var(--sm-surface);
   color: var(--sm-ink-soft);
   font-family: inherit;
@@ -491,7 +500,7 @@
   }
 
   &--all.status-pill--active {
-    background: var(--sm-ink);
+    background: var(--sm-surface);
     color: #fff;
     border-color: var(--sm-ink);
   }
@@ -580,9 +589,9 @@
 
 /* ── Status Timeline ───────────────────────────────────────────────────────── */
 .status-timeline {
-  border-top: 1px dashed var(--sm-border);
+  border-top: 1px dashed var(--sm-accent);
   padding: 10px 20px 14px;
-  background: #fafbfc;
+  background:  var(--sm-surface);
 }
 
 .status-timeline__toggle {

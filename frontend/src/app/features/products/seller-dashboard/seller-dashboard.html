@@ -47,7 +47,7 @@
 
         <div class="form-group">
           <label for="name">Name</label>
-          <input id="name" type="text" formControlName="name" autocomplete="off" />
+          <input id="name" type="text" formControlName="name" autocomplete="off" placeholder="Enter product name"/>
 
           @if (productForm.controls.name.touched && productForm.controls.name.invalid) {
             <div class="error">
@@ -66,7 +66,7 @@
 
         <div class="form-group">
           <label for="description">Description</label>
-          <textarea id="description" rows="4" formControlName="description"></textarea>
+          <textarea id="description" rows="4" formControlName="description"   placeholder="Enter product description"></textarea>
 
           @if (productForm.controls.description.touched && productForm.controls.description.invalid) {
             <div class="error">

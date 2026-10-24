@@ -1,21 +1,29 @@
 <header class="navbar">
   <div class="navbar__inner">
-    <a class="navbar__brand" routerLink="/">
+    <a
+      class="navbar__brand"
+      routerLink="/"
+      routerLinkActive
+      [routerLinkActiveOptions]="{ exact: true }"
+      #homeLink="routerLinkActive"
+    >
       <span class="navbar__mark" aria-hidden="true">&#9917;</span>
       <span class="navbar__name">Sport<span>Market</span></span>
     </a>
 
     <nav class="navbar__actions" aria-label="Main navigation">
-      <button
-        type="button"
-        class="navbar__search"
-        [attr.aria-expanded]="catalogSearchState.isOpen()"
-        aria-controls="catalog-search-panel"
-        (click)="openCatalogSearch()"
-      >
-        <span aria-hidden="true">&#128269;</span>
-        <span>Search</span>
-      </button>
+      @if (homeLink.isActive) {
+        <button
+          type="button"
+          class="navbar__search"
+          [attr.aria-expanded]="catalogSearchState.isOpen()"
+          aria-controls="catalog-search-panel"
+          (click)="openCatalogSearch()"
+        >
+          <span aria-hidden="true">&#128269;</span>
+          <span>Search</span>
+        </button>
+      }
       @if (isAuthenticated()) {
         @if (isSeller()) {
           <a class="navbar__link" routerLink="/dashboard" routerLinkActive="navbar__link--active">
@@ -52,4 +60,3 @@
     </nav>
   </div>
 </header>
-
