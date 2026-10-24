@@ -328,12 +328,40 @@
 }
 
 .hero {
+  position: relative;
   width: 100%;
-  height: 100%;
+  overflow: hidden;
+}
+
+.hero img {
   display: block;
-  object-fit: cover;
-  object-position: center;
-  background: #e7eee8 url('/Assets/images/SportMarket.png') center / cover no-repeat;
+  width: 100%;
+  height: auto;
+}
+
+.hero__shop-now {
+  position: absolute;
+  top: 79%;
+  left: 13%;
+  width: 17%;
+  height: 10%;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero__shop-now:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.hero__shop-now:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgb(0 0 0 / 70%);
+}
+
+.home#product-catalog {
+  scroll-margin-top: calc(var(--sm-navbar-h) + 12px);
 }
 
 .home__count {
@@ -565,10 +593,6 @@
 }
 
 @media (max-width: 480px) {
-  .hero {
-    aspect-ratio: 4 / 3;
-  }
-
   .home {
     padding: 24px 16px 48px;
   }
