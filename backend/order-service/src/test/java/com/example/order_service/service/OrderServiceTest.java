@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -220,6 +221,7 @@ class OrderServiceTest {
         when(productRestClient.getProductById("product-2"))
                 .thenReturn(Optional.of(product("product-2", "Shoes", 20.0, 5, "seller-1", List.of(), "SHOES")));
         RuntimeException failure = new RuntimeException("stock service unavailable");
+        doNothing().when(productRestClient).decreaseStock("product-1", 2);
         doThrow(failure).when(productRestClient).decreaseStock("product-2", 1);
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
@@ -239,6 +241,7 @@ class OrderServiceTest {
                 .thenReturn(Optional.of(product("product-1", "Ball", 10.0, 5, "seller-1", List.of(), "SPORT")));
         when(productRestClient.getProductById("product-2"))
                 .thenReturn(Optional.of(product("product-2", "Shoes", 20.0, 5, "seller-1", List.of(), "SHOES")));
+        doNothing().when(productRestClient).decreaseStock("product-1", 2);
         doThrow(conflictException()).when(productRestClient).decreaseStock("product-2", 1);
 
         InsufficientStockException thrown = assertThrows(InsufficientStockException.class,
