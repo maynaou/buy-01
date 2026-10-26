@@ -78,23 +78,6 @@
   outline: 0;
 }
 
-.catalog-search__clear {
-  flex: 0 0 auto;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--sm-ink-soft);
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.catalog-search__clear:hover:not(:disabled) {
-  background: var(--sm-bg);
-  color: var(--sm-ink);
-}
 
 .catalog-search__submit {
   flex: 0 0 auto;
@@ -376,10 +359,11 @@
 /* Status messages */
 .home__status {
   padding: 44px 20px;
-  border: 1px dashed var(--sm-border);
+  border: 1px dashed var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   color: var(--sm-ink-soft);
   text-align: center;
+  background: var(--sm-surface);
 }
 
 .home__status--error {

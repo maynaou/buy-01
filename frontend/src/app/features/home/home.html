@@ -33,17 +33,6 @@
           [value]="searchTerm()"
           (input)="onSearchInput($event)"
         />
-        @if (searchTerm()) {
-          <button
-            type="button"
-            class="catalog-search__clear"
-            aria-label="Effacer la recherche"
-            [disabled]="loading()"
-            (click)="clearSearch()"
-          >
-            Effacer
-          </button>
-        }
       </div>
       <button type="submit" class="catalog-search__submit" [disabled]="loading()">
         {{ loading() ? 'Recherche…' : 'Rechercher' }}
@@ -101,7 +90,7 @@
           <span aria-hidden="true">€</span>
         </div>
       </div>
-      @if (hasSearched() || searchTerm() || categoryFilter() || minPriceFilter() || maxPriceFilter()) {
+      <!-- @if (hasSearched() || searchTerm() || categoryFilter() || minPriceFilter() || maxPriceFilter()) { -->
         <button
           type="button"
           class="catalog-search__reset"
@@ -110,9 +99,9 @@
         >
           <span aria-hidden="true">↺</span> Effacer les filtres
         </button>
-      } @else {
+      <!-- } @else {
         <span class="catalog-search__price-note">Prix en euros</span>
-      }
+      } -->
     </div>
     @if (filterError()) {
       <p class="catalog-search__error" role="alert">{{ filterError() }}</p>

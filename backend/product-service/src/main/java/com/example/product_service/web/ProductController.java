@@ -43,6 +43,7 @@ public class ProductController {
 
     @GetMapping("/product/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable String id) {
+        System.out.println("+++++++++++++++++++++++++++++++++++ " + id);
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
@@ -121,6 +122,7 @@ public class ProductController {
         if (quantity < 1)
             return ResponseEntity.badRequest().build();
         productService.increaseStock(id, quantity);
+        System.out.println("+++++++++++++++++++++++");
         return ResponseEntity.ok().build();
     }
 

@@ -64,10 +64,16 @@ public class CartService {
     }
 
     public CartResponse getCartByUserId(String userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + userId));
-
-        return mapToCartResponse(cart);
+        return cartRepository.findByUserId(userId)
+                .map(this::mapToCartResponse)
+                .orElseGet(() -> CartResponse.builder()
+                        .userId(userId)
+                        .items(new ArrayList<>())
+                        .totalItems(0)
+                        .subtotalPrice(0.0)
+                        .shippingPrice(0.0)
+                        .totalPrice(0.0)
+                        .build());
     }
 
     public CartResponse updateCart(CartRequest cartRequest, String userId) {
@@ -108,6 +114,17 @@ public class CartService {
         cartRepository.save(cart);
 
         return mapToCartResponse(cart);
+    }
+
+    public void removeProductFromAllCarts(String productId) {
+        List<Cart> affectedCarts = cartRepository.findAll().stream()
+                .filter(cart -> cart.getItems() != null
+                        && cart.getItems().removeIf(item -> productId.equals(item.getProductId())))
+                .toList();
+
+        if (!affectedCarts.isEmpty()) {
+            cartRepository.saveAll(affectedCarts);
+        }
     }
 
 

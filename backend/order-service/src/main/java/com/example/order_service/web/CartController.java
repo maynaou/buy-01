@@ -31,12 +31,14 @@ public class CartController {
     @PostMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public ResponseEntity<CartResponse> addItem(@Valid @RequestBody CartRequest cartRequest, Authentication authentication) {
+        System.out.println("------------- ");
         return ResponseEntity.ok(cartService.addItemToCart(cartRequest, authentication.getName()));
     }
 
     @GetMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public ResponseEntity<CartResponse> getCartByUserId(Authentication authentication) {
+        System.out.println("User ID: " + authentication.getName()); // Debugging line
         return ResponseEntity.ok(cartService.getCartByUserId(authentication.getName()));
     }
 

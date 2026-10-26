@@ -40,10 +40,23 @@ export class Navbar {
 
   openCatalogSearch(): void {
     if (this.router.url.split('?')[0] === '/') {
-      this.catalogSearchState.toggle();
-    } else {
       this.catalogSearchState.open();
-      this.router.navigateByUrl('/');
+      this.scrollToCatalogSearch();
+    } else {
+      void this.router.navigateByUrl('/').then(() => {
+        this.catalogSearchState.open();
+        this.scrollToCatalogSearch();
+      });
     }
+  }
+
+  private scrollToCatalogSearch(): void {
+    requestAnimationFrame(() => {
+      document.getElementById('catalog-search-panel')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      document.getElementById('product-search')?.focus({ preventScroll: true });
+    });
   }
 }

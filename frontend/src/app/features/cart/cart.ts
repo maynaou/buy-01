@@ -39,10 +39,14 @@ export class CartPage {
 
     this.cartService.getCart().subscribe({
       next: (cartResponse) => {
+        console.log("++++++++++++++++++++", cartResponse);
+        
         this.cart.set(cartResponse);
         this.loading.set(false);
       },
       error: (error) => {
+        console.log("++++++++++++++++++++++++++++++++",error);
+        
         this.loading.set(false);
         this.errorMessage.set('Unable to load your cart.');
         console.error('Unable to load cart', error);

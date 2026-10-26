@@ -63,6 +63,7 @@ readonly isClient = computed(
 
   constructor() {
     this.loadProducts();
+    this.catalogSearchState.close();
 
     if (this.isClient()) {
         this.cartService.getCart().subscribe();
