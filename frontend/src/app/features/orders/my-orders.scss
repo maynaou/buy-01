@@ -37,8 +37,8 @@
 
 .orders-status--error {
   border-style: solid;
-  border-color: #fecdca;
-  background: #fffbfa;
+  border-color: var(--sm-danger);
+  background: var(--sm-surface);
   color: var(--sm-danger);
   gap: 14px;
 }

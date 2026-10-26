@@ -178,6 +178,21 @@ describe('CartPage', () => {
   });
 
   describe('clearCart', () => {
+    it('should not call the service when the cart is already empty', () => {
+      component.cart.set({
+        ...mockCart,
+        items: [],
+        totalItems: 0,
+        subtotalPrice: 0,
+        totalPrice: 0,
+      });
+
+      component.clearCart();
+
+      expect(cartService.clearCart).not.toHaveBeenCalled();
+      expect(component.isClearing()).toBeFalse();
+    });
+
     it('should clear all cart items and notify user', () => {
       const emptyCart: CartResponse = {
         id: 'cart-1',
@@ -266,6 +281,28 @@ describe('CartPage', () => {
 
       component.changeQuantity('prod-1', 11);
       expect(cartService.updateQuantity).not.toHaveBeenCalled();
+    });
+
+    it('should not update quantity for a product that is not in the cart', () => {
+      component.changeQuantity('missing-product', 1);
+
+      expect(cartService.updateQuantity).not.toHaveBeenCalled();
+      expect(component.updatingProductId()).toBeNull();
+    });
+
+    it('should reset the updating state and notify when quantity update fails', () => {
+      cartService.updateQuantity.and.returnValue(
+        throwError(() => new Error('Update failed'))
+      );
+
+      component.changeQuantity('prod-1', 3);
+
+      expect(component.updatingProductId()).toBeNull();
+      expect(notification.show).toHaveBeenCalledWith(
+        'Unable to update quantity',
+        'red'
+      );
+      expect(component.items()[0].quantity).toBe(2);
     });
   });
 });

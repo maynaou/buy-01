@@ -41,8 +41,8 @@
   align-items: center;
   gap: 14px;
   border-style: solid;
-  border-color: #fecdca;
-  background-color: #fffbfa;
+  border-color: var(--sm-danger);
+  background-color: var(--sm-surface);
   color: var(--sm-danger);
 }
 

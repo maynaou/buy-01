@@ -69,8 +69,8 @@
 .cart-status--error {
   gap: 14px;
   border-style: solid;
-  border-color: #fecdca;
-  background: #fffbfa;
+  border-color: var(--sm-danger);
+  background: var(--sm-surface);
   color: var(--sm-danger);
 }
 

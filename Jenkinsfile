@@ -4,7 +4,8 @@ def BACKEND_SERVICES = [
     'media-service',
     'product-service',
     'security-service',
-    'user-service'
+    'user-service',
+    'order-service'
 ]
 
 

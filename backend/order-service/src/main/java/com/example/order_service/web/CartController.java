@@ -31,7 +31,6 @@ public class CartController {
     @PostMapping("/cart")
     @PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public ResponseEntity<CartResponse> addItem(@Valid @RequestBody CartRequest cartRequest, Authentication authentication) {
-        System.out.println("------------- ");
         return ResponseEntity.ok(cartService.addItemToCart(cartRequest, authentication.getName()));
     }
 
