@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Navigation, Router, provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 import { Order } from '../checkout/models/order';
 import { OrderConfirmationPage } from './order-confirmation';
 
 describe('OrderConfirmationPage', () => {
-  let router: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const orders: Order[] = [
     makeOrder('order-123456789', 25),
@@ -13,25 +13,26 @@ describe('OrderConfirmationPage', () => {
   ];
 
   function createPage(currentOrders: Order[] | undefined): OrderConfirmationPage {
-    router = jasmine.createSpyObj<Router>('Router', [
-      'getCurrentNavigation',
-      'navigate',
-    ]);
-    router.getCurrentNavigation.and.returnValue(
-      currentOrders
-        ? ({
-            extras: { state: { orders: currentOrders } },
-          } as Navigation)
-        : null
-    );
-
     TestBed.configureTestingModule({
       imports: [OrderConfirmationPage],
-      providers: [
-        provideRouter([]),
-        { provide: Router, useValue: router },
-      ],
+      providers: [provideRouter([])],
     }).overrideComponent(OrderConfirmationPage, { set: { template: '' } });
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'getCurrentNavigation').and.returnValue(
+      currentOrders
+        ? {
+            id: 1,
+            initialUrl: router.parseUrl('/order/confirmation'),
+            extractedUrl: router.parseUrl('/order/confirmation'),
+            trigger: 'imperative',
+            extras: { state: { orders: currentOrders } },
+            previousNavigation: null,
+            abort: jasmine.createSpy('abort'),
+          }
+        : null
+    );
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
     const fixture = TestBed.createComponent(OrderConfirmationPage);
     fixture.detectChanges();
