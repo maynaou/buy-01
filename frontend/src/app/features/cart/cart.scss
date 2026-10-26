@@ -151,7 +151,13 @@
   box-shadow: var(--sm-shadow);
   transition: border-color var(--sm-transition);
 
-  &:hover { border-color: #c8d8cb; }
+}
+
+
+.cart-item:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .cart-item__image {
@@ -294,6 +300,13 @@
   box-shadow: var(--sm-shadow);
   position: sticky;
   top: calc(var(--sm-navbar-h) + 20px);
+}
+
+
+.cart-summary:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .cart-summary__title {

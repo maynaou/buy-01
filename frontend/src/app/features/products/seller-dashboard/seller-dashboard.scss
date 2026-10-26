@@ -325,6 +325,13 @@
   box-shadow: var(--sm-shadow);
 }
 
+
+.row:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
 .row__media {
   flex-shrink: 0;
 }
@@ -520,6 +527,13 @@
   box-shadow: var(--sm-shadow);
 }
 
+.orders-stat:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
+
 .orders-stat__value {
   font-size: 1.5rem;
   font-weight: 800;
@@ -542,6 +556,12 @@
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
   box-shadow: var(--sm-shadow);
+}
+
+.analytics-card:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .analytics-card__title {
@@ -723,6 +743,12 @@
   background: var(--sm-surface);
   box-shadow: var(--sm-shadow);
   overflow: hidden;
+}
+
+.order-card:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .order-card__head {

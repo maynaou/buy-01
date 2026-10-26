@@ -154,6 +154,14 @@
   overflow: hidden;
 }
 
+.client-order-card:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
+
+
 .client-order-card__head {
   display: flex;
   justify-content: space-between;
@@ -456,6 +464,12 @@
   &--danger .orders-stat__value {
     color: #ef4444;
   }
+}
+
+.orders-stat:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .orders-stat__value {

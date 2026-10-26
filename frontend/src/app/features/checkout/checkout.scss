@@ -146,6 +146,12 @@
   box-shadow: var(--sm-shadow);
 }
 
+.checkout-form-wrap:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
 .checkout-form {
   display: flex;
   flex-direction: column;
@@ -293,6 +299,13 @@
   position: sticky;
   top: calc(var(--sm-navbar-h) + 20px);
 }
+
+.checkout-summary:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
 
 .checkout-summary__items {
   display: flex;

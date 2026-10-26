@@ -58,6 +58,12 @@
   box-shadow: var(--sm-shadow);
 }
 
+.profile__card:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
+}
+
 .profile__identity {
   text-align: center;
 }
