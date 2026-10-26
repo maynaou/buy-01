@@ -62,8 +62,9 @@ describe('Home', () => {
 
     authService = jasmine.createSpyObj<AuthService>(
       'AuthService',
-      ['logout'],
+      ['isAuthenticated', 'logout'],
     );
+    authService.isAuthenticated.and.returnValue(false);
 
     notificationError = jasmine.createSpyObj<NotificationError>(
       'NotificationError',

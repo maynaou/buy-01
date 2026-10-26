@@ -46,8 +46,11 @@ export class CartPage {
       },
       error: (error) => {
         console.log("++++++++++++++++++++++++++++++++",error);
-        
         this.loading.set(false);
+        if (error?.status === 404) {
+          this.cart.set(null);
+          return;
+        }
         this.errorMessage.set('Unable to load your cart.');
         console.error('Unable to load cart', error);
       },
