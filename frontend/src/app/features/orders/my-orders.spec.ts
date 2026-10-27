@@ -120,7 +120,7 @@ describe('MyOrdersPage', () => {
     component.loadOrders();
 
     expect(component.filteredOrders().map((order) => order.id)).toEqual(['order-new']);
-    expect(component.orders().length).toBe(3);
+    expect(component.orders()).toHaveSize(3);
     expect(component.totalOrdersCount()).toBe(3);
   });
 

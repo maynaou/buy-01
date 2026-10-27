@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
@@ -11,8 +11,9 @@ import { Order } from '../checkout/models/order';
   templateUrl: './order-confirmation.html',
   styleUrl: './order-confirmation.scss',
 })
-export class OrderConfirmationPage {
+export class OrderConfirmationPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly navigationOrders: Order[] | undefined;
 
   readonly orders = signal<Order[]>([]);
 
@@ -21,9 +22,12 @@ export class OrderConfirmationPage {
     // getCurrentNavigation() returns null once the component finishes constructing.
     const nav = this.router.getCurrentNavigation();
     const state = nav?.extras?.state as { orders?: Order[] } | undefined;
+    this.navigationOrders = state?.orders;
+  }
 
-    if (state?.orders?.length) {
-      this.orders.set(state.orders);
+  ngOnInit(): void {
+    if (this.navigationOrders?.length) {
+      this.orders.set(this.navigationOrders);
     } else {
       // If user navigates directly or refreshes, redirect home
       this.router.navigate(['/']);
