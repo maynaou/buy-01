@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Navigation, Router, provideRouter } from '@angular/router';
 
 import { Order } from '../checkout/models/order';
 import { OrderConfirmationPage } from './order-confirmation';
@@ -19,9 +19,8 @@ describe('OrderConfirmationPage', () => {
     }).overrideComponent(OrderConfirmationPage, { set: { template: '' } });
 
     router = TestBed.inject(Router);
-    spyOn(router, 'getCurrentNavigation').and.returnValue(
-      currentOrders
-        ? {
+    const navigation: Navigation | null = currentOrders
+      ? {
             id: 1,
             initialUrl: router.parseUrl('/order/confirmation'),
             extractedUrl: router.parseUrl('/order/confirmation'),
@@ -30,8 +29,8 @@ describe('OrderConfirmationPage', () => {
             previousNavigation: null,
             abort: jasmine.createSpy('abort'),
           }
-        : null
-    );
+      : null;
+    spyOn(router, 'currentNavigation').and.returnValue(navigation);
     spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
     const fixture = TestBed.createComponent(OrderConfirmationPage);
