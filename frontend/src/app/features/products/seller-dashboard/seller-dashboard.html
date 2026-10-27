@@ -357,7 +357,7 @@
           <span aria-hidden="true">&#127942;</span> Meilleures ventes
         </h3>
         @if (topProductsLoading()) {
-          <p class="analytics-card__message" role="status">Chargement des meilleures ventes…</p>
+          <output class="analytics-card__message">Chargement des meilleures ventes…</output>
         } @else if (topProductsError()) {
           <div class="analytics-card__message analytics-card__message--error">
             <span>{{ topProductsError() }}</span>
@@ -423,7 +423,8 @@
       </div>
 
       <!-- Filters by status with color coding -->
-      <div class="order-status-filters" role="group" aria-label="Filtrer par statut">
+      <fieldset class="order-status-filters">
+        <legend class="visually-hidden">Filtrer par statut</legend>
         <button
           type="button"
           class="status-pill status-pill--all"
@@ -472,7 +473,7 @@
         >
           Annulées ({{ countByStatus('CANCELLED') }})
         </button>
-      </div>
+      </fieldset>
 
       <!-- Orders list (Dernières commandes en premier) -->
       @if (filteredOrders().length === 0) {

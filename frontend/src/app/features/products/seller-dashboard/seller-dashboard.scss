@@ -512,7 +512,7 @@
 /* Orders Stats */
 .orders-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -954,9 +954,9 @@
     border-color: #a7f3d0;
 
     &:hover:not(:disabled) {
-      background: #049639;
+      background: #047857;
       color: #fff;
-      border-color: #049639;
+      border-color: #047857;
     }
   }
 
@@ -966,9 +966,9 @@
     border-color: #c7d2fe;
 
     &:hover:not(:disabled) {
-      background: #4f46e5;
+      background: #4338ca;
       color: #fff;
-      border-color: #4f46e5;
+      border-color: #4338ca;
     }
   }
 
@@ -978,9 +978,9 @@
     border-color: #bbf7d0;
 
     &:hover:not(:disabled) {
-      background: #16a34a;
+      background: #15803d;
       color: #fff;
-      border-color: #16a34a;
+      border-color: #15803d;
     }
   }
 
@@ -991,9 +991,9 @@
     margin-left: auto;
 
     &:hover:not(:disabled) {
-      background: #dc2626;
+      background: #b91c1c;
       color: #fff;
-      border-color: #dc2626;
+      border-color: #b91c1c;
     }
   }
 }
@@ -1035,7 +1035,7 @@
   }
 
   .orders-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .order-card__foot {
@@ -1058,7 +1058,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 22px;
+  margin: 0 0 22px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
 }
 
 .status-pill {
@@ -1091,9 +1094,9 @@
     border-color: #fef08a;
 
     &.status-pill--active {
-      background: #f59e0b;
+      background: #a16207;
       color: #fff;
-      border-color: #f59e0b;
+      border-color: #a16207;
     }
   }
 
@@ -1103,9 +1106,9 @@
     border-color: #bfdbfe;
 
     &.status-pill--active {
-      background: #3b82f6;
+      background: #1d4ed8;
       color: #fff;
-      border-color: #3b82f6;
+      border-color: #1d4ed8;
     }
   }
 
@@ -1127,9 +1130,9 @@
     border-color: #bbf7d0;
 
     &.status-pill--active {
-      background: #10b981;
+      background: #047857;
       color: #fff;
-      border-color: #10b981;
+      border-color: #047857;
     }
   }
 
@@ -1139,9 +1142,9 @@
     border-color: #fecaca;
 
     &.status-pill--active {
-      background: #ef4444;
+      background: #b91c1c;
       color: #fff;
-      border-color: #ef4444;
+      border-color: #b91c1c;
     }
   }
 }
@@ -1246,13 +1249,4 @@
 .status-timeline__date {
   font-size: 0.78rem;
   color: var(--sm-muted);
-}
-
-/* Orders stats now 4 columns */
-.orders-stats {
-  grid-template-columns: repeat(4, 1fr);
-
-  @media (max-width: 680px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }

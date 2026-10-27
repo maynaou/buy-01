@@ -83,7 +83,7 @@ describe('CartPage', () => {
   it('should be created and load calculated cart directly from backend', () => {
     expect(component).toBeTruthy();
     expect(cartService.getCart).toHaveBeenCalledTimes(1);
-    expect(component.items().length).toBe(2);
+    expect(component.items()).toHaveSize(2);
     expect(component.totalItems()).toBe(3);
     expect(component.subtotal()).toBe(160.0);
     expect(component.shipping()).toBe(0.0);
@@ -105,7 +105,7 @@ describe('CartPage', () => {
     );
     component.loadCart();
 
-    expect(component.items().length).toBe(0);
+    expect(component.items()).toHaveSize(0);
     expect(component.totalItems()).toBe(0);
     expect(component.total()).toBe(0);
   });
@@ -114,7 +114,7 @@ describe('CartPage', () => {
     cartService.getCart.and.returnValue(throwError(() => ({ status: 404 })));
     component.loadCart();
 
-    expect(component.items().length).toBe(0);
+    expect(component.items()).toHaveSize(0);
     expect(component.errorMessage()).toBe('');
   });
 
@@ -152,7 +152,7 @@ describe('CartPage', () => {
       component.removeItem('prod-1');
 
       expect(cartService.removeFromCart).toHaveBeenCalledWith('prod-1');
-      expect(component.items().length).toBe(1);
+      expect(component.items()).toHaveSize(1);
       expect(component.items()[0].productId).toBe('prod-2');
       expect(component.totalItems()).toBe(1);
       expect(component.total()).toBe(100.0);
@@ -173,7 +173,7 @@ describe('CartPage', () => {
         'Failed to remove item',
         'red'
       );
-      expect(component.items().length).toBe(2);
+      expect(component.items()).toHaveSize(2);
     });
   });
 
@@ -209,7 +209,7 @@ describe('CartPage', () => {
       component.clearCart();
 
       expect(cartService.clearCart).toHaveBeenCalledTimes(1);
-      expect(component.items().length).toBe(0);
+      expect(component.items()).toHaveSize(0);
       expect(component.totalItems()).toBe(0);
       expect(component.total()).toBe(0);
       expect(notification.show).toHaveBeenCalledWith(
@@ -229,7 +229,7 @@ describe('CartPage', () => {
         'Failed to clear cart',
         'red'
       );
-      expect(component.items().length).toBe(2);
+      expect(component.items()).toHaveSize(2);
     });
   });
 

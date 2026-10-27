@@ -133,7 +133,7 @@
       <p class="profile__analytics-subtitle">Based on your delivered orders.</p>
 
       @if (analyticsLoading()) {
-      <p class="profile__analytics-message" role="status">Loading your statistics…</p>
+      <output class="profile__analytics-message">Loading your statistics…</output>
       } @else if (analyticsError()) {
       <div class="profile__analytics-message profile__analytics-message--error" role="alert">
         <p>{{ analyticsError() }}</p>

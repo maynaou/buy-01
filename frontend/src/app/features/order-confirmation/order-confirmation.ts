@@ -13,21 +13,14 @@ import { Order } from '../checkout/models/order';
 })
 export class OrderConfirmationPage implements OnInit {
   private readonly router = inject(Router);
-  private readonly navigationOrders: Order[] | undefined;
+  private readonly navigationOrders = this.router.currentNavigation()?.extras
+    .state as { orders?: Order[] } | undefined;
 
   readonly orders = signal<Order[]>([]);
 
-  constructor() {
-    // Navigation state must be read in the constructor while navigation is active.
-    // getCurrentNavigation() returns null once the component finishes constructing.
-    const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras?.state as { orders?: Order[] } | undefined;
-    this.navigationOrders = state?.orders;
-  }
-
   ngOnInit(): void {
-    if (this.navigationOrders?.length) {
-      this.orders.set(this.navigationOrders);
+    if (this.navigationOrders?.orders?.length) {
+      this.orders.set(this.navigationOrders.orders);
     } else {
       // If user navigates directly or refreshes, redirect home
       this.router.navigate(['/']);

@@ -82,7 +82,8 @@
       </button>
     </div>
 
-    <div class="order-status-filters" role="group" aria-label="Filtrer par statut">
+    <fieldset class="order-status-filters">
+      <legend class="visually-hidden">Filtrer par statut</legend>
       <button
         type="button"
         class="status-pill status-pill--all"
@@ -131,7 +132,7 @@
       >
         Annulées ({{ countByStatus('CANCELLED') }})
       </button>
-    </div>
+    </fieldset>
 
     <!-- Liste des commandes (Dernières commandes en premier) -->
     @if (filteredOrders().length === 0) {

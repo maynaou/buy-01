@@ -1,8 +1,7 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
 <div class="gallery" role="presentation" (click)="galleryClosed.emit()" (keydown.escape)="galleryClosed.emit()" tabindex="-1">
-<div
+<dialog open
   class="gallery__dialog"
-  role="dialog"
   aria-modal="true"
   [attr.aria-label]="product().name"
   (click)="$event.stopPropagation()"
@@ -110,5 +109,5 @@
         </div>
       }
     </div>
-  </div>
+</dialog>
 </div>

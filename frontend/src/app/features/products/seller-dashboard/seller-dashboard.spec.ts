@@ -772,7 +772,7 @@ describe('SellerDashboard', () => {
 
     component.onFilesSelected(event);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(file);
     expect(component.pendingImages()[0].previewUrl).toBe(
       'blob:photo',
@@ -866,7 +866,7 @@ describe('SellerDashboard', () => {
 
     component.onFilesSelected(event);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(validFile);
 
     expect(component.imageErrors()).toEqual([
@@ -906,7 +906,7 @@ describe('SellerDashboard', () => {
 
     component.removeImage(0);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(file2);
 
     expect(revokeSpy).toHaveBeenCalledWith('blob:a');
@@ -930,7 +930,7 @@ describe('SellerDashboard', () => {
 
     component.removeImage(99);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(revokeSpy).not.toHaveBeenCalled();
   });
 

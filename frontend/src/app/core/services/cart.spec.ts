@@ -112,7 +112,7 @@ describe('CartService', () => {
       };
 
       service.getCart().subscribe((cart) => {
-        expect(cart.items.length).toBe(0);
+        expect(cart.items).toHaveSize(0);
       });
 
       const req = httpTestingController.expectOne(cartUrl);

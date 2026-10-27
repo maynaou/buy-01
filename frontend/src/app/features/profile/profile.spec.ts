@@ -360,52 +360,26 @@ describe('Profile', () => {
     // Form validators
     // =========================================================
 
-    it('should require the username', () => {
+    it('should validate username values', () => {
         const control = component.profileForm.controls.username;
 
-        control.setValue('');
+        const cases = [
+            { description: 'required', value: '', error: 'required', valid: false },
+            { description: 'minimum length', value: 'ab', error: 'minlength', valid: false },
+            { description: 'minimum length boundary', value: 'abc', error: 'minlength', valid: true },
+            { description: 'maximum length', value: 'a'.repeat(21), error: 'maxlength', valid: false },
+            { description: 'invalid characters', value: 'test-user', error: 'pattern', valid: false },
+            { description: 'letters, numbers and underscores', value: 'user_123', valid: true },
+        ];
 
-        expect(control.hasError('required')).toBeTrue();
-    });
+        cases.forEach(({ description, value, error, valid }) => {
+            control.setValue(value);
 
-    it('should require username to have at least 3 characters', () => {
-        const control = component.profileForm.controls.username;
-
-        control.setValue('ab');
-
-        expect(control.hasError('minlength')).toBeTrue();
-    });
-
-    it('should allow a username with 3 characters', () => {
-        const control = component.profileForm.controls.username;
-
-        control.setValue('abc');
-
-        expect(control.valid).toBeTrue();
-    });
-
-    it('should reject usernames longer than 20 characters', () => {
-        const control = component.profileForm.controls.username;
-
-        control.setValue('a'.repeat(21));
-
-        expect(control.hasError('maxlength')).toBeTrue();
-    });
-
-    it('should reject usernames containing invalid characters', () => {
-        const control = component.profileForm.controls.username;
-
-        control.setValue('test-user');
-
-        expect(control.hasError('pattern')).toBeTrue();
-    });
-
-    it('should accept usernames containing letters, numbers and underscores', () => {
-        const control = component.profileForm.controls.username;
-
-        control.setValue('user_123');
-
-        expect(control.valid).toBeTrue();
+            expect(control.valid).withContext(description).toBe(valid);
+            if (error) {
+                expect(control.hasError(error)).withContext(description).toBe(!valid);
+            }
+        });
     });
 
     it('should require the email', () => {

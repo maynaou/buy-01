@@ -90,7 +90,6 @@
           <span aria-hidden="true">€</span>
         </div>
       </div>
-      <!-- @if (hasSearched() || searchTerm() || categoryFilter() || minPriceFilter() || maxPriceFilter()) { -->
         <button
           type="button"
           class="catalog-search__reset"
@@ -99,9 +98,6 @@
         >
           <span aria-hidden="true">↺</span> Effacer les filtres
         </button>
-      <!-- } @else {
-        <span class="catalog-search__price-note">Prix en euros</span>
-      } -->
     </div>
     @if (filterError()) {
       <p class="catalog-search__error" role="alert">{{ filterError() }}</p>
