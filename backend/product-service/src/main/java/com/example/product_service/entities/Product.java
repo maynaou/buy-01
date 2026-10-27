@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.example.product_service.enums.ProductCategory;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +24,7 @@ public class Product {
      private String description;
      private Double price;
      private Integer quantity;
+     private ProductCategory category;
      private String userId;
      private List<String> imagePaths;
 }

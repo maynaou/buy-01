@@ -1,8 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { environment } from '../../../environments/environment';
-import { Product, ProductRequest } from '../../features/products/models/product';
+import {
+  Product,
+  ProductCategory,
+  ProductPage,
+  ProductRequest,
+} from '../../features/products/models/product';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +17,30 @@ export class ProductService {
 
   private readonly productsUrl = `${environment.apiUrl}/api/products`;
 
-  getProducts() {
-    return this.http.get<Product[]>(`${this.productsUrl}/product`);
+  getProducts(page = 0, size = 10) {
+    return this.http.get<ProductPage>(`${this.productsUrl}/catalog`, {
+      params: { page, size },
+    });
+  }
+
+  searchProducts(
+    keyword: string,
+    category: ProductCategory | null,
+    page = 0,
+    size = 10,
+    minPrice?: number,
+    maxPrice?: number,
+  ) {
+    let params = new HttpParams();
+    if (keyword) params = params.set('keyword', keyword);
+    if (category) params = params.set('category', category);
+    params = params.set('page', page).set('size', size);
+    if (minPrice !== undefined) params = params.set('minPrice', minPrice);
+    if (maxPrice !== undefined) params = params.set('maxPrice', maxPrice);
+
+    return this.http.get<ProductPage>(`${this.productsUrl}/search`, {
+      params,
+    });
   }
 
   getMyProducts() {

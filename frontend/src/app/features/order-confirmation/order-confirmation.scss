@@ -1,0 +1,289 @@
+.confirm-page {
+  min-height: calc(100vh - var(--sm-navbar-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 20px 64px;
+}
+
+// ── Main card ─────────────────────────────────────────────────────────────────
+.confirm-card {
+  width: 100%;
+  max-width: 720px;
+  padding: 44px 40px;
+  border: 1px solid var(--sm-accent);
+  border-radius: var(--sm-radius-lg);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow);
+  text-align: center;
+}
+
+// ── Success icon & heading ────────────────────────────────────────────────────
+.confirm-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.confirm-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--sm-ink);
+  margin-bottom: 10px;
+}
+
+.confirm-subtitle {
+  font-size: 0.95rem;
+  color: var(--sm-ink-soft);
+  margin-bottom: 32px;
+}
+
+// ── Order cards ───────────────────────────────────────────────────────────────
+.confirm-orders {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.confirm-order {
+  border: 1px solid var(--sm-accent);
+  border-radius: var(--sm-radius);
+  overflow: hidden;
+}
+
+.confirm-order__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--sm-surface);
+  border-bottom: 1px solid var(--sm-accent);
+}
+
+.confirm-order__label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sm-muted);
+  margin-bottom: 2px;
+}
+
+.confirm-order__id {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--sm-ink);
+  font-family: monospace;
+}
+
+.confirm-order__status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.confirm-order__status--pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+// ── Items inside order ─────────────────────────────────────────────────────────
+.confirm-order__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.confirm-order__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sm-accent);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.confirm-order__item-img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: var(--sm-radius);
+  background: #f3f6f3;
+}
+
+.confirm-order__item-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--sm-muted);
+  font-size: 1.2rem;
+}
+
+.confirm-order__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.confirm-order__item-name {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.confirm-order__item-meta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--sm-muted);
+  margin-top: 2px;
+}
+
+.confirm-order__item-total {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sm-ink);
+  white-space: nowrap;
+}
+
+// ── Footer (delivery info + total) ────────────────────────────────────────────
+.confirm-order__footer {
+  padding: 14px 16px;
+  background: var(--sm-surface);
+  border-top: 1px solid var(--sm-accent);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-order__detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--sm-ink-soft);
+}
+
+.confirm-order__total {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--sm-ink);
+
+  strong {
+    color: var(--sm-accent);
+    font-size: 1rem;
+  }
+}
+
+// ── Grand total ────────────────────────────────────────────────────────────────
+.confirm-grand-total {
+  padding: 16px 20px;
+  border: 1px solid var(--sm-accent);
+  border-radius: var(--sm-radius);
+  background: #f0fdf4;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sm-ink);
+  margin-bottom: 20px;
+  text-align: center;
+
+  strong {
+    color: var(--sm-accent);
+    font-size: 1.2rem;
+    margin-left: 6px;
+  }
+}
+
+// ── Payment notice ─────────────────────────────────────────────────────────────
+.confirm-payment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--sm-radius);
+  background: var(--sm-surface);
+  color: var(--sm-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+// ── Action buttons ─────────────────────────────────────────────────────────────
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--sm-radius);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--sm-transition),
+    color var(--sm-transition),
+    box-shadow var(--sm-transition),
+    transform var(--sm-transition);
+}
+
+.confirm-btn--primary {
+  background: var(--sm-accent);
+  color: #fff;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--sm-accent-dark);
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 8px 18px rgb(7 132 61 / 18%);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+// ── Responsive ─────────────────────────────────────────────────────────────────
+@media (max-width: 540px) {
+  .confirm-page {
+    align-items: flex-start;
+    padding: 28px 16px 48px;
+  }
+
+  .confirm-card {
+    padding: 30px 20px;
+  }
+
+  .confirm-title {
+    font-size: 1.4rem;
+  }
+}

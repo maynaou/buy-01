@@ -1,0 +1,92 @@
+<section class="confirm-page">
+
+  <div class="confirm-card">
+
+    <h1 class="confirm-title">Order Placed!</h1>
+    <p class="confirm-subtitle">
+      Thank you for your purchase. Your order has been received and is being prepared.
+    </p>
+
+    <!-- Orders list (one per seller) -->
+    <div class="confirm-orders">
+      @for (order of orders(); track order.id) {
+        <article class="confirm-order">
+          <div class="confirm-order__head">
+            <div>
+              <span class="confirm-order__label">Order ID</span>
+              <span class="confirm-order__id" title="{{ order.id }}">#{{ shortId(order.id) }}</span>
+            </div>
+            <span class="confirm-order__status confirm-order__status--pending">
+              {{ order.status }}
+            </span>
+          </div>
+
+          <div class="confirm-order__items">
+            @for (item of order.items; track item.productId) {
+              <div class="confirm-order__item">
+                @if (item.image) {
+                  <img class="confirm-order__item-img" [src]="item.image" [alt]="item.productName" />
+                } @else {
+                  <div class="confirm-order__item-img confirm-order__item-placeholder">
+                    <span aria-hidden="true">&#128247;</span>
+                  </div>
+                }
+                <div class="confirm-order__item-info">
+                  <span class="confirm-order__item-name">{{ item.productName }}</span>
+                  <span class="confirm-order__item-meta">
+                    Qty: {{ item.quantity }} &times; {{ item.unitPrice | currency }}
+                  </span>
+                </div>
+                <span class="confirm-order__item-total">
+                  {{ item.unitPrice * item.quantity | currency }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="confirm-order__footer">
+            <div class="confirm-order__detail">
+              <span aria-hidden="true">&#128100;</span> {{ order.fullName }}
+            </div>
+            <div class="confirm-order__detail">
+              <span aria-hidden="true">&#128205;</span> {{ order.address }}
+            </div>
+            <div class="confirm-order__detail">
+              <span aria-hidden="true">&#128222;</span> {{ order.phone }}
+            </div>
+            <div class="confirm-order__detail">
+              <span aria-hidden="true">&#128197;</span>
+              {{ order.createdAt | date:'medium' }}
+            </div>
+            <div class="confirm-order__total">
+              Order Total: <strong>{{ order.total | currency }}</strong>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- Grand total (multi-seller) -->
+    @if (orders().length > 1) {
+      <div class="confirm-grand-total">
+        Grand Total ({{ orders().length }} orders):
+        <strong>{{ grandTotal() | currency }}</strong>
+      </div>
+    }
+
+    <!-- Payment method -->
+    <div class="confirm-payment">
+      <span aria-hidden="true">&#128176;</span>
+      Payment on delivery — our team will contact you shortly.
+    </div>
+
+    <!-- Actions -->
+    <div class="confirm-actions">
+      <a routerLink="/" class="confirm-btn confirm-btn--primary">
+        <span aria-hidden="true">&#127916;</span> Continue Shopping
+      </a>
+    </div>
+
+  </div>
+
+</section>

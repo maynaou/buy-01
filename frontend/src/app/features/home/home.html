@@ -1,21 +1,133 @@
 <div class="hero">
-
-  <img src="/Assets/images/image1.png" alt="">
+  <img src="/Assets/images/SportMarket.png" alt="Sport Market : équipement de football" />
+  <a
+    class="hero__shop-now"
+    href="#product-catalog"
+    aria-label="Shop Now : voir les produits"
+  ></a>
 </div>
 
 
-<section class="home">
+<section class="home" id="product-catalog">
+  <form
+    id="catalog-search-panel"
+    class="catalog-search"
+    role="search"
+    [hidden]="!searchPanelOpen()"
+    (ngSubmit)="searchProducts()"
+  >
+    <div class="catalog-search__header">
+      <label class="catalog-search__label" for="product-search">Rechercher des produits</label>
+    </div>
+    <div class="catalog-search__controls">
+      <div class="catalog-search__input-wrap">
+        <span class="catalog-search__icon" aria-hidden="true">&#128269;</span>
+        <input
+          id="product-search"
+          name="keyword"
+          type="search"
+          maxlength="100"
+          autocomplete="off"
+          [disabled]="loading()"
+          placeholder="Ex. ballon, chaussures, maillot…"
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+      <button type="submit" class="catalog-search__submit" [disabled]="loading()">
+        {{ loading() ? 'Recherche…' : 'Rechercher' }}
+      </button>
+    </div>
+    <div class="catalog-search__filters">
+      <div class="catalog-search__filter">
+        <label for="product-category">Catégorie</label>
+        <select
+          id="product-category"
+          name="category"
+          [value]="categoryFilter() ?? ''"
+          [disabled]="loading()"
+          (change)="onCategoryInput($event)"
+        >
+          <option value="">Toutes les catégories</option>
+          @for (category of productCategories; track category.value) {
+            <option [value]="category.value">{{ category.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="catalog-search__filter">
+        <label for="product-min-price">Prix minimum</label>
+        <div class="catalog-search__price-input">
+          <input
+            id="product-min-price"
+            name="minPrice"
+            type="number"
+            min="0"
+            max="999999.99"
+            step="0.01"
+            placeholder="0"
+            [value]="minPriceFilter()"
+            [disabled]="loading()"
+            (input)="onMinPriceInput($event)"
+          />
+          <span aria-hidden="true">€</span>
+        </div>
+      </div>
+      <div class="catalog-search__filter">
+        <label for="product-max-price">Prix maximum</label>
+        <div class="catalog-search__price-input">
+          <input
+            id="product-max-price"
+            name="maxPrice"
+            type="number"
+            min="0"
+            max="999999.99"
+            step="0.01"
+            placeholder="Sans limite"
+            [value]="maxPriceFilter()"
+            [disabled]="loading()"
+            (input)="onMaxPriceInput($event)"
+          />
+          <span aria-hidden="true">€</span>
+        </div>
+      </div>
+        <button
+          type="button"
+          class="catalog-search__reset"
+          [disabled]="loading()"
+          (click)="clearSearch()"
+        >
+          <span aria-hidden="true">↺</span> Effacer les filtres
+        </button>
+    </div>
+    @if (filterError()) {
+      <p class="catalog-search__error" role="alert">{{ filterError() }}</p>
+    }
+  </form>
+
   @if (loading()) {
     <p class="home__status">Loading products…</p>
   } @else if (errorMessage()) {
     <div class="home__status home__status--error">
       <p>{{ errorMessage() }}</p>
-      <button type="button" class="home__btn" (click)="loadProducts()">Retry</button>
+      <button
+        type="button"
+        class="home__btn"
+        (click)="retryCurrentPage()"
+      >
+        Retry
+      </button>
     </div>
   } @else if (products().length === 0) {
-    <p class="home__status">No products yet — check back soon.</p>
+    <p class="home__status">
+      {{ hasSearched() ? 'Aucun produit ne correspond à ces critères.' : 'No products yet — check back soon.' }}
+    </p>
   } @else {
-    <p class="home__count">{{ products().length }} product(s)</p>
+    <p class="home__count">
+      {{ totalElements() }} produit(s)
+      @if (searchTerm()) {
+        <span>pour « {{ searchTerm() }} »</span>
+      }
+    </p>
 
     <ul class="product-grid">
       @for (product of products(); track product.id) {
@@ -38,6 +150,7 @@
 
           <div class="product-card__body">
             <h3 class="product-card__name">{{ product.name }}</h3>
+            <p class="product-card__category">{{ categoryLabel(product.category) }}</p>
             <p class="product-card__description">{{ product.description }}</p>
 
             <div class="product-card__footer">
@@ -49,6 +162,21 @@
                 <span class="product-card__stock product-card__stock--out">Out of stock</span>
               }
             </div>
+
+            @if (authService.isAuthenticated() && isClient() && product.quantity > 0) {
+  <button
+    type="button"
+    class="product-card__cart"
+    [disabled]="isStockReached(product)"
+    (click)="onAddToCart(product, $event)"
+  >
+  @if (isStockReached(product)) {
+      🚫 Max atteint ({{ product.quantity }})
+    } @else {
+      🛒 Add to Cart ({{ getCartQuantity(product.id) }}/{{ product.quantity }})
+    }
+  </button>
+}
           </div>
 
           <!-- Stretched over the whole card so the card itself is the button. -->
@@ -58,9 +186,45 @@
         </li>
       }
     </ul>
+    @if (totalPages() > 1) {
+      <nav class="catalog-pagination" aria-label="Pagination des produits">
+        <button
+          type="button"
+          class="catalog-pagination__button"
+          [disabled]="loading() || currentPage() === 0"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          Précédent
+        </button>
+        @for (page of visiblePageNumbers(); track page) {
+          <button
+            type="button"
+            class="catalog-pagination__number"
+            [class.catalog-pagination__number--active]="page === currentPage()"
+            [attr.aria-current]="page === currentPage() ? 'page' : null"
+            [attr.aria-label]="'Page ' + (page + 1)"
+            [disabled]="loading() || page === currentPage()"
+            (click)="goToPage(page)"
+          >
+            {{ page + 1 }}
+          </button>
+        }
+        <span class="catalog-pagination__status" aria-live="polite">
+          Page {{ currentPage() + 1 }} sur {{ totalPages() }}
+        </span>
+        <button
+          type="button"
+          class="catalog-pagination__button"
+          [disabled]="loading() || currentPage() >= totalPages() - 1"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          Suivant
+        </button>
+      </nav>
+    }
   }
 </section>
-
+ 
 @if (selectedProduct(); as product) {
-  <app-product-gallery [product]="product" (galleryClosed)="closeGallery()" />
+  <app-product-gallery [product]="product" (galleryClosed)="closeGallery()" (addToCart)="addToCartFromGallery($event)"/>
 }

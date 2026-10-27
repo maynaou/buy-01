@@ -45,6 +45,10 @@ export class TokenService {
     return this.getRoles().includes('ROLE_SELLER');
   }
 
+  isClient(): boolean {
+    return this.getRoles().includes('ROLE_CLIENT');
+  }
+
   private readPayload(): Record<string, unknown> | null {
     const token = this.getAccessToken();
     if (!token) {

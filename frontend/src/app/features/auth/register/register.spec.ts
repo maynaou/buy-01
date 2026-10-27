@@ -84,68 +84,28 @@ describe('Register', () => {
   // Username validation
   // --------------------------------------------------
 
-  it('should require a username', () => {
+  it('should validate username values', () => {
     const username = component.registerForm.controls.username;
 
-    username.setValue('');
+    const cases = [
+      { description: 'required', value: '', error: 'required', valid: false },
+      { description: 'minimum length', value: 'ab', error: 'minlength', valid: false },
+      { description: 'minimum length boundary', value: 'abc', error: 'minlength', valid: true },
+      { description: 'maximum length', value: 'a'.repeat(21), error: 'maxlength', valid: false },
+      { description: 'maximum length boundary', value: 'a'.repeat(20), error: 'maxlength', valid: true },
+      { description: 'special characters', value: 'test-user', error: 'pattern', valid: false },
+      { description: 'spaces', value: 'test user', error: 'pattern', valid: false },
+      { description: 'letters, numbers and underscore', value: 'Test_User123', valid: true },
+    ];
 
-    expect(username.hasError('required')).toBeTrue();
-  });
+    cases.forEach(({ description, value, error, valid }) => {
+      username.setValue(value);
 
-  it('should reject a username shorter than 3 characters', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('ab');
-
-    expect(username.hasError('minlength')).toBeTrue();
-  });
-
-  it('should accept a username with exactly 3 characters', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('abc');
-
-    expect(username.hasError('minlength')).toBeFalse();
-  });
-
-  it('should reject a username longer than 20 characters', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('a'.repeat(21));
-
-    expect(username.hasError('maxlength')).toBeTrue();
-  });
-
-  it('should accept a username with exactly 20 characters', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('a'.repeat(20));
-
-    expect(username.hasError('maxlength')).toBeFalse();
-  });
-
-  it('should reject a username containing special characters', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('test-user');
-
-    expect(username.hasError('pattern')).toBeTrue();
-  });
-
-  it('should reject a username containing spaces', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('test user');
-
-    expect(username.hasError('pattern')).toBeTrue();
-  });
-
-  it('should accept a username containing letters, numbers and underscore', () => {
-    const username = component.registerForm.controls.username;
-
-    username.setValue('Test_User123');
-
-    expect(username.valid).toBeTrue();
+      expect(username.valid).withContext(description).toBe(valid);
+      if (error) {
+        expect(username.hasError(error)).withContext(description).toBe(!valid);
+      }
+    });
   });
 
   // --------------------------------------------------

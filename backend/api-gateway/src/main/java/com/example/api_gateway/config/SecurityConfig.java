@@ -38,7 +38,8 @@ public class SecurityConfig {
               .csrf(csrf-> csrf.disable())
               .authorizeExchange(authorize -> authorize.pathMatchers("/actuator/health/**").permitAll()
                                                        .pathMatchers("/api/auth/**").permitAll()
-                                                       .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll())
+                                                       .pathMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+              )
               .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
               .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt-> jwt.jwtDecoder(jwtDecoder()))
                                                     .authenticationEntryPoint(customAuthenticationEntryPoint()))
@@ -73,7 +74,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("https://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

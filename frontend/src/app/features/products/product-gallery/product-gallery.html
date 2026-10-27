@@ -1,8 +1,7 @@
 <!-- Backdrop: clicking outside the dialog closes it. -->
 <div class="gallery" role="presentation" (click)="galleryClosed.emit()" (keydown.escape)="galleryClosed.emit()" tabindex="-1">
-<div
+<dialog open
   class="gallery__dialog"
-  role="dialog"
   aria-modal="true"
   [attr.aria-label]="product().name"
   (click)="$event.stopPropagation()"
@@ -48,17 +47,21 @@
 
     <!-- Details + thumbnails -->
     <div class="gallery__info">
-      <h2 class="gallery__name">{{ product().name }}</h2>
-      <p class="gallery__description">{{ product().description }}</p>
+      <div class="gallery__details">
+        <div class="gallery__product-details">
+          <h2 class="gallery__name">{{ product().name }}</h2>
+          <p class="gallery__description">{{ product().description }}</p>
 
-      <div class="gallery__meta">
-        <span class="gallery__price">{{ product().price | currency }}</span>
+          <div class="gallery__meta">
+            <span class="gallery__price">{{ product().price | currency }}</span>
 
-        @if (product().quantity > 0) {
-          <span class="gallery__stock">{{ product().quantity }} in stock</span>
-        } @else {
-          <span class="gallery__stock gallery__stock--out">Out of stock</span>
-        }
+            @if (product().quantity > 0) {
+              <span class="gallery__stock">{{ product().quantity }} in stock</span>
+            } @else {
+              <span class="gallery__stock gallery__stock--out">Out of stock</span>
+            }
+          </div>
+        </div>
       </div>
 
       @if (hasMultiple()) {
@@ -78,6 +81,33 @@
           }
         </ul>
       }
+
+      @if (authService.isAuthenticated() && isClient()) {
+        <div class="gallery__cart">
+          <label for="cart-quantity">Quantity</label>
+          <input
+            id="cart-quantity"
+            type="number"
+            min="1"
+            [max]="product().quantity"
+            [value]="quantity()"
+            (input)="quantity.set(+$any($event.target).value)"
+            [disabled]="product().quantity <= 0"
+          />
+          <button
+            type="button"
+            class="gallery__add-cart"
+            [disabled]="
+              product().quantity <= 0 ||
+              quantity() < 1 ||
+              quantity() > product().quantity
+            "
+            (click)="addProductToCart()"
+          >
+            Add to Cart
+          </button>
+        </div>
+      }
     </div>
-  </div>
+</dialog>
 </div>

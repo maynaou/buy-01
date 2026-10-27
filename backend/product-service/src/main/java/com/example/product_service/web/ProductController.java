@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.product_service.dto.ProductDTO;
+import com.example.product_service.dto.ProductPageDTO;
+import com.example.product_service.enums.ProductCategory;
 import com.example.product_service.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -23,27 +26,64 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-     
+
     ProductService productService;
 
     public ProductController(ProductService productService) {
-              this.productService = productService;
+        this.productService = productService;
     }
-    
+
     @PostMapping("/product")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest, Authentication authentication) {
-           return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productRequest, authentication.getName()));
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductDTO productRequest,
+            Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.createProduct(productRequest, authentication.getName()));
     }
 
     @GetMapping("/product/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable String id) {
-            return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
+        System.out.println("+++++++++++++++++++++++++++++++++++ " + id);
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
-    @GetMapping("/product")
-    public ResponseEntity<List<ProductDTO>> getProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
+    @GetMapping("/catalog")
+    public ResponseEntity<ProductPageDTO> getProductPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (!isValidPage(page, size)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(productService.getProductPage(null, null, null, null, page, size));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ProductPageDTO> searchProducts(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "category", required = false) ProductCategory category,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        String normalizedKeyword = keyword == null ? null : keyword.trim();
+        if ((normalizedKeyword != null
+                    && (normalizedKeyword.isEmpty() || normalizedKeyword.length() > 100))
+                || !isValidPrice(minPrice)
+                || !isValidPrice(maxPrice)
+                || (minPrice != null && maxPrice != null && minPrice > maxPrice)
+                || !isValidPage(page, size)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(
+                productService.getProductPage(normalizedKeyword, category, minPrice, maxPrice, page, size));
+    }
+
+    private boolean isValidPage(int page, int size) {
+        return page >= 0 && size >= 1 && size <= 48;
+    }
+
+    private boolean isValidPrice(Double price) {
+        return price == null || (Double.isFinite(price) && price >= 0 && price <= 999999.99);
     }
 
     @GetMapping("/my-products")
@@ -54,15 +94,36 @@ public class ProductController {
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody @Valid ProductDTO productDTO) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id,productDTO));
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id,
+            @RequestBody @Valid ProductDTO productDTO) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id, productDTO));
     }
 
     @DeleteMapping("/product/{id}")
     @PreAuthorize("hasAuthority('ROLE_SELLER') and @productSecurity.isOwner(#id,authentication.name)")
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-              productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();  
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/stock/decrease")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT','ROLE_SELLER')")
+    public ResponseEntity<Void> decrease(@PathVariable String id, @RequestParam int quantity) {
+        if (quantity < 1)
+            return ResponseEntity.badRequest().build();
+        boolean ok = productService.decreaseStock(id, quantity);
+        return ok ? ResponseEntity.ok().build()
+                : ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PostMapping("/{id}/stock/increase")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT','ROLE_SELLER')")
+    public ResponseEntity<Void> increase(@PathVariable String id, @RequestParam int quantity) {
+        if (quantity < 1)
+            return ResponseEntity.badRequest().build();
+        productService.increaseStock(id, quantity);
+        System.out.println("+++++++++++++++++++++++");
+        return ResponseEntity.ok().build();
     }
 
 }

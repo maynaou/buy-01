@@ -5,17 +5,14 @@
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - var(--sm-navbar-h));
-  padding: 32px 16px;
-  background:
-    radial-gradient(circle at 12% 12%, rgb(255 77 45 / 10%), transparent 42%),
-    radial-gradient(circle at 88% 88%, rgb(15 23 42 / 8%), transparent 45%), var(--sm-bg);
+  padding: 44px 20px;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 420px;
-  padding: 36px 32px 32px;
-  border: 1px solid var(--sm-border);
+  max-width: 440px;
+  padding: 40px 36px 34px;
+  border: 1px solid var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   background-color: var(--sm-surface);
   box-shadow: var(--sm-shadow);
@@ -23,9 +20,9 @@
 
 /* Headings */
 .auth-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
   text-align: center;
 }
 
@@ -54,10 +51,11 @@
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 11px 13px;
+  min-height: 48px;
+  padding: 11px 14px;
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius);
-  background-color: #fbfcfe;
+  background-color: var(--sm-surface);
   color: var(--sm-ink);
   font-family: inherit;
   font-size: 0.95rem;
@@ -73,14 +71,14 @@
 
 .form-group input:hover,
 .form-group select:hover {
-  border-color: #cbd5e1;
+  border-color: #c2d0c5;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   border-color: var(--sm-accent);
   background-color: var(--sm-surface);
-  box-shadow: 0 0 0 3px rgb(255 77 45 / 15%);
+  box-shadow: 0 0 0 3px rgb(7 132 61 / 13%);
   outline: none;
 }
 
@@ -112,7 +110,8 @@
 .auth-card button[type='submit'] {
   width: 100%;
   margin-top: 6px;
-  padding: 12px 16px;
+  min-height: 48px;
+  padding: 12px 18px;
   border: 0;
   border-radius: var(--sm-radius);
   background-color: var(--sm-accent);
@@ -120,8 +119,7 @@
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition:
     background-color var(--sm-transition),
@@ -131,7 +129,7 @@
 
 .auth-card button[type='submit']:hover:not(:disabled) {
   background-color: var(--sm-accent-dark);
-  box-shadow: 0 8px 18px rgb(255 77 45 / 28%);
+  box-shadow: 0 8px 18px rgb(7 132 61 / 22%);
   transform: translateY(-1px);
 }
 
@@ -160,7 +158,17 @@
 }
 
 @media (max-width: 480px) {
+  .auth-page {
+    padding: 28px 16px;
+  }
+
   .auth-card {
-    padding: 28px 20px 24px;
+    padding: 30px 22px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card button[type='submit'] {
+    transition: none;
   }
 }

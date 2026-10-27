@@ -1,0 +1,191 @@
+<section class="checkout-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="checkout-header">
+    <a routerLink="/cart" class="checkout-header__back" aria-label="Back to cart">
+      <span aria-hidden="true">&#8592;</span> Back to Cart
+    </a>
+    <div>
+      <h1 class="checkout-header__title">Checkout</h1>
+      <p class="checkout-header__subtitle">Fill in your delivery details to confirm your order.</p>
+    </div>
+  </header>
+
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="checkout-status">
+      <div class="checkout-spinner" aria-hidden="true"></div>
+      <p>Loading your cart…</p>
+    </div>
+
+  <!-- ── Empty cart ─────────────────────────────────────────────────────── -->
+  } @else if (items().length === 0 && !loading()) {
+    <div class="checkout-empty">
+      <div class="checkout-empty__icon" aria-hidden="true">&#128722;</div>
+      <h2>Your cart is empty</h2>
+      <p>Add products before placing an order.</p>
+      <a routerLink="/" class="checkout-btn">Discover Products</a>
+    </div>
+
+  } @else {
+
+    <div class="checkout-layout">
+
+      <!-- ── LEFT — Delivery form ──────────────────────────────────────── -->
+      <div class="checkout-form-wrap">
+        <h2 class="checkout-section-title">
+          <span class="checkout-section-title__step">1</span>
+          Delivery Information
+        </h2>
+
+        <form class="checkout-form" #orderForm="ngForm" (ngSubmit)="placeOrder(orderForm)" novalidate>
+
+          <!-- Full Name -->
+          <div class="checkout-field" [class.checkout-field--error]="fullNameField.invalid && fullNameField.touched">
+            <label class="checkout-field__label" for="fullName">Full Name</label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              class="checkout-field__input"
+              placeholder="John Doe"
+              [(ngModel)]="fullName"
+              #fullNameField="ngModel"
+              required
+              minlength="2"
+              autocomplete="name"
+            />
+            @if (fullNameField.invalid && fullNameField.touched) {
+              <span class="checkout-field__error">Full name is required (min 2 characters).</span>
+            }
+          </div>
+
+          <!-- Address -->
+          <div class="checkout-field" [class.checkout-field--error]="addressField.invalid && addressField.touched">
+            <label class="checkout-field__label" for="address">Delivery Address</label>
+            <textarea
+              id="address"
+              name="address"
+              class="checkout-field__input checkout-field__textarea"
+              placeholder="Street, City, Country"
+              [(ngModel)]="address"
+              #addressField="ngModel"
+              required
+              minlength="5"
+              rows="3"
+              autocomplete="street-address"
+            ></textarea>
+            @if (addressField.invalid && addressField.touched) {
+              <span class="checkout-field__error">A valid address is required.</span>
+            }
+          </div>
+
+          <!-- Phone -->
+          <div class="checkout-field" [class.checkout-field--error]="phoneField.invalid && phoneField.touched">
+            <label class="checkout-field__label" for="phone">Phone Number</label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              class="checkout-field__input"
+              placeholder="+1 555 000 0000"
+              [(ngModel)]="phone"
+              #phoneField="ngModel"
+              required
+              pattern="[+\d\s\-()]{6,20}"
+              autocomplete="tel"
+            />
+            @if (phoneField.invalid && phoneField.touched) {
+              <span class="checkout-field__error">A valid phone number is required.</span>
+            }
+          </div>
+
+          <!-- Payment badge -->
+          <div class="checkout-payment">
+            <span class="checkout-payment__icon" aria-hidden="true">&#128176;</span>
+            <div>
+              <strong>Pay on Delivery</strong>
+              <p>Cash payment when your order arrives.</p>
+            </div>
+          </div>
+
+          <!-- Error message from server -->
+          @if (errorMessage()) {
+            <div class="checkout-error" role="alert">
+              <span aria-hidden="true">&#9888;&#65039;</span>
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <!-- Submit -->
+          <button
+            type="submit"
+            class="checkout-submit"
+            [disabled]="submitting() || orderForm.invalid"
+          >
+            @if (submitting()) {
+              <span class="checkout-submit__spinner" aria-hidden="true"></span>
+              Placing Order…
+            } @else {
+              <span aria-hidden="true">&#10003;</span>
+              Place Order
+            }
+          </button>
+
+        </form>
+      </div>
+
+      <!-- ── RIGHT — Order Summary (read-only) ────────────────────────── -->
+      <aside class="checkout-summary">
+        <h2 class="checkout-section-title">
+          <span class="checkout-section-title__step">2</span>
+          Order Summary
+        </h2>
+
+        <div class="checkout-summary__items">
+          @for (item of items(); track item.productId) {
+            <div class="checkout-summary__item">
+              @if (item.imagePaths?.[0]; as img) {
+                <img class="checkout-summary__item-img" [src]="img" [alt]="item.productName" />
+              } @else {
+                <div class="checkout-summary__item-img checkout-summary__item-placeholder">
+                  <span aria-hidden="true">&#128247;</span>
+                </div>
+              }
+              <div class="checkout-summary__item-info">
+                <span class="checkout-summary__item-name">{{ item.productName }}</span>
+                <span class="checkout-summary__item-qty">Qty: {{ item.quantity }}</span>
+              </div>
+              <span class="checkout-summary__item-price">{{ item.subtotal | currency }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="checkout-summary__divider"></div>
+
+        <div class="checkout-summary__row">
+          <span>Items ({{ totalItems() }})</span>
+          <span>{{ subtotal() | currency }}</span>
+        </div>
+        <div class="checkout-summary__row">
+          <span>Shipping</span>
+          <span class="checkout-summary__free">
+            {{ shipping() === 0 ? 'Free' : (shipping() | currency) }}
+          </span>
+        </div>
+
+        <div class="checkout-summary__total">
+          <span>Total</span>
+          <strong class="checkout-summary__total-price">{{ total() | currency }}</strong>
+        </div>
+
+        <div class="checkout-summary__guarantees">
+          <p><span aria-hidden="true">&#128274;</span> Secure checkout powered by SportMarket</p>
+          <p><span aria-hidden="true">&#9889;</span> Free delivery on all orders</p>
+        </div>
+      </aside>
+
+    </div>
+  }
+
+</section>

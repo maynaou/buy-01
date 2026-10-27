@@ -8,6 +8,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import com.example.product_service.enums.ProductCategory;
+
 import lombok.Data;
 
 @Data
@@ -32,5 +35,8 @@ public class ProductDTO {
      @NotNull(message = "Quantity is required")
      @Min(value = 0, message = "Quantity cannot be negative")
      private Integer quantity;
+     @NotNull(message = "Category is required")
+     private ProductCategory category;
+     private String userId;
      private List<String> imagePaths;
 }

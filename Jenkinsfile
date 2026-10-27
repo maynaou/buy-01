@@ -4,7 +4,8 @@ def BACKEND_SERVICES = [
     'media-service',
     'product-service',
     'security-service',
-    'user-service'
+    'user-service',
+    'order-service'
 ]
 
 
@@ -146,7 +147,9 @@ stage('SonarQube Analysis') {
                             -Dsonar.projectKey=buy-01-frontend \
                             -Dsonar.projectName=buy-01-frontend \
                             -Dsonar.sources=src \
-                            -Dsonar.exclusions=**/node_modules/**,**/dist/** \
+                            -Dsonar.tests=src \
+                            -Dsonar.test.inclusions=**/*.spec.ts \
+                            -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/dist/** \
                             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                         '''
                     }

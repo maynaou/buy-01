@@ -1,7 +1,7 @@
 .profile {
-  max-width: 940px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 36px 20px 56px;
+  padding: 42px 28px 72px;
 }
 
 /* Header */
@@ -10,9 +10,9 @@
 }
 
 .profile__title {
-  font-size: 1.7rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
 }
 
 .profile__subtitle {
@@ -36,41 +36,175 @@
   align-items: center;
   gap: 14px;
   border-style: solid;
-  border-color: #fecdca;
-  background-color: #fffbfa;
+  border-color: var(--sm-danger);
+  background-color: var(--sm-surface);
   color: var(--sm-danger);
 }
 
 /* Layout */
 .profile__grid {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
 .profile__card {
-  padding: 24px 22px;
-  border: 1px solid var(--sm-border);
+  padding: 28px 26px;
+  height: stretch;
+  border: 1px solid var(--sm-accent);
   border-radius: var(--sm-radius-lg);
   background-color: var(--sm-surface);
   box-shadow: var(--sm-shadow);
+}
+
+.profile__card:hover {
+  border-color: #d4e4d7;
+  box-shadow: var(--sm-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .profile__identity {
   text-align: center;
 }
 
+.profile__analytics {
+  grid-column: 1 / -1;
+}
+
+.profile__analytics-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.profile__analytics-subtitle {
+  margin-top: 5px;
+  color: var(--sm-ink-soft);
+  font-size: 0.86rem;
+}
+
+.profile__spent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 17px 18px;
+  border-radius: var(--sm-radius);
+  background-color: var(--sm-surface);
+}
+
+.profile__spent-label {
+  color: var(--sm-ink-soft);
+  font-weight: 600;
+}
+
+.profile__spent strong {
+  color: var(--sm-accent);
+  font-size: 1.25rem;
+}
+
+.profile__analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.profile__analytics-heading {
+  margin-bottom: 12px;
+  font-size: 0.96rem;
+}
+
+.profile__analytics-list,
+.profile__category-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile__analytics-item,
+.profile__category-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sm-border);
+}
+
+.profile__analytics-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 12px;
+}
+
+.profile__analytics-name {
+  overflow-wrap: anywhere;
+  font-weight: 650;
+}
+
+.profile__analytics-meta {
+  color: var(--sm-ink-soft);
+  font-size: 0.82rem;
+}
+
+.profile__analytics-amount {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--sm-ink-soft);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.profile__category-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.86rem;
+}
+
+.profile__category-label span:last-child {
+  color: var(--sm-ink-soft);
+}
+
+.profile__category-track {
+  height: 8px;
+  margin: 8px 0 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: #e4ebe5;
+}
+
+.profile__category-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--sm-accent);
+}
+
+.profile__analytics-message {
+  margin-top: 16px;
+  color: var(--sm-ink-soft);
+  font-size: 0.88rem;
+}
+
+.profile__analytics-message--error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--sm-danger);
+}
+
 /* Avatar */
 .avatar {
   display: grid;
   place-items: center;
-  width: 108px;
-  height: 108px;
+  width: 116px;
+  height: 116px;
   margin: 0 auto 14px;
   overflow: hidden;
   border-radius: 50%;
-  background-color: #f1f5f9;
+  background-color: var(--sm-surface);
 }
 
 .avatar__image {
@@ -80,7 +214,7 @@
 }
 
 .avatar__initial {
-  color: var(--sm-accent);
+  color: #00f41c;
   font-size: 2.4rem;
   font-weight: 800;
 }
@@ -95,8 +229,8 @@
   margin-top: 8px;
   padding: 3px 12px;
   border-radius: 999px;
-  background-color: #f1f5f9;
-  color: var(--sm-ink-soft);
+  background-color: #000000;
+  color: var(--sm-ink);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -104,8 +238,8 @@
 }
 
 .profile__role--seller {
-  background-color: rgb(255 77 45 / 12%);
-  color: var(--sm-accent);
+  background-color: var(--sm-surface);
+  color: var(--sm-ink);
 }
 
 /* Avatar upload */
@@ -120,7 +254,8 @@
 
 .avatar-upload__pick {
   display: inline-block;
-  padding: 9px 14px;
+  min-height: 42px;
+  padding: 10px 14px;
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius);
   color: var(--sm-ink-soft);
@@ -167,10 +302,11 @@
 
 .profile__form input {
   width: 100%;
-  padding: 11px 13px;
+  min-height: 46px;
+  padding: 11px 14px;
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius);
-  background-color: #fbfcfe;
+  background-color: #000000;
   color: var(--sm-ink);
   font-family: inherit;
   font-size: 0.95rem;
@@ -182,13 +318,13 @@
 .profile__form input:focus {
   border-color: var(--sm-accent);
   background-color: var(--sm-surface);
-  box-shadow: 0 0 0 3px rgb(255 77 45 / 15%);
+  box-shadow: 0 0 0 3px rgb(7 132 61 / 13%);
   outline: none;
 }
 
 .profile__form input:disabled {
-  background-color: #f1f5f9;
-  color: var(--sm-muted);
+  background-color: #000000;
+  color: var(--sm-ink);
   cursor: not-allowed;
 }
 
@@ -229,6 +365,7 @@
 /* Buttons */
 .profile__btn,
 .profile__form button[type='submit'] {
+  min-height: 44px;
   padding: 11px 18px;
   border: 0;
   border-radius: var(--sm-radius);
@@ -259,14 +396,26 @@
 }
 
 @media (max-width: 720px) {
+  .profile {
+    padding-inline: 20px;
+  }
+
   .profile__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile__analytics-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
   .profile {
-    padding: 26px 14px 40px;
+    padding: 26px 16px 48px;
+  }
+
+  .profile__card {
+    padding: 22px 18px;
   }
 }
 
@@ -296,6 +445,7 @@
   object-fit: cover;
   border-radius: var(--sm-radius);
   border: 1px solid var(--sm-border);
+  background: #f3f6f3;
 }
 
 .thumbs__remove {
@@ -304,8 +454,8 @@
   right: -8px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: 50%;

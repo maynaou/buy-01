@@ -26,6 +26,7 @@ describe('SellerDashboard', () => {
     price: 100,
     quantity: 10,
     imagePaths: ['image-1.jpg', 'image-2.jpg'],
+    category: 'BALLS',
   };
 
   const productWithoutImages: Product = {
@@ -35,6 +36,7 @@ describe('SellerDashboard', () => {
     price: 200,
     quantity: 5,
     imagePaths: null,
+    category: 'FOOTWEAR',
   };
 
   const uploadedImages: ProductImage[] = [
@@ -248,6 +250,7 @@ describe('SellerDashboard', () => {
       description: 'Old description',
       price: 100,
       quantity: 5,
+      category: 'BALLS',
     });
 
     component.startCreate();
@@ -257,6 +260,7 @@ describe('SellerDashboard', () => {
       description: '',
       price: null,
       quantity: null,
+      category: null,
     });
   });
 
@@ -286,6 +290,7 @@ describe('SellerDashboard', () => {
       description: product.description,
       price: product.price,
       quantity: product.quantity,
+      category: product.category ?? null,
     });
   });
 
@@ -345,6 +350,22 @@ describe('SellerDashboard', () => {
     expect(component.saving()).toBeFalse();
   });
 
+  it('should require a category before creating a product', () => {
+    component.startCreate();
+    component.productForm.setValue({
+      name: 'Valid Product',
+      description: 'This is a valid product.',
+      category: null,
+      price: 100,
+      quantity: 10,
+    });
+
+    expect(component.productForm.controls.category.hasError('required')).toBeTrue();
+    component.onSubmit();
+
+    expect(productService.createProduct).not.toHaveBeenCalled();
+  });
+
   it('should reject a name shorter than 2 characters', () => {
     component.startCreate();
 
@@ -353,6 +374,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid description.',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     expect(
@@ -372,6 +394,7 @@ describe('SellerDashboard', () => {
       description: 'Short',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     expect(
@@ -391,6 +414,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid description.',
       price: 0,
       quantity: 10,
+      category: 'BALLS',
     });
 
     expect(
@@ -410,6 +434,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid description.',
       price: -10,
       quantity: 10,
+      category: 'BALLS',
     });
 
     expect(
@@ -429,6 +454,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid description.',
       price: 100,
       quantity: 2.5,
+      category: 'BALLS',
     });
 
     expect(
@@ -448,6 +474,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid description.',
       price: 100,
       quantity: 0,
+      category: 'BALLS',
     });
 
     expect(component.productForm.valid).toBeTrue();
@@ -475,6 +502,7 @@ describe('SellerDashboard', () => {
       description: '  This is a valid product.  ',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -484,6 +512,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
   });
 
@@ -512,6 +541,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -539,6 +569,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -580,6 +611,7 @@ describe('SellerDashboard', () => {
       description: product.description,
       price: 500,
       quantity: product.quantity,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -591,6 +623,7 @@ describe('SellerDashboard', () => {
         description: product.description,
         price: 500,
         quantity: product.quantity,
+        category: 'BALLS',
       },
     );
 
@@ -615,6 +648,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     component.saving.set(true);
@@ -644,6 +678,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -672,6 +707,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -698,6 +734,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 100,
       quantity: 10,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -735,7 +772,7 @@ describe('SellerDashboard', () => {
 
     component.onFilesSelected(event);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(file);
     expect(component.pendingImages()[0].previewUrl).toBe(
       'blob:photo',
@@ -829,7 +866,7 @@ describe('SellerDashboard', () => {
 
     component.onFilesSelected(event);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(validFile);
 
     expect(component.imageErrors()).toEqual([
@@ -869,7 +906,7 @@ describe('SellerDashboard', () => {
 
     component.removeImage(0);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(component.pendingImages()[0].file).toBe(file2);
 
     expect(revokeSpy).toHaveBeenCalledWith('blob:a');
@@ -893,7 +930,7 @@ describe('SellerDashboard', () => {
 
     component.removeImage(99);
 
-    expect(component.pendingImages().length).toBe(1);
+    expect(component.pendingImages()).toHaveSize(1);
     expect(revokeSpy).not.toHaveBeenCalled();
   });
 
@@ -1060,6 +1097,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
 
     component.onSubmit();
@@ -1126,6 +1164,7 @@ describe('SellerDashboard', () => {
       description: product.description,
       price: product.price,
       quantity: product.quantity,
+      category: product.category ?? null,
     });
 
     component.onSubmit();
@@ -1193,6 +1232,7 @@ describe('SellerDashboard', () => {
       description: 'This is a valid product.',
       price: 300,
       quantity: 20,
+      category: 'BALLS',
     });
 
     component.onSubmit();

@@ -1,8 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth';
 import { TokenService } from '../../core/services/token';
+import { CartService } from '../../core/services/cart';
+import { CatalogSearchState } from '../../core/services/catalog-search-state';
 
 @Component({
   selector: 'app-navbar',
@@ -13,14 +15,48 @@ import { TokenService } from '../../core/services/token';
 export class Navbar {
   private readonly authService = inject(AuthService);
   private readonly tokenService = inject(TokenService);
+  private readonly cartService = inject(CartService);
+  readonly catalogSearchState = inject(CatalogSearchState);
   private readonly router = inject(Router);
 
   readonly isAuthenticated = this.authService.isAuthenticated;
 
   readonly isSeller = computed(() => this.isAuthenticated() && this.tokenService.isSeller());
+  readonly isClient = computed(() => this.isAuthenticated() && this.tokenService.isClient());
+  readonly cartCount = this.cartService.cartCount;
+
+  constructor() {
+    effect(() => {
+      if (this.isClient()) {
+        this.cartService.refreshCartCount();
+      }
+    });
+  }
 
   onLogout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  openCatalogSearch(): void {
+    if (this.router.url.split('?')[0] === '/') {
+      this.catalogSearchState.open();
+      this.scrollToCatalogSearch();
+    } else {
+      void this.router.navigateByUrl('/').then(() => {
+        this.catalogSearchState.open();
+        this.scrollToCatalogSearch();
+      });
+    }
+  }
+
+  private scrollToCatalogSearch(): void {
+    requestAnimationFrame(() => {
+      document.getElementById('catalog-search-panel')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      document.getElementById('product-search')?.focus({ preventScroll: true });
+    });
   }
 }

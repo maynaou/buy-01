@@ -1,8 +1,9 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
+  FormsModule,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
@@ -13,9 +14,17 @@ import { Observable, retry, throwError, timer } from 'rxjs';
 
 import { MediaService } from '../../../core/services/media';
 import { ProductService } from '../../../core/services/product';
-import { Product, ProductRequest } from '../models/product';
+import { OrderService, TopSellingProduct } from '../../../core/services/order';
+import {
+  PRODUCT_CATEGORIES,
+  Product,
+  ProductCategory,
+  ProductRequest,
+  productCategoryLabel,
+} from '../models/product';
 import { ProductImage } from '../models/product-image';
 import { NotificationError } from '../../../core/services/notification-error';
+import { Order, OrderStatus } from '../../checkout/models/order';
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 
@@ -47,7 +56,7 @@ function wholeNumber(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-seller-dashboard',
-  imports: [ReactiveFormsModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, CurrencyPipe, DatePipe, FormsModule],
   templateUrl: './seller-dashboard.html',
   styleUrl: './seller-dashboard.scss',
 })
@@ -55,10 +64,15 @@ export class SellerDashboard {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly mediaService = inject(MediaService);
+  private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
   private readonly notificationError = inject(NotificationError);
 
+  // ── Tab ────────────────────────────────────────────────────────────────────
+  readonly activeTab = signal<'products' | 'orders'>('products');
 
+
+  // ── Products signals ────────────────────────────────────────────────────────
   readonly products = signal<Product[]>([]);
   readonly loading = signal(true);
   readonly loadError = signal('');
@@ -79,6 +93,43 @@ export class SellerDashboard {
   readonly isEditing = computed(() => this.editingId() !== null);
 
   readonly maxImageKb = Math.round(MAX_IMAGE_BYTES / 1024);
+  readonly productCategories = PRODUCT_CATEGORIES;
+
+  // ── Orders signals ──────────────────────────────────────────────────────────
+  readonly orders = signal<Order[]>([]);
+  readonly filteredOrders = signal<Order[]>([]);
+  readonly ordersLoading = signal(false);
+  readonly ordersError = signal('');
+  readonly topProducts = signal<TopSellingProduct[]>([]);
+  readonly topProductsLoading = signal(false);
+  readonly topProductsError = signal('');
+  readonly topProductsLoaded = signal(false);
+  readonly updatingOrderId = signal<string | null>(null);
+  readonly orderFilter = signal<OrderStatus | 'ALL'>('ALL');
+  readonly orderSearch = signal<string>('');
+  readonly orderDateFrom = signal('');
+  readonly orderDateTo = signal('');
+
+  readonly totalRevenue = computed(() =>
+    this.orders()
+      .filter((order) => order.status === 'DELIVERED')
+      .reduce((sum, order) => sum + (order.total || 0), 0)
+  );
+  readonly pendingOrdersCount = computed(() =>
+    this.orders().filter((order) => order.status === 'PENDING').length
+  );
+
+  /** Total units sold across all DELIVERED orders */
+  readonly totalUnitsSold = computed(() =>
+    this.orders()
+      .filter((o) => o.status === 'DELIVERED')
+      .flatMap((o) => o.items)
+      .reduce((sum, item) => sum + item.quantity, 0)
+  );
+  readonly highestProductRevenue = computed(() =>
+    Math.max(0, ...this.topProducts().map((product) => product.revenue))
+  );
+
 
   // Mirrors the backend ProductDTO constraints.
   productForm = this.fb.group({
@@ -87,6 +138,7 @@ export class SellerDashboard {
       '',
       [Validators.required, Validators.minLength(10), Validators.maxLength(500)],
     ],
+    category: this.fb.control<ProductCategory | null>(null, Validators.required),
     price: [
       null as number | null,
       [Validators.required, greaterThanZero, Validators.max(MAX_PRICE)],
@@ -103,6 +155,141 @@ export class SellerDashboard {
     // Preview URLs are only valid while this component lives.
     inject(DestroyRef).onDestroy(() => this.clearPendingImages());
   }
+
+  switchTab(tab: 'products' | 'orders'): void {
+    this.activeTab.set(tab);
+    if (tab === 'orders' && this.orders().length === 0 && !this.ordersLoading()) {
+      this.loadSellerOrders();
+    }
+    if (tab === 'orders' && !this.topProductsLoaded() && !this.topProductsLoading()
+        && !this.topProductsError()) {
+      this.loadSellerTopProducts();
+    }
+  }
+
+  loadSellerTopProducts(): void {
+    this.topProductsLoading.set(true);
+    this.topProductsError.set('');
+    this.orderService.getSellerTopProducts().subscribe({
+      next: (products) => {
+        this.topProducts.set(products);
+        this.topProductsLoaded.set(true);
+        this.topProductsLoading.set(false);
+      },
+      error: () => {
+        this.topProductsLoading.set(false);
+        this.topProductsError.set('Unable to load best-selling products. Please try again.');
+      },
+    });
+  }
+
+  topProductBarWidth(revenue: number): number {
+    const maximum = this.highestProductRevenue();
+    return maximum > 0 ? (revenue / maximum) * 100 : 0;
+  }
+
+  loadSellerOrders(): void {
+    this.ordersLoading.set(true);
+    this.ordersError.set('');
+    const status = this.selectedOrderStatus();
+    this.orderService.getSellerOrders({
+      search: this.orderSearch(),
+      status,
+      dateFrom: this.orderDateFrom(),
+      dateTo: this.orderDateTo(),
+    }).subscribe({
+      next: (orders) => {
+        // Dernières commandes en premier (tri décroissant par date)
+        const sorted = [...orders].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        this.filteredOrders.set(sorted);
+        if (this.hasNoActiveOrderFilters()) {
+          this.orders.set(sorted);
+        }
+        this.ordersLoading.set(false);
+      },
+      error: () => {
+        this.ordersLoading.set(false);
+        this.ordersError.set('Unable to load orders. Please try again.');
+      },
+    });
+  }
+
+  private hasNoActiveOrderFilters(): boolean {
+    return this.orderFilter() === 'ALL'
+      && !this.orderSearch().trim()
+      && !this.orderDateFrom()
+      && !this.orderDateTo();
+  }
+
+  applyOrderFilters(): void {
+    this.loadSellerOrders();
+  }
+
+  setOrderFilter(status: OrderStatus | 'ALL'): void {
+    this.orderFilter.set(status);
+    this.loadSellerOrders();
+  }
+
+  private selectedOrderStatus(): OrderStatus | undefined {
+    const status = this.orderFilter();
+    return status === 'ALL' ? undefined : status;
+  }
+
+  countByStatus(status: OrderStatus): number {
+    return this.orders().filter((o) => o.status === status).length;
+  }
+
+  orderStatusClass(status: string): string {
+    switch (status) {
+      case 'PENDING':    return 'status--pending';
+      case 'CONFIRMED':  return 'status--confirmed';
+      case 'SHIPPED':    return 'status--shipped';
+      case 'DELIVERED':  return 'status--delivered';
+      case 'CANCELLED':  return 'status--cancelled';
+      default:           return '';
+    }
+  }
+
+  orderCardClass(status: string): string {
+    return 'order-card--' + status.toLowerCase();
+  }
+
+  shortId(id: string): string {
+    return id.length > 8 ? '…' + id.slice(-8) : id;
+  }
+
+  updateStatus(order: Order, nextStatus: OrderStatus): void {
+    if (this.updatingOrderId() === order.id) {
+      return;
+    }
+
+    this.updatingOrderId.set(order.id);
+    this.orderService.updateOrderStatus(order.id, nextStatus).subscribe({
+      next: (updatedOrder) => {
+        this.orders.update((orders) =>
+          orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
+        this.filteredOrders.update((orders) =>
+          orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
+        this.updatingOrderId.set(null);
+        this.notificationError.show(
+          `Order #${this.shortId(order.id)} updated to ${nextStatus}.`,
+          'green'
+        );
+        this.loadSellerOrders();
+        this.loadSellerTopProducts();
+      },
+      error: (err) => {
+        this.updatingOrderId.set(null);
+        const msg = err?.error?.message || 'Failed to update order status.';
+        this.notificationError.show(msg, 'red');
+      },
+    });
+  }
+
 
   loadProducts(): void {
     this.loading.set(true);
@@ -136,7 +323,13 @@ export class SellerDashboard {
   startCreate(): void {
     this.editingId.set(null);
     this.editingImages.set([]);
-    this.productForm.reset({ name: '', description: '', price: null, quantity: null });
+    this.productForm.reset({
+      name: '',
+      description: '',
+      category: null,
+      price: null,
+      quantity: null,
+    });
     this.openForm();
   }
 
@@ -146,6 +339,7 @@ export class SellerDashboard {
     this.productForm.reset({
       name: product.name,
       description: product.description,
+      category: product.category ?? null,
       price: product.price,
       quantity: product.quantity,
     });
@@ -170,11 +364,18 @@ export class SellerDashboard {
       return;
     }
 
+    const category = this.productForm.controls.category.value;
+    if (!category) {
+      this.productForm.controls.category.markAsTouched();
+      return;
+    }
+
     const request: ProductRequest = {
       name: this.productForm.value.name!.trim(),
       description: this.productForm.value.description!.trim(),
       price: Number(this.productForm.value.price),
       quantity: Number(this.productForm.value.quantity),
+      category,
     };
 
     const editingId = this.editingId();
@@ -286,6 +487,10 @@ export class SellerDashboard {
 
   coverImage(product: Product): string | null {
     return product.imagePaths?.[0] ?? null;
+  }
+
+  categoryLabel(category: ProductCategory | null | undefined): string {
+    return productCategoryLabel(category);
   }
 
   imageCount(product: Product): number {
