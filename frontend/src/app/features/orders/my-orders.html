@@ -1,84 +1,84 @@
 <section class="orders-page">
   <header class="orders-header">
     <div>
-      <h1 class="orders-header__title">Mes commandes</h1>
-      <p class="orders-header__subtitle">Suivez l'état de vos achats et gérez vos commandes.</p>
+      <h1 class="orders-header__title">My orders</h1>
+      <p class="orders-header__subtitle">Track your purchases and manage your orders.</p>
     </div>
   </header>
 
   @if (loading()) {
     <div class="orders-status">
       <div class="orders-spinner" aria-hidden="true"></div>
-      <p>Chargement de vos commandes…</p>
+      <p>Loading your orders…</p>
     </div>
   } @else if (errorMessage()) {
     <div class="orders-status orders-status--error">
       <p>{{ errorMessage() }}</p>
-      <button type="button" class="orders-btn" (click)="loadOrders()">Réessayer</button>
+      <button type="button" class="orders-btn" (click)="loadOrders()">Try again</button>
     </div>
   } @else if (orders().length === 0) {
     <div class="orders-empty">
       <div class="orders-empty__icon" aria-hidden="true">&#128230;</div>
-      <h2>Vous n'avez aucune commande</h2>
-      <p>Découvrez nos équipements sportifs et passez votre première commande.</p>
-      <a routerLink="/" class="orders-btn">Découvrir les produits</a>
+      <h2>You have no orders yet</h2>
+      <p>Explore our sports gear and place your first order.</p>
+      <a routerLink="/" class="orders-btn">Browse products</a>
     </div>
   } @else {
-    <!-- Statistiques des commandes du client -->
+    <!-- Customer order statistics -->
     <div class="orders-stats">
       <div class="orders-stat">
         <span class="orders-stat__value">{{ totalOrdersCount() }}</span>
-        <span class="orders-stat__label">Total Commandes</span>
+        <span class="orders-stat__label">Total orders</span>
       </div>
 
       <div class="orders-stat orders-stat--success">
         <span class="orders-stat__value">{{ totalDeliveredAmount() | currency }}</span>
-        <span class="orders-stat__label">Total Livré & Payé</span>
+        <span class="orders-stat__label">Delivered and paid</span>
       </div>
 
       <div class="orders-stat orders-stat--pending">
         <span class="orders-stat__value">{{ totalActiveCount() }}</span>
-        <span class="orders-stat__label">En cours</span>
+        <span class="orders-stat__label">In progress</span>
       </div>
 
       <div class="orders-stat orders-stat--danger">
         <span class="orders-stat__value">{{ totalCancelledAmount() | currency }}</span>
-        <span class="orders-stat__label">Total Annulé ({{ totalCancelledCount() }})</span>
+        <span class="orders-stat__label">Cancelled total ({{ totalCancelledCount() }})</span>
       </div>
     </div>
 
     <div class="order-list-controls">
       <label class="order-list-controls__search">
         <span aria-hidden="true">&#128269;</span>
-        <span class="visually-hidden">Rechercher une commande</span>
+        <span class="visually-hidden">Search orders</span>
         <input
           type="search"
           maxlength="100"
-          placeholder="Rechercher par ID ou produit…"
+          placeholder="Search by ID or product…"
           [ngModel]="orderSearch()"
           (ngModelChange)="orderSearch.set($event)"
         />
       </label>
       <label class="order-list-controls__date">
-        <span>Du</span>
+        <span>From</span>
         <input
           type="date"
-          aria-label="Date de début"
+          aria-label="Start date"
           [ngModel]="orderDateFrom()"
           (ngModelChange)="orderDateFrom.set($event)"
         />
       </label>
       <label class="order-list-controls__date">
-        <span>Au</span>
+        <span>To</span>
         <input
           type="date"
-          aria-label="Date de fin"
+          aria-label="End date"
           [ngModel]="orderDateTo()"
           (ngModelChange)="orderDateTo.set($event)"
         />
       </label>
       <button type="button" class="orders-btn order-list-controls__apply" (click)="applyOrderFilters()">
-        Appliquer
+        Apply
       </button>
     </div>
 
@@ -90,7 +90,7 @@
         [class.status-pill--active]="orderFilter() === 'ALL'"
         (click)="setOrderFilter('ALL')"
       >
-        Toutes ({{ orders().length }})
+        All ({{ orders().length }})
       </button>
       <button
         type="button"
@@ -98,7 +98,7 @@
         [class.status-pill--active]="orderFilter() === 'PENDING'"
         (click)="setOrderFilter('PENDING')"
       >
-        En attente ({{ countByStatus('PENDING') }})
+        Pending ({{ countByStatus('PENDING') }})
       </button>
       <button
         type="button"
@@ -106,7 +106,7 @@
         [class.status-pill--active]="orderFilter() === 'CONFIRMED'"
         (click)="setOrderFilter('CONFIRMED')"
       >
-        Confirmées ({{ countByStatus('CONFIRMED') }})
+        Confirmed ({{ countByStatus('CONFIRMED') }})
       </button>
       <button
         type="button"
@@ -114,7 +114,7 @@
         [class.status-pill--active]="orderFilter() === 'SHIPPED'"
         (click)="setOrderFilter('SHIPPED')"
       >
-        Expédiées ({{ countByStatus('SHIPPED') }})
+        Shipped ({{ countByStatus('SHIPPED') }})
       </button>
       <button
         type="button"
@@ -122,7 +122,7 @@
         [class.status-pill--active]="orderFilter() === 'DELIVERED'"
         (click)="setOrderFilter('DELIVERED')"
       >
-        Livrées ({{ countByStatus('DELIVERED') }})
+        Delivered ({{ countByStatus('DELIVERED') }})
       </button>
       <button
         type="button"
@@ -130,14 +130,14 @@
         [class.status-pill--active]="orderFilter() === 'CANCELLED'"
         (click)="setOrderFilter('CANCELLED')"
       >
-        Annulées ({{ countByStatus('CANCELLED') }})
+        Cancelled ({{ countByStatus('CANCELLED') }})
       </button>
     </fieldset>
 
-    <!-- Liste des commandes (Dernières commandes en premier) -->
+    <!-- Orders list (newest first) -->
     @if (filteredOrders().length === 0) {
       <div class="orders-status">
-        <p>Aucune commande trouvée pour ce statut.</p>
+        <p>No orders found for this status.</p>
       </div>
     } @else {
       <div class="orders-list">
@@ -147,7 +147,7 @@
           <div class="client-order-card__head">
             <div class="client-order-card__meta">
               <span class="client-order-card__id" [title]="order.id">#{{ shortId(order.id) }}</span>
-              <span class="client-order-card__date">{{ order.createdAt | date:'dd MMM yyyy à HH:mm' }}</span>
+              <span class="client-order-card__date">{{ order.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
             </div>
 
             <div class="client-order-card__status-wrap">
@@ -172,7 +172,7 @@
                 <div class="client-order-card__info">
                   <span class="client-order-card__name">{{ item.productName }}</span>
                   <span class="client-order-card__qty">
-                    Qté : {{ item.quantity }} &times; {{ item.unitPrice | currency }}
+                    Qty: {{ item.quantity }} &times; {{ item.unitPrice | currency }}
                   </span>
                 </div>
 
@@ -194,13 +194,13 @@
             </div>
 
             <div class="client-order-card__total">
-              Total payé à la livraison : <strong>{{ order.total | currency }}</strong>
+              Total due on delivery: <strong>{{ order.total | currency }}</strong>
             </div>
           </div>
 
           <!-- Actions according to status rules -->
           <footer class="client-order-card__actions">
-            <!-- PENDING: Annuler -->
+            <!-- PENDING: Cancel -->
             @if (order.status === 'PENDING') {
               <button
                 type="button"
@@ -208,25 +208,25 @@
                 [disabled]="actionOrderId() === order.id"
                 (click)="cancelOrder(order)"
               >
-                <span aria-hidden="true">&#10005;</span> Annuler la commande
+                <span aria-hidden="true">&#10005;</span> Cancel order
               </button>
             }
 
-            <!-- CONFIRMED: Message d'information (aucune action) -->
+            <!-- CONFIRMED: Informational message (no action) -->
             @if (order.status === 'CONFIRMED') {
               <span class="client-order-card__info-note">
-                <span aria-hidden="true">&#128230;</span> Commande validée par le vendeur, préparation en cours.
+                <span aria-hidden="true">&#128230;</span> Order confirmed by the seller and being prepared.
               </span>
             }
 
-            <!-- SHIPPED: Message d'information (aucune action) -->
+            <!-- SHIPPED: Informational message (no action) -->
             @if (order.status === 'SHIPPED') {
               <span class="client-order-card__info-note client-order-card__info-note--shipped">
-                <span aria-hidden="true">&#128666;</span> Votre colis est en cours de livraison.
+                <span aria-hidden="true">&#128666;</span> Your order is on its way.
               </span>
             }
 
-            <!-- DELIVERED & CANCELLED: Supprimer et Refaire -->
+            <!-- DELIVERED & CANCELLED: Delete and reorder -->
             @if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
               <button
                 type="button"
@@ -234,7 +234,7 @@
                 [disabled]="actionOrderId() === order.id"
                 (click)="reorder(order)"
               >
-                <span aria-hidden="true">&#8635;</span> Refaire la commande
+                <span aria-hidden="true">&#8635;</span> Reorder
               </button>
 
               <button
@@ -243,7 +243,7 @@
                 [disabled]="actionOrderId() === order.id"
                 (click)="deleteOrder(order)"
               >
-                <span aria-hidden="true">&#128465;</span> Supprimer
+                <span aria-hidden="true">&#128465;</span> Delete
               </button>
             }
           </footer>
@@ -252,7 +252,7 @@
           @if (order.statusHistory && order.statusHistory.length > 0) {
             <details class="status-timeline">
               <summary class="status-timeline__toggle">
-                <span aria-hidden="true">&#128337;</span> Historique du statut
+                <span aria-hidden="true">&#128337;</span> Status history
               </summary>
               <ol class="status-timeline__list">
                 @for (change of order.statusHistory; track change.changedAt) {
@@ -263,7 +263,7 @@
                         {{ statusLabel(change.status) }}
                       </span>
                       <span class="status-timeline__date">
-                        {{ change.changedAt | date:'dd MMM yyyy à HH:mm' }}
+                        {{ change.changedAt | date:'dd MMM yyyy, HH:mm' }}
                       </span>
                     </div>
                   </li>

@@ -269,7 +269,7 @@ describe('Home', () => {
 
     component.searchProducts();
 
-    expect(component.filterError()).toContain('prix minimum');
+    expect(component.filterError()).toContain('minimum price');
     expect(productService.searchProducts).not.toHaveBeenCalled();
   });
 

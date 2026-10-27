@@ -129,7 +129,7 @@ describe('MyOrdersPage', () => {
 
     component.loadOrders();
 
-    expect(component.errorMessage()).toBe('Impossible de charger vos commandes.');
+    expect(component.errorMessage()).toBe('Unable to load your orders.');
     expect(component.loading()).toBeFalse();
   });
 
@@ -148,7 +148,7 @@ describe('MyOrdersPage', () => {
     expect(orderService.cancelOrder).toHaveBeenCalledWith(pendingOrder.id);
     expect(component.orders().find((order) => order.id === pendingOrder.id)?.status)
       .toBe('CANCELLED');
-    expect(notification.show).toHaveBeenCalledWith('Commande annulée avec succès.', 'green');
+    expect(notification.show).toHaveBeenCalledWith('Order cancelled successfully.', 'green');
     expect(component.actionOrderId()).toBeNull();
     expect(orderService.getMyOrders).toHaveBeenCalledTimes(2);
   });
@@ -181,7 +181,7 @@ describe('MyOrdersPage', () => {
     expect(component.orders().some((order) => order.id === 'order-old')).toBeFalse();
     expect(component.filteredOrders().some((order) => order.id === 'order-old')).toBeFalse();
     expect(notification.show).toHaveBeenCalledWith(
-      'Commande retirée de votre historique.',
+      'Order removed from your history.',
       'green'
     );
     expect(component.actionOrderId()).toBeNull();
@@ -231,7 +231,7 @@ describe('MyOrdersPage', () => {
       quantity: 1,
     });
     expect(router.navigate).toHaveBeenCalledWith(['/cart']);
-    expect(notification.show).toHaveBeenCalledWith('Articles ajoutés au panier !', 'green');
+    expect(notification.show).toHaveBeenCalledWith('Items added to your cart!', 'green');
     expect(component.actionOrderId()).toBeNull();
   });
 
@@ -243,7 +243,7 @@ describe('MyOrdersPage', () => {
     component.reorder(mockOrders[0]);
 
     expect(notification.show).toHaveBeenCalledWith(
-      'Certains articles ne sont plus disponibles en stock.',
+      'Some items are no longer in stock.',
       'red'
     );
     expect(router.navigate).not.toHaveBeenCalled();
@@ -260,11 +260,11 @@ describe('MyOrdersPage', () => {
     ];
 
     expect(statuses.map((status) => component.statusLabel(status))).toEqual([
-      'En attente',
-      'Confirmée',
-      'Expédiée',
-      'Livrée',
-      'Annulée',
+      'Pending',
+      'Confirmed',
+      'Shipped',
+      'Delivered',
+      'Cancelled',
     ]);
     expect(component.statusClass('CANCELLED')).toBe('status--cancelled');
     expect(component.orderCardClass('PENDING')).toBe('client-order-card--pending');

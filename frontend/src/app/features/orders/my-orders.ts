@@ -32,7 +32,7 @@ export class MyOrdersPage {
   readonly orderDateFrom = signal('');
   readonly orderDateTo = signal('');
 
-  // Statistiques pour le client (total dépensé, en cours, pertes/annulées)
+  // Customer statistics (total spent, active orders, and cancellations)
   readonly totalOrdersCount = computed(() => this.orders().length);
   readonly totalDeliveredAmount = computed(() =>
     this.orders()
@@ -73,7 +73,7 @@ export class MyOrdersPage {
       dateTo: this.orderDateTo(),
     }).subscribe({
       next: (orders) => {
-        // Dernières commandes en haut (tri décroissant par date)
+        // Show newest orders first.
         const sorted = [...orders].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -85,7 +85,7 @@ export class MyOrdersPage {
       },
       error: () => {
         this.loading.set(false);
-        this.errorMessage.set('Impossible de charger vos commandes.');
+        this.errorMessage.set('Unable to load your orders.');
       },
     });
   }
@@ -129,12 +129,12 @@ export class MyOrdersPage {
           list.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
         );
         this.actionOrderId.set(null);
-        this.notification.show('Commande annulée avec succès.', 'green');
+        this.notification.show('Order cancelled successfully.', 'green');
         this.loadOrders();
       },
       error: (err) => {
         this.actionOrderId.set(null);
-        const msg = err?.error?.message || "Impossible d'annuler la commande.";
+        const msg = err?.error?.message || 'Unable to cancel this order.';
         this.notification.show(msg, 'red');
       },
     });
@@ -154,11 +154,11 @@ export class MyOrdersPage {
         this.orders.update((list) => list.filter((o) => o.id !== order.id));
         this.filteredOrders.update((list) => list.filter((o) => o.id !== order.id));
         this.actionOrderId.set(null);
-        this.notification.show('Commande retirée de votre historique.', 'green');
+        this.notification.show('Order removed from your history.', 'green');
       },
       error: (err) => {
         this.actionOrderId.set(null);
-        const msg = err?.error?.message || 'Impossible de supprimer cette commande.';
+        const msg = err?.error?.message || 'Unable to delete this order.';
         this.notification.show(msg, 'red');
       },
     });
@@ -181,13 +181,13 @@ export class MyOrdersPage {
     forkJoin(addCalls).subscribe({
       next: () => {
         this.actionOrderId.set(null);
-        this.notification.show('Articles ajoutés au panier !', 'green');
+        this.notification.show('Items added to your cart!', 'green');
         this.router.navigate(['/cart']);
       },
       error: () => {
         this.actionOrderId.set(null);
         this.notification.show(
-          'Certains articles ne sont plus disponibles en stock.',
+          'Some items are no longer in stock.',
           'red'
         );
       },
@@ -197,15 +197,15 @@ export class MyOrdersPage {
   statusLabel(status: OrderStatus): string {
     switch (status) {
       case 'PENDING':
-        return 'En attente';
+        return 'Pending';
       case 'CONFIRMED':
-        return 'Confirmée';
+        return 'Confirmed';
       case 'SHIPPED':
-        return 'Expédiée';
+        return 'Shipped';
       case 'DELIVERED':
-        return 'Livrée';
+        return 'Delivered';
       case 'CANCELLED':
-        return 'Annulée';
+        return 'Cancelled';
       default:
         return status;
     }

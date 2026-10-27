@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
-import { Order } from '../checkout/models/order';
+import { Order, OrderStatus } from '../checkout/models/order';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -30,6 +30,21 @@ export class OrderConfirmationPage implements OnInit {
   /** Grand total across all orders (one per seller) */
   grandTotal(): number {
     return this.orders().reduce((sum, o) => sum + o.total, 0);
+  }
+
+  statusLabel(status: OrderStatus): string {
+    switch (status) {
+      case 'PENDING':
+        return 'Pending';
+      case 'CONFIRMED':
+        return 'Confirmed';
+      case 'SHIPPED':
+        return 'Shipped';
+      case 'DELIVERED':
+        return 'Delivered';
+      case 'CANCELLED':
+        return 'Cancelled';
+    }
   }
 
   /** Formatted order ID — show last 8 chars for readability */

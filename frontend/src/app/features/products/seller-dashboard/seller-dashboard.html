@@ -84,15 +84,15 @@
         </div>
 
         <div class="form-group">
-          <label for="category">Catégorie</label>
+          <label for="category">Category</label>
           <select id="category" formControlName="category">
-            <option [ngValue]="null" disabled>Choisir une catégorie</option>
+            <option [ngValue]="null" disabled>Select a category</option>
             @for (category of productCategories; track category.value) {
               <option [value]="category.value">{{ category.label }}</option>
             }
           </select>
           @if (productForm.controls.category.touched && productForm.controls.category.invalid) {
-            <div class="error">Veuillez choisir une catégorie.</div>
+            <div class="error">Please select a category.</div>
           }
         </div>
 
@@ -357,23 +357,23 @@
           <span aria-hidden="true">&#127942;</span> Meilleures ventes
         </h3>
         @if (topProductsLoading()) {
-          <output class="analytics-card__message">Chargement des meilleures ventes…</output>
+          <output class="analytics-card__message">Loading top-selling products…</output>
         } @else if (topProductsError()) {
           <div class="analytics-card__message analytics-card__message--error">
             <span>{{ topProductsError() }}</span>
             <button type="button" class="dashboard__btn" (click)="loadSellerTopProducts()">
-              Réessayer
+              Try again
             </button>
           </div>
         } @else if (topProducts().length === 0) {
-          <p class="analytics-card__message">Aucune vente livrée pour le moment.</p>
+          <p class="analytics-card__message">No delivered sales yet.</p>
         } @else {
           <ol class="analytics-list">
             @for (product of topProducts(); track product.productId; let i = $index) {
               <li class="analytics-item">
                 <span class="analytics-item__rank">{{ i + 1 }}</span>
                 <span class="analytics-item__name">{{ product.name }}</span>
-                <span class="analytics-item__meta">{{ product.units }} vendu(s)</span>
+                <span class="analytics-item__meta">{{ product.units }} sold</span>
                 <span class="analytics-item__revenue">{{ product.revenue | currency }}</span>
                 <div class="analytics-bar-wrap" aria-hidden="true">
                   <div
@@ -390,29 +390,29 @@
       <div class="order-list-controls">
         <label class="order-list-controls__search">
           <span aria-hidden="true">&#128269;</span>
-          <span class="visually-hidden">Rechercher une commande</span>
+          <span class="visually-hidden">Search orders</span>
           <input
             type="search"
             maxlength="100"
-            placeholder="Rechercher par ID, client ou produit…"
+            placeholder="Search by ID, customer, or product…"
             [ngModel]="orderSearch()"
             (ngModelChange)="orderSearch.set($event)"
           />
         </label>
         <label class="order-list-controls__date">
-          <span>Du</span>
+          <span>From</span>
           <input
             type="date"
-            aria-label="Date de début"
+            aria-label="Start date"
             [ngModel]="orderDateFrom()"
             (ngModelChange)="orderDateFrom.set($event)"
           />
         </label>
         <label class="order-list-controls__date">
-          <span>Au</span>
+          <span>To</span>
           <input
             type="date"
-            aria-label="Date de fin"
+            aria-label="End date"
             [ngModel]="orderDateTo()"
             (ngModelChange)="orderDateTo.set($event)"
           />
@@ -424,14 +424,14 @@
 
       <!-- Filters by status with color coding -->
       <fieldset class="order-status-filters">
-        <legend class="visually-hidden">Filtrer par statut</legend>
+        <legend class="visually-hidden">Filter by status</legend>
         <button
           type="button"
           class="status-pill status-pill--all"
           [class.status-pill--active]="orderFilter() === 'ALL'"
           (click)="setOrderFilter('ALL')"
         >
-          Tous ({{ orders().length }})
+          All ({{ orders().length }})
         </button>
         <button
           type="button"
@@ -439,7 +439,7 @@
           [class.status-pill--active]="orderFilter() === 'PENDING'"
           (click)="setOrderFilter('PENDING')"
         >
-          En attente ({{ countByStatus('PENDING') }})
+          Pending ({{ countByStatus('PENDING') }})
         </button>
         <button
           type="button"
@@ -447,7 +447,7 @@
           [class.status-pill--active]="orderFilter() === 'CONFIRMED'"
           (click)="setOrderFilter('CONFIRMED')"
         >
-          Confirmées ({{ countByStatus('CONFIRMED') }})
+          Confirmed ({{ countByStatus('CONFIRMED') }})
         </button>
         <button
           type="button"
@@ -455,7 +455,7 @@
           [class.status-pill--active]="orderFilter() === 'SHIPPED'"
           (click)="setOrderFilter('SHIPPED')"
         >
-          Expédiées ({{ countByStatus('SHIPPED') }})
+          Shipped ({{ countByStatus('SHIPPED') }})
         </button>
         <button
           type="button"
@@ -463,7 +463,7 @@
           [class.status-pill--active]="orderFilter() === 'DELIVERED'"
           (click)="setOrderFilter('DELIVERED')"
         >
-          Livrées ({{ countByStatus('DELIVERED') }})
+          Delivered ({{ countByStatus('DELIVERED') }})
         </button>
         <button
           type="button"
@@ -471,13 +471,13 @@
           [class.status-pill--active]="orderFilter() === 'CANCELLED'"
           (click)="setOrderFilter('CANCELLED')"
         >
-          Annulées ({{ countByStatus('CANCELLED') }})
+          Cancelled ({{ countByStatus('CANCELLED') }})
         </button>
       </fieldset>
 
-      <!-- Orders list (Dernières commandes en premier) -->
+      <!-- Orders list (newest first) -->
       @if (filteredOrders().length === 0) {
-        <p class="dashboard__status">Aucune commande pour ce filtre.</p>
+        <p class="dashboard__status">No orders match this filter.</p>
       } @else {
         <div class="order-cards">
           @for (order of filteredOrders(); track order.id) {
@@ -489,7 +489,7 @@
                 <span class="order-card__id" [title]="order.id">#{{ shortId(order.id) }}</span>
               </div>
               <span class="order-card__status" [class]="orderStatusClass(order.status)">
-                {{ order.status }}
+                {{ orderStatusLabel(order.status) }}
               </span>
               <span class="order-card__date">{{ order.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
             </div>
@@ -538,7 +538,7 @@
             <!-- Status Actions for Seller -->
             @if (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
               <div class="order-card__actions">
-                <span class="order-card__actions-label">Action :</span>
+                <span class="order-card__actions-label">Actions:</span>
 
                 @if (order.status === 'PENDING') {
                   <button
@@ -547,7 +547,7 @@
                     [disabled]="updatingOrderId() === order.id"
                     (click)="updateStatus(order, 'CONFIRMED')"
                   >
-                    <span aria-hidden="true">&#10003;</span> Confirmer la commande
+                    <span aria-hidden="true">&#10003;</span> Confirm order
                   </button>
                 }
 
@@ -558,7 +558,7 @@
                     [disabled]="updatingOrderId() === order.id"
                     (click)="updateStatus(order, 'SHIPPED')"
                   >
-                    <span aria-hidden="true">&#128666;</span> Marquer expédiée
+                    <span aria-hidden="true">&#128666;</span> Mark as shipped
                   </button>
                 }
 
@@ -569,7 +569,7 @@
                     [disabled]="updatingOrderId() === order.id"
                     (click)="updateStatus(order, 'DELIVERED')"
                   >
-                    <span aria-hidden="true">&#9989;</span> Marquer livrée &amp; payée
+                    <span aria-hidden="true">&#9989;</span> Mark as delivered and paid
                   </button>
                 }
 
@@ -579,7 +579,7 @@
                   [disabled]="updatingOrderId() === order.id"
                   (click)="updateStatus(order, 'CANCELLED')"
                 >
-                  <span aria-hidden="true">&#10005;</span> Annuler
+                  <span aria-hidden="true">&#10005;</span> Cancel
                 </button>
               </div>
             }
@@ -588,7 +588,7 @@
             @if (order.statusHistory && order.statusHistory.length > 0) {
               <details class="status-timeline">
                 <summary class="status-timeline__toggle">
-                  <span aria-hidden="true">&#128337;</span> Historique du statut
+                  <span aria-hidden="true">&#128337;</span> Status history
                 </summary>
                 <ol class="status-timeline__list">
                   @for (change of order.statusHistory; track change.changedAt) {
@@ -596,7 +596,7 @@
                       <span class="status-timeline__dot" [class]="orderStatusClass(change.status)"></span>
                       <div class="status-timeline__info">
                         <span class="status-timeline__status" [class]="orderStatusClass(change.status)">
-                          {{ change.status }}
+                          {{ orderStatusLabel(change.status) }}
                         </span>
                         <span class="status-timeline__date">
                           {{ change.changedAt | date:'dd MMM yyyy, HH:mm' }}

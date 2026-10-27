@@ -149,11 +149,11 @@ readonly isClient = computed(
     this.filterError.set('');
 
     if (minPrice === null || maxPrice === null) {
-      this.filterError.set('Entrez un prix valide entre 0 et 999 999,99.');
+      this.filterError.set('Enter a valid price between 0 and 999,999.99.');
       return;
     }
     if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
-      this.filterError.set('Le prix minimum doit être inférieur ou égal au prix maximum.');
+      this.filterError.set('The minimum price must be less than or equal to the maximum price.');
       return;
     }
 
@@ -200,12 +200,12 @@ readonly isClient = computed(
     const minPrice = this.parsePrice(this.minPriceFilter());
     const maxPrice = this.parsePrice(this.maxPriceFilter());
     if (minPrice === null || maxPrice === null) {
-      this.filterError.set('Entrez un prix valide entre 0 et 999 999,99.');
+      this.filterError.set('Enter a valid price between 0 and 999,999.99.');
       this.catalogSearchState.open();
       return;
     }
     if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
-      this.filterError.set('Le prix minimum doit être inférieur ou égal au prix maximum.');
+      this.filterError.set('The minimum price must be less than or equal to the maximum price.');
       this.catalogSearchState.open();
       return;
     }
@@ -293,14 +293,14 @@ addToCartFromGallery(event: {
   }
 
 
-// ✅ Cherche la quantité réelle dans le panier du client
+// ✅ Get the actual quantity in the customer's cart.
 getCartQuantity(productId: string): number {
   const item = this.cartService.cart()?.items?.find(
     (item) => item.productId === productId
   );
   return item?.quantity ?? 0;
 }
-// ✅ Vérifie si le stock maximal est atteint
+// ✅ Check whether the maximum available stock has been reached.
 isStockReached(product: Product): boolean {
   if (product.quantity <= 0) return true;
   return this.getCartQuantity(product.id) >= product.quantity;
