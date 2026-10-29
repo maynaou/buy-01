@@ -190,6 +190,17 @@ stage('SonarQube Analysis') {
                         sh '''
                             IMAGE_TAG=$IMAGE_TAG docker compose up \
                                 --no-build -d --wait --wait-timeout 420
+
+                            attempts=0
+                            until curl --fail --silent --show-error --max-time 5 \
+                                http://docker:8761/eureka/apps/SECURITY-SERVICE >/dev/null; do
+                                attempts=$((attempts + 1))
+                                if [ "$attempts" -ge 60 ]; then
+                                    echo "SECURITY-SERVICE did not register with Eureka"
+                                    exit 1
+                                fi
+                                sleep 2
+                            done
                         '''
                     }
 
