@@ -46,9 +46,11 @@ ng test
 
 ## Running end-to-end tests
 
-The first E2E test covers a complete browser-to-backend flow: account registration,
-login, and displaying the profile returned by the backend. It uses a real browser
-and real API services; it does not mock HTTP requests.
+The E2E tests cover complete browser-to-backend flows using a real browser and
+real API services (without mocked HTTP requests): a client can register, log in,
+and view their backend profile; a seller can register, log in, and create a
+product, then a client can register, add that product to their cart, and place
+an order that the seller confirms, ships, and marks as delivered.
 
 ```bash
 # Install the browser once
