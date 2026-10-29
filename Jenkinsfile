@@ -202,12 +202,27 @@ stage('SonarQube Analysis') {
                         sh '''
                             set -eu
 
-                            socat TCP-LISTEN:4200,bind=127.0.0.1,reuseaddr,fork TCP:docker:4200 &
+                            node ../scripts/tcp-proxy.js 4200 docker 4200 &
                             frontend_proxy=$!
-                            socat TCP-LISTEN:8888,bind=127.0.0.1,reuseaddr,fork TCP:docker:8888 &
+                            node ../scripts/tcp-proxy.js 8888 docker 8888 &
                             gateway_proxy=$!
                             trap 'kill "$frontend_proxy" "$gateway_proxy" 2>/dev/null || true' EXIT
 
+                            wait_for_proxy() {
+                                port=$1
+                                attempts=0
+                                until node -e "const socket = require('node:net').connect($port, '127.0.0.1'); socket.once('connect', () => socket.end()); socket.once('error', () => process.exit(1));"; do
+                                    attempts=$((attempts + 1))
+                                    if [ "$attempts" -ge 10 ]; then
+                                        echo "TCP proxy on port $port did not start"
+                                        return 1
+                                    fi
+                                    sleep 1
+                                done
+                            }
+
+                            wait_for_proxy 4200
+                            wait_for_proxy 8888
                             npm run e2e
                         '''
                     }
