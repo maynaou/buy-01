@@ -17,7 +17,7 @@
               <span class="confirm-order__id" title="{{ order.id }}">#{{ shortId(order.id) }}</span>
             </div>
             <span class="confirm-order__status confirm-order__status--pending">
-              {{ order.status }}
+              {{ statusLabel(order.status) }}
             </span>
           </div>
 

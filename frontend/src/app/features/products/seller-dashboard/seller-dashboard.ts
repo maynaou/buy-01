@@ -199,7 +199,7 @@ export class SellerDashboard {
       dateTo: this.orderDateTo(),
     }).subscribe({
       next: (orders) => {
-        // Dernières commandes en premier (tri décroissant par date)
+        // Show newest orders first.
         const sorted = [...orders].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -249,6 +249,17 @@ export class SellerDashboard {
       case 'DELIVERED':  return 'status--delivered';
       case 'CANCELLED':  return 'status--cancelled';
       default:           return '';
+    }
+  }
+
+  orderStatusLabel(status: string): string {
+    switch (status) {
+      case 'PENDING': return 'Pending';
+      case 'CONFIRMED': return 'Confirmed';
+      case 'SHIPPED': return 'Shipped';
+      case 'DELIVERED': return 'Delivered';
+      case 'CANCELLED': return 'Cancelled';
+      default: return status;
     }
   }
 

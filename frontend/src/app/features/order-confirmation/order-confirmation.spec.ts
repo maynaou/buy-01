@@ -47,6 +47,7 @@ describe('OrderConfirmationPage', () => {
 
     expect(component.orders()).toEqual(orders);
     expect(component.grandTotal()).toBe(65);
+    expect(component.statusLabel('PENDING')).toBe('Pending');
     expect(router.navigate).not.toHaveBeenCalled();
   });
 

@@ -75,7 +75,7 @@ pipeline {
             }
         }
 
-        stage('Backend Tests') {
+        stage('Backend Unit & Integration Tests') {
             steps {
                 script {
                     def tests = [:]
@@ -128,11 +128,11 @@ stage('SonarQube Analysis') {
     }
 }
 
-        stage('Frontend Tests') {
+        stage('Frontend Unit & Integration Tests') {
             steps {
                 dir('frontend') {
                     sh 'npm ci'
-                    sh 'npm test -- --watch=false'
+                    sh "npm test -- --watch=false --include='src/**/*.spec.ts'"
                 }
             }
         }

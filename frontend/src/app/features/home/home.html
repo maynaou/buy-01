@@ -1,9 +1,9 @@
 <div class="hero">
-  <img src="/Assets/images/SportMarket.png" alt="Sport Market : équipement de football" />
+  <img src="/Assets/images/SportMarket.png" alt="SportMarket football equipment" />
   <a
     class="hero__shop-now"
     href="#product-catalog"
-    aria-label="Shop Now : voir les produits"
+    aria-label="Shop now: browse products"
   ></a>
 </div>
 
@@ -17,7 +17,7 @@
     (ngSubmit)="searchProducts()"
   >
     <div class="catalog-search__header">
-      <label class="catalog-search__label" for="product-search">Rechercher des produits</label>
+      <label class="catalog-search__label" for="product-search">Search products</label>
     </div>
     <div class="catalog-search__controls">
       <div class="catalog-search__input-wrap">
@@ -29,18 +29,18 @@
           maxlength="100"
           autocomplete="off"
           [disabled]="loading()"
-          placeholder="Ex. ballon, chaussures, maillot…"
+          placeholder="e.g. ball, shoes, jersey…"
           [value]="searchTerm()"
           (input)="onSearchInput($event)"
         />
       </div>
       <button type="submit" class="catalog-search__submit" [disabled]="loading()">
-        {{ loading() ? 'Recherche…' : 'Rechercher' }}
+        {{ loading() ? 'Searching…' : 'Search' }}
       </button>
     </div>
     <div class="catalog-search__filters">
       <div class="catalog-search__filter">
-        <label for="product-category">Catégorie</label>
+        <label for="product-category">Category</label>
         <select
           id="product-category"
           name="category"
@@ -48,14 +48,14 @@
           [disabled]="loading()"
           (change)="onCategoryInput($event)"
         >
-          <option value="">Toutes les catégories</option>
+          <option value="">All categories</option>
           @for (category of productCategories; track category.value) {
             <option [value]="category.value">{{ category.label }}</option>
           }
         </select>
       </div>
       <div class="catalog-search__filter">
-        <label for="product-min-price">Prix minimum</label>
+        <label for="product-min-price">Minimum price</label>
         <div class="catalog-search__price-input">
           <input
             id="product-min-price"
@@ -73,7 +73,7 @@
         </div>
       </div>
       <div class="catalog-search__filter">
-        <label for="product-max-price">Prix maximum</label>
+        <label for="product-max-price">Maximum price</label>
         <div class="catalog-search__price-input">
           <input
             id="product-max-price"
@@ -82,7 +82,7 @@
             min="0"
             max="999999.99"
             step="0.01"
-            placeholder="Sans limite"
+            placeholder="No limit"
             [value]="maxPriceFilter()"
             [disabled]="loading()"
             (input)="onMaxPriceInput($event)"
@@ -96,7 +96,7 @@
           [disabled]="loading()"
           (click)="clearSearch()"
         >
-          <span aria-hidden="true">↺</span> Effacer les filtres
+          <span aria-hidden="true">↺</span> Clear filters
         </button>
     </div>
     @if (filterError()) {
@@ -119,13 +119,13 @@
     </div>
   } @else if (products().length === 0) {
     <p class="home__status">
-      {{ hasSearched() ? 'Aucun produit ne correspond à ces critères.' : 'No products yet — check back soon.' }}
+      {{ hasSearched() ? 'No products match your filters.' : 'No products yet — check back soon.' }}
     </p>
   } @else {
     <p class="home__count">
-      {{ totalElements() }} produit(s)
+      {{ totalElements() }} product(s)
       @if (searchTerm()) {
-        <span>pour « {{ searchTerm() }} »</span>
+        <span>for “{{ searchTerm() }}”</span>
       }
     </p>
 
@@ -171,7 +171,7 @@
     (click)="onAddToCart(product, $event)"
   >
   @if (isStockReached(product)) {
-      🚫 Max atteint ({{ product.quantity }})
+      🚫 Stock limit reached ({{ product.quantity }})
     } @else {
       🛒 Add to Cart ({{ getCartQuantity(product.id) }}/{{ product.quantity }})
     }
@@ -194,7 +194,7 @@
           [disabled]="loading() || currentPage() === 0"
           (click)="goToPage(currentPage() - 1)"
         >
-          Précédent
+          Previous
         </button>
         @for (page of visiblePageNumbers(); track page) {
           <button
@@ -210,7 +210,7 @@
           </button>
         }
         <span class="catalog-pagination__status" aria-live="polite">
-          Page {{ currentPage() + 1 }} sur {{ totalPages() }}
+        Page {{ currentPage() + 1 }} of {{ totalPages() }}
         </span>
         <button
           type="button"
@@ -218,7 +218,7 @@
           [disabled]="loading() || currentPage() >= totalPages() - 1"
           (click)="goToPage(currentPage() + 1)"
         >
-          Suivant
+          Next
         </button>
       </nav>
     }
