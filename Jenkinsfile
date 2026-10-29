@@ -183,6 +183,38 @@ stage('SonarQube Analysis') {
             }
         }
 
+        stage('Frontend End-to-End Tests') {
+            steps {
+                script {
+                    dir('backend') {
+                        sh '''
+                            IMAGE_TAG=$IMAGE_TAG docker compose up \
+                                --no-build -d --wait --wait-timeout 420
+                        '''
+                    }
+
+                    dir('frontend') {
+                        sh '''
+                            IMAGE_TAG=$IMAGE_TAG docker compose up \
+                                --no-build -d --wait --wait-timeout 420
+                        '''
+
+                        sh '''
+                            set -eu
+
+                            socat TCP-LISTEN:4200,bind=127.0.0.1,reuseaddr,fork TCP:docker:4200 &
+                            frontend_proxy=$!
+                            socat TCP-LISTEN:8888,bind=127.0.0.1,reuseaddr,fork TCP:docker:8888 &
+                            gateway_proxy=$!
+                            trap 'kill "$frontend_proxy" "$gateway_proxy" 2>/dev/null || true' EXIT
+
+                            npm run e2e
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Deploy Backend') {
             when {
                 branch 'main'

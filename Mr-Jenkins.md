@@ -121,15 +121,32 @@ ngrok http 8080
 Developer
    │ git push
    ▼
-GitHub ──Webhook──► Ngrok ──► Jenkins (Checkout → Build → Tests)
+GitHub ──Webhook──► Ngrok ──► Jenkins (Checkout → Build → Tests → E2E)
                                    │
                     ┌──────────────┴──────────────┐
                     ▼                              ▼
-              Tests ❌ → STOP                 Tests ✅ → Docker Build
+              Tests ❌ → STOP                 Tests ✅ → Docker Build → E2E
                                                      │
                                                      ▼
                                           Docker Compose → Microservices
 ```
+
+Après la construction des images, l'étape **Frontend End-to-End Tests** démarre
+les images du build avec Docker Compose, puis exécute Playwright dans Chromium.
+Le test couvre le navigateur Angular, l'API Gateway et le backend réel. Il faut
+reconstruire l'image Jenkins après l'ajout de `socat` :
+
+```bash
+docker compose -f jenkins-setup/docker-compose.yml build jenkins-blueocean
+docker compose -f jenkins-setup/docker-compose.yml up -d jenkins-blueocean
+```
+
+Le Docker daemon DinD doit exposer les ports `4200` et `8888` sur le réseau
+Jenkins, comme dans `jenkins-setup/docker-compose.yml`. Jenkins relaie ces ports
+vers `localhost` afin que le navigateur conserve l'origine TLS autorisée par le
+Gateway. Les variables de configuration MongoDB et TLS et les credentials de
+certificats utilisés par `Prepare Secrets` doivent être disponibles comme dans
+la configuration Jenkins existante.
 
 ---
 
