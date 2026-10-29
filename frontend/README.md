@@ -46,13 +46,31 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
+The E2E tests cover complete browser-to-backend flows using a real browser and
+real API services (without mocked HTTP requests): a client can register, log in,
+and view their backend profile; a seller can register, log in, and create a
+product, then a client can register, add that product to their cart, and place
+an order that the seller confirms, ships, and marks as delivered.
 
 ```bash
-ng e2e
+# Install the browser once
+npx playwright install chromium
+
+# Start the backend and frontend in separate terminals
+docker compose -f ../backend/docker-compose.yml up --build -d
+docker compose up --build -d
+
+# Run the test
+npm run e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+The test expects the frontend at `https://localhost:4200` and the API Gateway at
+`https://localhost:8888`. Playwright accepts the local development certificates.
+To use another frontend URL, set `E2E_BASE_URL`, for example:
+
+```bash
+E2E_BASE_URL=https://localhost:4200 npm run e2e
+```
 
 ## Additional Resources
 
