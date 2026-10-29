@@ -192,15 +192,27 @@ stage('SonarQube Analysis') {
                                 --no-build -d --wait --wait-timeout 420
 
                             attempts=0
-                            until curl --fail --silent --show-error --max-time 5 \
-                                http://docker:8761/eureka/apps/SECURITY-SERVICE >/dev/null; do
-                                attempts=$((attempts + 1))
-                                if [ "$attempts" -ge 60 ]; then
-                                    echo "SECURITY-SERVICE did not register with Eureka"
-                                    exit 1
+                            status=000
+                            while [ "$attempts" -lt 60 ]; do
+                                status=$(curl --silent --insecure --max-time 1 \
+                                    --output /dev/null --write-out '%{http_code}' \
+                                    --request POST --header 'Content-Type: application/json' \
+                                    --data '{}' \
+                                    https://docker:8888/api/auth/register 2>/dev/null || true)
+                                if [ "$status" = 400 ]; then
+                                    break
                                 fi
-                                sleep 2
+                                attempts=$((attempts + 1))
+                                if [ "$((attempts % 10))" -eq 0 ]; then
+                                    echo "Waiting for auth route through API Gateway (attempt $attempts/60, HTTP $status)"
+                                fi
+                                sleep 1
                             done
+
+                            if [ "$status" != 400 ]; then
+                                echo "Auth route did not become ready through the API Gateway within 2 minutes (expected HTTP 400, got $status)"
+                                exit 1
+                            fi
                         '''
                     }
 
