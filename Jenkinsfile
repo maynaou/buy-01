@@ -75,7 +75,7 @@ pipeline {
             }
         }
 
-        stage('Backend Tests') {
+        stage('Backend Unit & Integration Tests') {
             steps {
                 script {
                     def tests = [:]
