@@ -192,31 +192,40 @@ test('a seller can create a product, a client can order it, and the seller can d
   const confirmResponse = page.waitForResponse((response) =>
     response.request().method() === 'PATCH' &&
     new URL(response.url()).pathname === `/api/orders/${orders[0].id}/status`
-  );
+  ).then(async (response) => ({
+    status: response.status(),
+    body: await response.json(),
+  }));
   await orderCard.getByRole('button', { name: 'Confirm order' }).click();
   const confirmedOrder = await confirmResponse;
-  expect(confirmedOrder.status()).toBe(200);
-  expect((await confirmedOrder.json()).status).toBe('CONFIRMED');
+  expect(confirmedOrder.status).toBe(200);
+  expect(confirmedOrder.body.status).toBe('CONFIRMED');
   await expect(orderCard.locator('.order-card__status')).toHaveText('Confirmed');
 
   const shipResponse = page.waitForResponse((response) =>
     response.request().method() === 'PATCH' &&
     new URL(response.url()).pathname === `/api/orders/${orders[0].id}/status`
-  );
+  ).then(async (response) => ({
+    status: response.status(),
+    body: await response.json(),
+  }));
   await orderCard.getByRole('button', { name: 'Mark as shipped' }).click();
   const shippedOrder = await shipResponse;
-  expect(shippedOrder.status()).toBe(200);
-  expect((await shippedOrder.json()).status).toBe('SHIPPED');
+  expect(shippedOrder.status).toBe(200);
+  expect(shippedOrder.body.status).toBe('SHIPPED');
   await expect(orderCard.locator('.order-card__status')).toHaveText('Shipped');
 
   const deliverResponse = page.waitForResponse((response) =>
     response.request().method() === 'PATCH' &&
     new URL(response.url()).pathname === `/api/orders/${orders[0].id}/status`
-  );
+  ).then(async (response) => ({
+    status: response.status(),
+    body: await response.json(),
+  }));
   await orderCard.getByRole('button', { name: 'Mark as delivered and paid' }).click();
   const deliveredOrder = await deliverResponse;
-  expect(deliveredOrder.status()).toBe(200);
-  expect((await deliveredOrder.json()).status).toBe('DELIVERED');
+  expect(deliveredOrder.status).toBe(200);
+  expect(deliveredOrder.body.status).toBe('DELIVERED');
   await expect(orderCard.locator('.order-card__status')).toHaveText('Delivered');
   await expect(orderCard.getByRole('button', { name: 'Mark as delivered and paid' })).toHaveCount(0);
 });
