@@ -42,10 +42,13 @@ test('a seller can register, log in, and create a product', async ({ page }) => 
   const productResponse = page.waitForResponse((response) =>
     response.request().method() === 'POST' &&
     new URL(response.url()).pathname === '/api/products/product'
-  );
+  ).then(async (response) => ({
+    status: response.status(),
+    body: await response.json(),
+  }));
   await page.getByRole('button', { name: 'Create product' }).click();
   const createdProduct = await productResponse;
-  expect(createdProduct.status()).toBe(201);
-  expect((await createdProduct.json()).name).toBe(productName);
+  expect(createdProduct.status).toBe(201);
+  expect(createdProduct.body.name).toBe(productName);
   await expect(page.locator('.row__name', { hasText: productName })).toBeVisible();
 });
