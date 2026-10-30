@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 test('a seller can register, log in, and create a product', async ({ page }) => {
-  const username = `seller${Date.now()}`;
+  const username = process.env['E2E_USERNAME'] ?? `seller${Date.now()}`;
   const email = `${username}@example.test`;
   const password = 'password123';
-  const productName = `E2E Product ${Date.now()}`;
+  const productName = process.env['E2E_PRODUCT_NAME'] ?? `E2E Product ${Date.now()}`;
 
   await page.goto('/register');
   await page.getByLabel('Username').fill(username);
