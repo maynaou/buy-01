@@ -91,7 +91,7 @@ pipeline {
             }
         }
 
-stage('SonarQube Analysis') {
+stage('Backend SonarQube Analysis') {
     steps {
         script {
 
@@ -183,7 +183,7 @@ stage('SonarQube Analysis') {
             }
         }
 
-        stage('Frontend End-to-End Tests') {
+        stage('End-to-End Tests') {
             steps {
                 script {
                     dir('backend') {
@@ -223,29 +223,6 @@ stage('SonarQube Analysis') {
                         '''
 
                         sh '''
-                            set -eu
-
-                            node ../scripts/tcp-proxy.js 4200 docker 4200 &
-                            frontend_proxy=$!
-                            node ../scripts/tcp-proxy.js 8888 docker 8888 &
-                            gateway_proxy=$!
-                            trap 'kill "$frontend_proxy" "$gateway_proxy" 2>/dev/null || true' EXIT
-
-                            wait_for_proxy() {
-                                port=$1
-                                attempts=0
-                                until node -e "const socket = require('node:net').connect($port, '127.0.0.1'); socket.once('connect', () => socket.end()); socket.once('error', () => process.exit(1));"; do
-                                    attempts=$((attempts + 1))
-                                    if [ "$attempts" -ge 10 ]; then
-                                        echo "TCP proxy on port $port did not start"
-                                        return 1
-                                    fi
-                                    sleep 1
-                                done
-                            }
-
-                            wait_for_proxy 4200
-                            wait_for_proxy 8888
                             npm run e2e
                         '''
                     }
