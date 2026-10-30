@@ -11,7 +11,7 @@ flowchart LR
     jenkins[Jenkins<br/>jenkins-blueocean]
     dind[Docker Engine distant<br/>jenkins-docker / DinD]
     sonar[SonarQube]
-    app[Buy-01<br/>services backend + frontend]
+    app[Buy-02<br/>services backend + frontend]
 
     github -->|Multibranch scan| jenkins
     jenkins -->|Docker CLI via TLS :2376| dind
@@ -24,7 +24,7 @@ Jenkins et le moteur Docker sont deux conteneurs distincts :
 | Conteneur | Rôle |
 |---|---|
 | `jenkins-blueocean` | Jenkins, Docker CLI, Java 21, Node.js, Chromium et plugins |
-| `jenkins-docker` | Daemon Docker-in-Docker qui construit et exécute les conteneurs Buy-01 |
+| `jenkins-docker` | Daemon Docker-in-Docker qui construit et exécute les conteneurs Buy-02 |
 | `sonarqube` | Serveur d’analyse de code, accessible à Jenkins sur `http://sonarqube:9000` |
 
 Le CLI Docker communique avec DinD par TLS sur `docker:2376`. Les variables

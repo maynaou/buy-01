@@ -1,6 +1,6 @@
-# Buy-01 — Plateforme e-commerce en microservices
+# Buy-02 — Plateforme e-commerce en microservices
 
-Buy-01 est une application e-commerce construite avec Angular et des
+Buy-02 est une application e-commerce construite avec Angular et des
 microservices Spring Boot. L’API Gateway est le point d’entrée HTTP(S), Eureka
 permet la découverte des services, MongoDB stocke leurs données et Kafka
 transporte les événements asynchrones.

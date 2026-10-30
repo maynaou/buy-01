@@ -26,14 +26,14 @@ Chaque composant possède une clé de projet distincte :
 
 | Composant | Clé SonarQube |
 |---|---|
-| `api-gateway` | `buy-01-api-gateway` |
-| `discovery-service` | `buy-01-discovery-service` |
-| `security-service` | `buy-01-security-service` |
-| `user-service` | `buy-01-user-service` |
-| `product-service` | `buy-01-product-service` |
-| `media-service` | `buy-01-media-service` |
-| `order-service` | `buy-01-order-service` |
-| Frontend | `buy-01-frontend` |
+| `api-gateway` | `buy-02-api-gateway` |
+| `discovery-service` | `buy-02-discovery-service` |
+| `security-service` | `buy-02-security-service` |
+| `user-service` | `buy-02-user-service` |
+| `product-service` | `buy-02-product-service` |
+| `media-service` | `buy-02-media-service` |
+| `order-service` | `buy-02-order-service` |
+| Frontend | `buy-02-frontend` |
 
 ## Backend — Maven, Surefire et JaCoCo
 

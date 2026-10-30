@@ -108,8 +108,8 @@ stage('Backend SonarQube Analysis') {
                         withSonarQubeEnv('SonarQube') {
                             sh """
                                 ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                                -Dsonar.projectKey=buy-01-${service} \
-                                -Dsonar.projectName=buy-01-${service} \
+                                -Dsonar.projectKey=buy-02-${service} \
+                                -Dsonar.projectName=buy-02-${service} \
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             """
                         }
@@ -144,8 +144,8 @@ stage('Backend SonarQube Analysis') {
                     withSonarQubeEnv('SonarQube') {
                         sh '''
                             npx sonar-scanner \
-                            -Dsonar.projectKey=buy-01-frontend \
-                            -Dsonar.projectName=buy-01-frontend \
+                            -Dsonar.projectKey=buy-02-frontend \
+                            -Dsonar.projectName=buy-02-frontend \
                             -Dsonar.sources=src \
                             -Dsonar.tests=src \
                             -Dsonar.test.inclusions=**/*.spec.ts \
