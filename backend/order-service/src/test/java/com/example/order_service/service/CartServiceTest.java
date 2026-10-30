@@ -24,6 +24,7 @@ import com.example.order_service.dto.ProductResponse;
 import com.example.order_service.entities.Cart;
 import com.example.order_service.entities.CartItem;
 import com.example.order_service.exception.CartNotFoundException;
+import com.example.order_service.exception.InsufficientStockException;
 import com.example.order_service.exception.ProductNotFoundException;
 import com.example.order_service.feign.ProductRestClient;
 import com.example.order_service.repository.CartRepository;
@@ -94,6 +95,46 @@ class CartServiceTest {
         assertEquals(5, existingCart.getItems().get(0).getQuantity());
         assertEquals(5, response.getTotalItems());
         assertEquals(50.0, response.getSubtotalPrice());
+    }
+
+    @Test
+    void addItemToCart_shouldThrowWhenRequestedQuantityExceedsAvailableStock() {
+        String productId = "product-123";
+        String userId = "client-123";
+        CartRequest request = new CartRequest();
+        request.setProductId(productId);
+        request.setQuantity(3);
+        ProductResponse product = new ProductResponse(
+                productId, "Ball", "Training ball", 10.0, 2, "seller-1", List.of(), "BALLS");
+        when(productRestClient.getProductById(productId)).thenReturn(Optional.of(product));
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        assertThrows(InsufficientStockException.class, () -> cartService.addItemToCart(request, userId));
+
+        verify(cartRepository, never()).save(org.mockito.ArgumentMatchers.any(Cart.class));
+    }
+
+    @Test
+    void addItemToCart_shouldCheckCombinedQuantityAgainstAvailableStock() {
+        String productId = "product-123";
+        String userId = "client-123";
+        CartRequest request = new CartRequest();
+        request.setProductId(productId);
+        request.setQuantity(2);
+        Cart existingCart = Cart.builder()
+                .id("cart-123")
+                .userId(userId)
+                .items(new ArrayList<>(List.of(CartItem.builder().productId(productId).quantity(2).build())))
+                .build();
+        ProductResponse product = new ProductResponse(
+                productId, "Ball", "Training ball", 10.0, 3, "seller-1", List.of(), "BALLS");
+        when(productRestClient.getProductById(productId)).thenReturn(Optional.of(product));
+        when(cartRepository.findByUserId(userId)).thenReturn(Optional.of(existingCart));
+
+        assertThrows(InsufficientStockException.class, () -> cartService.addItemToCart(request, userId));
+
+        verify(cartRepository, never()).save(org.mockito.ArgumentMatchers.any(Cart.class));
+        assertEquals(2, existingCart.getItems().get(0).getQuantity());
     }
 
     @Test

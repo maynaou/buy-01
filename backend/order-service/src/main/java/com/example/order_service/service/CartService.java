@@ -13,6 +13,7 @@ import com.example.order_service.dto.ProductResponse;
 import com.example.order_service.entities.Cart;
 import com.example.order_service.entities.CartItem;
 import com.example.order_service.exception.CartNotFoundException;
+import com.example.order_service.exception.InsufficientStockException;
 import com.example.order_service.exception.ProductNotFoundException;
 import com.example.order_service.feign.ProductRestClient;
 import com.example.order_service.repository.CartRepository;
@@ -29,7 +30,7 @@ public class CartService {
     }
 
     public CartResponse addItemToCart(CartRequest cartRequest, String userId) {
-        productRestClient.getProductById(cartRequest.getProductId())
+        ProductResponse product = productRestClient.getProductById(cartRequest.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Product not found: " + cartRequest.getProductId()));
 
         Cart cart = cartRepository.findByUserId(userId)
@@ -47,6 +48,12 @@ public class CartService {
                 .filter(item -> item.getProductId().equals(cartRequest.getProductId()))
                 .findFirst()
                 .orElse(null);
+
+        long quantityAfterAdd = (existingItem == null ? 0 : existingItem.getQuantity())
+                + cartRequest.getQuantity();
+        if (product.quantity() == null || quantityAfterAdd > product.quantity()) {
+            throw new InsufficientStockException("Not enough stock for " + product.name());
+        }
 
         if (existingItem != null) {
             existingItem.setQuantity(existingItem.getQuantity() + cartRequest.getQuantity());
