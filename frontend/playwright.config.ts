@@ -2,6 +2,8 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
+const dockerHostIp = process.env['E2E_DOCKER_HOST_IP'];
+
 export default defineConfig({
   testDir: './e2e',
   outputDir: './node_modules/.cache/playwright-e2e',
@@ -15,8 +17,13 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     trace: 'retain-on-failure',
     ...devices['Desktop Chrome'],
-    ...(process.env['CHROME_BIN']
-      ? { launchOptions: { executablePath: process.env['CHROME_BIN'] } }
-      : {}),
+    launchOptions: {
+      ...(process.env['CHROME_BIN']
+        ? { executablePath: process.env['CHROME_BIN'] }
+        : {}),
+      ...(dockerHostIp
+        ? { args: [`--host-resolver-rules=MAP localhost ${dockerHostIp}`] }
+        : {}),
+    },
   },
 });

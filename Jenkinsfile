@@ -223,7 +223,13 @@ stage('Backend SonarQube Analysis') {
                         '''
 
                         sh '''
-                            npm run e2e
+                            set -eu
+                            docker_host_ip=$(getent hosts docker | awk 'NR == 1 { print $1 }')
+                            if [ -z "$docker_host_ip" ]; then
+                                echo "Could not resolve Docker host 'docker' for Playwright"
+                                exit 1
+                            fi
+                            E2E_DOCKER_HOST_IP=$docker_host_ip npm run e2e
                         '''
                     }
                 }
