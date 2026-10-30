@@ -1,212 +1,140 @@
-# 🚀 MR-Jenk — Pipeline CI/CD (Jenkins + Docker DinD)
+# Jenkins — Pipeline CI/CD
 
-Pipeline CI/CD local reliant GitHub à Jenkins, qui build, teste et déploie les microservices e-commerce via Docker-in-Docker (DinD).
+Ce document décrit le pipeline réellement défini dans [`Jenkinsfile`](./Jenkinsfile)
+et son infrastructure Docker Compose située dans [`jenkins-setup/`](./jenkins-setup/).
 
+## Architecture
+
+```mermaid
+flowchart LR
+    github[GitHub]
+    jenkins[Jenkins<br/>jenkins-blueocean]
+    dind[Docker Engine distant<br/>jenkins-docker / DinD]
+    sonar[SonarQube]
+    app[Buy-01<br/>services backend + frontend]
+
+    github -->|Multibranch scan| jenkins
+    jenkins -->|Docker CLI via TLS :2376| dind
+    jenkins -->|Analyse de code| sonar
+    dind -->|Build, tests E2E, déploiement| app
 ```
-GitHub → Webhook → Ngrok → Jenkins → Maven/Angular → Tests → Docker → Microservices
-```
 
----
+Jenkins et le moteur Docker sont deux conteneurs distincts :
 
-## 📦 Architecture — les 4 concepts Docker
-
-| Concept | Rôle |
+| Conteneur | Rôle |
 |---|---|
-| **IMAGE** | Le modèle (ex: `jenkins/jenkins:2.568.3-jdk21`) |
-| **CONTAINER** | L'instance créée depuis l'image (ex: `jenkins-blueocean`) |
-| **VOLUME** | Le stockage persistant (`jenkins-data`, `jenkins-docker-certs`) |
-| **DAEMON** | Le processus qui gère/exécute les containers (`dockerd`) |
+| `jenkins-blueocean` | Jenkins, Docker CLI, Java 21, Node.js, Chromium et plugins |
+| `jenkins-docker` | Daemon Docker-in-Docker qui construit et exécute les conteneurs Buy-01 |
+| `sonarqube` | Serveur d’analyse de code, accessible à Jenkins sur `http://sonarqube:9000` |
 
-```
-image ──docker run──► container ──utilise──► volume
-```
+Le CLI Docker communique avec DinD par TLS sur `docker:2376`. Les variables
+`DOCKER_HOST`, `DOCKER_CERT_PATH` et `DOCKER_TLS_VERIFY` sont configurées dans
+[`jenkins-setup/docker-compose.yml`](./jenkins-setup/docker-compose.yml).
 
----
+## Démarrer l’infrastructure Jenkins
 
-## 🧱 Les deux containers du projet
+Le fichier Compose attend les valeurs de configuration et credentials déclarés
+dans [`jenkins-casc.yaml`](./jenkins-setup/jenkins/jenkins-casc.yaml). Configurez
+ces valeurs dans l’environnement de lancement ou dans un fichier `.env` local
+non versionné. Ne commitez ni secrets ni clés.
 
-### `jenkins-blueocean` (le cerveau)
-- Basé sur `jenkins/jenkins:2.568.3-jdk21`
-- Contient : Jenkins, **Docker CLI** (pas le daemon), Node.js, Angular CLI, Chromium, plugins Jenkins
-- Ne contient **pas** les microservices (api-gateway, product-service, mongodb...)
-- Envoie des commandes Docker via le réseau (pas de socket local)
-
-### `jenkins-docker` (le moteur)
-- Basé sur `docker:dind` (Docker-in-Docker)
-- Contient le **deuxième Docker daemon** (`dockerd #2`)
-- C'est lui qui crée et exécute réellement les containers de l'application (api-gateway, services, mongodb, kafka...)
-
-```
-                    HOST
-                     │
-             Docker daemon #1
-                     │
-          ┌──────────┴──────────┐
-          ▼                     ▼
-jenkins-blueocean        jenkins-docker
-  (Jenkins + CLI)          (dockerd #2)
-          │                     │
-          └──── TCP/TLS :2376──►│
-                                 ▼
-                    api-gateway, product-service,
-                    user-service, mongodb, kafka...
-```
-
-**Règle d'or :** Jenkins = commande, Docker CLI = outil, `dockerd` = moteur, container = résultat.
-Jenkins **n'est pas** dans le chemin HTTP des requêtes vers l'application — c'est le réseau Docker qui route directement `client → jenkins-docker → api-gateway`.
-
----
-
-## 🔌 Communication Docker CLI ↔ Docker Engine
-
-Les deux containers étant séparés, la communication passe par **HTTP/TLS sur le réseau**, pas par un socket local.
-
-- **Réseau Docker dédié** : `docker network create jenkins`
-- **DNS interne** : `--network-alias docker` fait pointer le nom `docker` vers l'IP de `jenkins-docker` → d'où `DOCKER_HOST=tcp://docker:2376`
-- **Port 2376** : API Docker exposée en TCP par `docker:dind`. Chaque commande (`docker build`, `docker run`...) devient un appel HTTP reçu par le Engine distant
-- **mTLS obligatoire** : le serveur prouve son identité au client ET le client au serveur. Sans certificat valide → connexion refusée même si le port est ouvert
-
-Variables clés côté Jenkins :
-```
-DOCKER_HOST=tcp://docker:2376
-DOCKER_CERT_PATH=/certs/client
-DOCKER_TLS_VERIFY=1
-```
-
----
-
-## 🌐 Chaîne Webhook → Ngrok → Jenkins
-
-```
-Developer → git push → GitHub → Webhook → Ngrok → localhost:8080 → Jenkins
-```
-
-- **GitHub** : stocke le code + envoie un `POST` HTTP au push/PR
-- **Ngrok** : ne fait que **transporter** le trafic (tunnel Internet → `localhost:8080`), il ne lance rien
-- **Jenkins** : expose `/github-webhook/`, parse le JSON, déclenche le job
-
----
-
-## 📥 Installation & lancement de Ngrok
+Depuis la racine du dépôt :
 
 ```bash
-cd ~
-curl -O https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
-tar xvzf ngrok-v3-stable-linux-amd64.tgz
-mkdir -p ~/.local/bin
-mv ngrok ~/.local/bin/
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-ngrok config add-authtoken <TON_TOKEN>
+docker compose -f jenkins-setup/docker-compose.yml up --build -d
 ```
+
+Accès locaux :
+
+| Service | URL |
+|---|---|
+| Jenkins | `http://localhost:8080` |
+| SonarQube | `http://localhost:9000` |
+
+Jenkins est configuré en multibranch : la découverte GitHub est périodiquement
+relancée et le dépôt configure la découverte des branches et des Pull Requests.
+La configuration présente ne crée pas elle-même de tunnel Ngrok.
+
+## Étapes du pipeline
+
+Le pipeline utilise `IMAGE_TAG=build-${BUILD_NUMBER}`, désactive les exécutions
+concurrentes, conserve les stashes récents et applique un timeout global de
+30 minutes.
+
+1. **Checkout** — récupère la révision sélectionnée par le job multibranch.
+2. **Prepare Secrets** — écrit les clés JWT, les certificats TLS et la
+   configuration Cloudinary à partir des credentials Jenkins via
+   [`scripts/prepare-secrets.sh`](./scripts/prepare-secrets.sh).
+3. **Backend Unit & Integration Tests** — lance `./mvnw clean test` en parallèle
+   pour les sept services backend.
+4. **Backend SonarQube Analysis** — analyse les sept services et attend leur
+   Quality Gate.
+5. **Frontend Unit & Integration Tests** — exécute `npm ci`, puis les tests
+   Angular avec la couverture activée.
+6. **Frontend SonarQube Analysis** — analyse le frontend et attend son Quality
+   Gate.
+7. **Docker Build** — construit les images backend et frontend, puis conserve
+   le tag de build pour les étapes suivantes.
+8. **End-to-End Tests** — exécute [`scripts/e2e-tests.sh`](./scripts/e2e-tests.sh)
+   avec les conteneurs construits. Le script attend que le Gateway réponde, lance
+   Playwright et supprime les données créées par le test, y compris si le test
+   échoue.
+9. **Deploy Backend**, **Deploy Frontend**, **cleanUp** — exécutés uniquement
+   sur la branche `main`. Les étapes de déploiement utilisent les scripts de
+   déploiement et de rollback du dossier `scripts/`.
+
+Si une étape échoue, Jenkins arrête les étapes suivantes. Les rapports JUnit
+disponibles sont publiés à la fin du build et le pipeline envoie un courriel de
+succès ou d’échec.
+
+## Tests E2E dans DinD
+
+Le script E2E démarre d’abord la stack backend, puis le frontend avec le même
+`IMAGE_TAG`. Le test utilise les adresses locales HTTPS :
+
+- Frontend : `https://localhost:4200`
+- API Gateway : `https://localhost:8888`
+
+Ces ports sont publiés par les Compose applicatifs sur le conteneur DinD. Le
+script récupère l’adresse DNS `docker` et la transmet comme
+`E2E_DOCKER_HOST_IP`. Playwright configure Chromium pour résoudre `localhost`
+vers cette adresse, afin de conserver les URL HTTPS configurées dans
+l’application.
+
+Le pipeline n’utilise plus de script TCP proxy. Une erreur
+`ERR_CONNECTION_REFUSED` doit donc être diagnostiquée en vérifiant le healthcheck
+du frontend et la publication des ports `4200` et `8888` par DinD.
+
+## Credentials Jenkins
+
+La configuration JCasC déclare les credentials nécessaires au pipeline :
+
+- GitHub et SMTP
+- Credentials administrateur Jenkins
+- MongoDB et mot de passe TLS
+- URL Cloudinary
+- Clés JWT privée et publique
+- Certificat et clé TLS du frontend
+- Token SonarQube
+
+Le token SonarQube est référencé par l’installation Jenkins nommée `SonarQube`.
+Ne stockez pas les valeurs réelles dans les fichiers suivis par Git.
+
+## Journaux et commandes de diagnostic
 
 ```bash
-ngrok http 8080
-```
-
----
-
-## 📂 Volumes
-
-| Volume | Chemin monté | Rôle |
-|---|---|---|
-| `jenkins-data` | `/var/jenkins_home` | Jobs, plugins, configs, credentials, workspaces |
-| `jenkins-docker-certs` | `/certs/client` | Certificats TLS pour parler au Docker Engine distant |
-
----
-
-## 🔄 Flow complet d'une Pull Request
-
-```
-Developer
-   │ git push
-   ▼
-GitHub ──Webhook──► Ngrok ──► Jenkins (Checkout → Build → Tests → E2E)
-                                   │
-                    ┌──────────────┴──────────────┐
-                    ▼                              ▼
-              Tests ❌ → STOP                 Tests ✅ → Docker Build → E2E
-                                                     │
-                                                     ▼
-                                          Docker Compose → Microservices
-```
-
-Après la construction des images, l'étape **Frontend End-to-End Tests** démarre
-les images du build avec Docker Compose, puis exécute Playwright dans Chromium.
-Le test couvre le navigateur Angular, l'API Gateway et le backend réel. Il faut
-reconstruire l'image Jenkins après l'ajout de `socat` :
-
-```bash
-docker compose -f jenkins-setup/docker-compose.yml build jenkins-blueocean
-docker compose -f jenkins-setup/docker-compose.yml up -d jenkins-blueocean
-```
-
-Le Docker daemon DinD doit exposer les ports `4200` et `8888` sur le réseau
-Jenkins, comme dans `jenkins-setup/docker-compose.yml`. Jenkins relaie ces ports
-vers `localhost` afin que le navigateur conserve l'origine TLS autorisée par le
-Gateway. Les variables de configuration MongoDB et TLS et les credentials de
-certificats utilisés par `Prepare Secrets` doivent être disponibles comme dans
-la configuration Jenkins existante.
-
----
-
-## 🌿 Best practice — Tester PR + `main` (avant ET après merge)
-
-| Phase | Configuration Jenkins | Résultat |
-|---|---|---|
-| **Avant merge** | Discover pull requests → `Merging the pull request with the current target branch revision` | Simule le merge et le teste avant la fusion réelle |
-| **Après merge** | Discover branches → `All branches` + Webhook sur l'event `push` | Rebuild automatique de `main` dès que la PR est mergée |
-
-⚠️ Éviter `Both` pour "Discover PR" sauf besoin réel — ça double les builds inutilement.
-
-Dans le Jenkinsfile, distinguer PR vs `main` avec `env.CHANGE_ID` (non-null seulement pour les PR) :
-```groovy
-stage('Deploy') {
-    when {
-        expression { env.CHANGE_ID == null } // seulement sur main
-    }
-    steps {
-        sh 'docker compose up -d'
-    }
-}
-```
-
----
-
-## ⚡ Points essentiels à ne jamais oublier
-
-1. **Docker CLI ≠ Docker Engine** — le CLI est un client, l'Engine exécute réellement, ils communiquent en HTTP/TLS.
-2. **`--network-alias docker`** crée l'entrée DNS qui rend `tcp://docker:2376` valide.
-3. **mTLS** : authentification dans les deux sens avant toute communication.
-4. **Ngrok ne lance rien** : simple tunnel HTTP.
-5. **Les tests sont une barrière** : en cas d'échec, le pipeline s'arrête avant le Docker Build.
-6. **Isolation Jenkins / Docker Engine** dans deux containers séparés = sécurité (éviter qu'un pipeline compromis contrôle directement l'hôte).
-
----
-
-## 🛠️ Commandes utiles (setup & nettoyage)
-
-```bash
-# Créer le réseau
-docker network create jenkins
-
-# Nettoyage complet
-docker rm -f jenkins-blueocean jenkins-docker
-docker volume rm jenkins-data jenkins-docker-certs
-docker network rm jenkins
-
-# Vérifications
-docker volume ls | grep jenkins
-docker network ls | grep jenkins
-docker images | grep -E 'jenkins|myjenkins'
+docker compose -f jenkins-setup/docker-compose.yml ps
+docker compose -f jenkins-setup/docker-compose.yml logs -f jenkins-blueocean
+docker compose -f jenkins-setup/docker-compose.yml logs -f sonarqube
 docker exec jenkins-docker docker ps
 docker exec jenkins-docker docker info
 ```
 
----
+Arrêt de l’infrastructure sans supprimer les données persistantes :
 
-## 🧠 Résumé en une phrase
+```bash
+docker compose -f jenkins-setup/docker-compose.yml down
+```
 
-> Une **image** est le modèle, un **container** est l'instance qui s'exécute, un **volume** conserve les données, et le **Docker daemon** est le moteur qui crée et gère tout cela.
->
-> `jenkins-blueocean` contient Jenkins + Docker CLI, tandis que `jenkins-docker` contient le deuxième Docker daemon qui crée et exécute réellement les containers de l'application.
+La suppression des volumes détruit les données Jenkins, SonarQube et les
+certificats DinD ; ne la faites que si cette perte de données est voulue.
