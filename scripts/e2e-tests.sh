@@ -53,14 +53,15 @@ cleanup_e2e_data() {
 const username = "$e2e_username";
 const productName = "$e2e_product_name";
 const authDb = db.getSiblingDB("auth-db");
-const auth = authDb.auth.findOne({ username: username }, { _id: 1 });
+const authCollection = authDb.getCollection("auth");
+const auth = authCollection.findOne({ username: username }, { _id: 1 });
 
-db.getSiblingDB("product-db").product.deleteMany({ name: productName });
-db.getSiblingDB("user-db").users.deleteMany({ username: username });
+db.getSiblingDB("product-db").getCollection("product").deleteMany({ name: productName });
+db.getSiblingDB("user-db").getCollection("users").deleteMany({ username: username });
 
 if (auth) {
-    authDb.refreshToken.deleteMany({ userId: String(auth._id) });
-    authDb.auth.deleteMany({ _id: auth._id });
+    authDb.getCollection("refreshToken").deleteMany({ userId: String(auth._id) });
+    authCollection.deleteMany({ _id: auth._id });
 }
 MONGOSH
     then
