@@ -1,307 +1,127 @@
-# 🔎 SonarQube — Analyse de qualité du code
+# SonarQube — Analyse de qualité du code
 
-SonarQube est intégré au pipeline CI/CD de **Buy-01** pour analyser automatiquement la qualité et la sécurité du code avant le déploiement.
+SonarQube analyse les sept composants backend et le frontend dans le pipeline
+[`Jenkinsfile`](./Jenkinsfile). Il reçoit les rapports de couverture produits
+par les tests, analyse le code, puis communique le résultat du Quality Gate à
+Jenkins.
+
+## Architecture
 
 ```text
-GitHub
-   ↓
-Jenkins
-   ↓
-Tests
-   ↓
-JaCoCo / LCOV
-   ↓
-SonarQube
-   ↓
-Quality Gate
-   ↓
-Deploy
+Tests backend ── Surefire / JaCoCo ──┐
+                                     ├──> SonarQube ── Quality Gate ──> Jenkins
+Tests frontend ── JUnit / LCOV ─────┘
 ```
 
----
+Le serveur SonarQube est le service `sonarqube` de
+[`jenkins-setup/docker-compose.yml`](./jenkins-setup/docker-compose.yml).
+Il est disponible dans le réseau Jenkins sur `http://sonarqube:9000` et depuis
+l’hôte sur `http://localhost:9000`. Jenkins utilise une installation Sonar
+nommée `SonarQube` et le credential `sonar-token`, configurés dans
+[`jenkins-casc.yaml`](./jenkins-setup/jenkins/jenkins-casc.yaml).
 
-## 🏗️ Projets analysés
+## Projets analysés
 
-Chaque microservice backend possède son propre projet SonarQube :
+Chaque composant possède une clé de projet distincte :
 
-| Service             | Projet SonarQube           |
-| ------------------- | -------------------------- |
-| `api-gateway`       | `buy-01-api-gateway`       |
-| `discovery-service` | `buy-01-discovery-service` |
-| `security-service`  | `buy-01-security-service`  |
-| `user-service`      | `buy-01-user-service`      |
-| `product-service`   | `buy-01-product-service`   |
-| `media-service`     | `buy-01-media-service`     |
-| `frontend`          | `buy-01-frontend`          |
+| Composant | Clé SonarQube |
+|---|---|
+| `api-gateway` | `buy-02-api-gateway` |
+| `discovery-service` | `buy-02-discovery-service` |
+| `security-service` | `buy-02-security-service` |
+| `user-service` | `buy-02-user-service` |
+| `product-service` | `buy-02-product-service` |
+| `media-service` | `buy-02-media-service` |
+| `order-service` | `buy-02-order-service` |
+| Frontend | `buy-02-frontend` |
 
-SonarQube permet ainsi de suivre séparément les métriques de chaque composant.
+## Backend — Maven, Surefire et JaCoCo
 
----
-
-## 🧪 Backend — Maven + JaCoCo
-
-Les tests Java sont exécutés avec Maven :
+Jenkins exécute d’abord les tests de chaque service en parallèle :
 
 ```bash
 ./mvnw clean test
 ```
 
-**Surefire** génère les rapports de tests :
+Les rapports produits sont :
 
-```text
-target/surefire-reports/*.xml
-```
+| Rapport | Chemin | Utilisé par |
+|---|---|---|
+| Tests JUnit | `target/surefire-reports/*.xml` | Jenkins |
+| Couverture JaCoCo | `target/site/jacoco/jacoco.xml` | SonarQube |
 
-**JaCoCo** mesure la couverture du code et génère :
+Les POM incluent le plugin JaCoCo. Jenkins lance ensuite le scanner Maven pour
+chaque projet et fournit le chemin du rapport XML avec
+`sonar.coverage.jacoco.xmlReportPaths`.
 
-```text
-target/site/jacoco/jacoco.xml
-```
-
-Le pipeline transmet ensuite ce rapport à SonarQube :
+Pour lancer localement les tests d’un service :
 
 ```bash
--Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+cd backend/product-service
+./mvnw clean test
 ```
 
-### Flow
+## Frontend — Angular, Karma et LCOV
 
-```text
-Maven Test
-    │
-    ├── Surefire → JUnit XML → Jenkins
-    │
-    └── JaCoCo → jacoco.xml → SonarQube
-```
-
----
-
-## 🖥️ Frontend — Angular
-
-Les tests Angular sont exécutés avec :
+Dans le pipeline, les tests Angular sont lancés ainsi :
 
 ```bash
 npm ci
-npm test -- --watch=false
+npm test -- --watch=false --include='src/**/*.spec.ts'
 ```
 
-La couverture est générée dans :
+La configuration Angular active la couverture et Karma génère :
+
+- `frontend/test-results/karma-results.xml` pour les résultats JUnit ;
+- `frontend/coverage/lcov.info` pour la couverture utilisée par SonarQube.
+
+L’analyse frontend utilise `npx sonar-scanner`, analyse `src`, exclut les tests
+`*.spec.ts`, `node_modules` et `dist`, puis transmet le rapport LCOV.
+
+## Quality Gate
+
+Après chaque analyse, Jenkins attend le résultat SonarQube avec
+`waitForQualityGate abortPipeline: true` et un délai d’attente de cinq minutes.
+Si le Quality Gate échoue ou n’est pas reçu dans le délai, le pipeline s’arrête
+avant le build Docker et les étapes de déploiement.
+
+Les conditions du Quality Gate sont définies côté SonarQube ; elles ne sont pas
+fixées par les commandes du scanner dans le dépôt. Le Quality Profile définit
+les règles d’analyse et le Quality Gate décide si les résultats satisfont les
+conditions configurées.
+
+## Ordre dans le pipeline
 
 ```text
-coverage/lcov.info
+Tests backend en parallèle
+        ↓
+Analyses backend et Quality Gates
+        ↓
+Tests frontend + couverture LCOV
+        ↓
+Analyse frontend + Quality Gate
+        ↓
+Build Docker
+        ↓
+Tests E2E
+        ↓
+Déploiement sur main
 ```
 
-SonarQube utilise ce fichier avec :
+Les analyses backend sont lancées en parallèle par le Jenkinsfile. Les étapes
+de build Docker, E2E et déploiement ne sont atteintes que si les tests et
+Quality Gates précédents réussissent.
 
-```bash
--Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-```
+## Diagnostic
 
----
+- Dans Jenkins, vérifiez les logs des étapes **Backend SonarQube Analysis** et
+  **Frontend SonarQube Analysis**.
+- Vérifiez que le serveur Jenkins est configuré sous le nom exact `SonarQube`.
+- Vérifiez la disponibilité de `http://sonarqube:9000` depuis le réseau Jenkins.
+- Vérifiez que le credential `sonar-token` est valide.
+- Vérifiez l’existence du rapport correspondant avant l’analyse :
+  `target/site/jacoco/jacoco.xml` ou `frontend/coverage/lcov.info`.
 
-## 🔍 Analyse SonarQube
-
-### Backend
-
-Le scanner Maven est utilisé :
-
-```bash
-./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-```
-
-Chaque service utilise une clé différente :
-
-```text
-buy-01-api-gateway
-buy-01-user-service
-buy-01-product-service
-...
-```
-
-### Frontend
-
-Le scanner SonarQube est exécuté avec :
-
-```bash
-npx sonar-scanner
-```
-
-Configuration principale :
-
-```text
-sonar.sources=src
-sonar.exclusions=**/node_modules/**,**/dist/**
-sonar.javascript.lcov.reportPaths=coverage/lcov.info
-```
-
----
-
-## 🚦 Quality Gate
-
-Le **Quality Gate** permet de définir les conditions minimales que le code doit respecter.
-
-Exemple de conditions utilisées :
-
-```text
-New Code Issues          = 0
-New Code Coverage        >= 80%
-New Code Duplication     <= 3%
-Security conditions      respectées
-```
-
-Après l'analyse, Jenkins attend le résultat :
-
-```groovy
-timeout(time: 5, unit: 'MINUTES') {
-    waitForQualityGate abortPipeline: true
-}
-```
-
-### Résultat
-
-```text
-              SonarQube
-                  │
-            Quality Gate
-             /         \
-            /           \
-        PASSED          FAILED
-          │                │
-          ▼                ▼
-     Pipeline           Pipeline
-     continue             stop
-```
-
-`waitForQualityGate` ne lance pas les tests et ne calcule pas la couverture. Il attend simplement le résultat produit par SonarQube.
-
----
-
-## 📊 Quality Profile vs Quality Gate
-
-### Quality Profile
-
-Définit **les règles d'analyse**.
-
-```text
-Quality Profile
-      ↓
-Rules
-      ↓
-Bugs / Vulnerabilities / Code Smells
-```
-
-### Quality Gate
-
-Définit **les conditions de validation**.
-
-```text
-Analysis
-   ↓
-Metrics
-   ↓
-Quality Gate
-   ↓
-Passed / Failed
-```
-
-> **Quality Profile = quelles règles appliquer ?**
-> **Quality Gate = est-ce que le résultat respecte les conditions ?**
-
----
-
-## 🔐 Intégration avec Jenkins
-
-Jenkins utilise la configuration SonarQube définie sous le nom :
-
-```text
-SonarQube
-```
-
-Dans le pipeline :
-
-```groovy
-withSonarQubeEnv('SonarQube') {
-    sh '...'
-}
-```
-
-Puis :
-
-```groovy
-waitForQualityGate abortPipeline: true
-```
-
-Le pipeline suit donc cette logique :
-
-```text
-Jenkins
-   │
-   ▼
-Run Tests
-   │
-   ▼
-Generate Coverage
-   │
-   ▼
-Sonar Scanner
-   │
-   ▼
-SonarQube
-   │
-   ▼
-Quality Gate
-   │
-   ├── PASSED → Continue
-   │
-   └── FAILED → Stop
-```
-
----
-
-## 📁 Rapports importants
-
-| Rapport                  | Généré par             | Utilisé par |
-| ------------------------ | ---------------------- | ----------- |
-| `surefire-reports/*.xml` | Maven Surefire         | Jenkins     |
-| `jacoco.xml`             | JaCoCo                 | SonarQube   |
-| `lcov.info`              | Angular/Karma Coverage | SonarQube   |
-
----
-
-## 🧠 Points essentiels
-
-1. **Surefire** → résultats des tests Java.
-2. **JaCoCo** → couverture des tests Java.
-3. **LCOV** → couverture frontend Angular.
-4. **Sonar Scanner** → analyse et transmet les résultats à SonarQube.
-5. **SonarQube** → analyse, stocke les métriques et calcule le Quality Gate.
-6. **`waitForQualityGate`** → Jenkins attend le résultat du Quality Gate.
-7. **Quality Gate FAILED** → le pipeline s'arrête lorsque `abortPipeline: true`.
-8. **SonarQube ne remplace pas les tests** : les tests sont exécutés avant l'analyse.
-
----
-
-## 🧩 Résumé
-
-```text
-Tests
-  │
-  ├── JUnit/Surefire ──────→ Jenkins
-  │
-  └── Coverage ────────────→ SonarQube
-                                │
-                                ▼
-                           Code Analysis
-                                │
-                                ▼
-                           Quality Gate
-                                │
-                         ┌──────┴──────┐
-                         ▼             ▼
-                      PASSED         FAILED
-                         │             │
-                         ▼             ▼
-                     Continue         Stop
-```
-
-> **Jenkins orchestre le pipeline, Surefire produit les résultats des tests, JaCoCo/LCOV produisent la couverture, SonarQube analyse le code et le Quality Gate valide les conditions de qualité.**
+> Surefire/Karma exécutent les tests, JaCoCo/LCOV mesurent la couverture, le
+> scanner transmet les résultats et SonarQube calcule le Quality Gate. Ces rôles
+> sont complémentaires.
