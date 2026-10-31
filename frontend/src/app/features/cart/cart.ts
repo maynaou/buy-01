@@ -106,10 +106,7 @@ export class CartPage {
     this.cartService.updateQuantity({ productId, quantity }).subscribe({
       next: (updatedCart) => {
         this.cart.set(updatedCart);
-        this.updatingProductId.set(null);
-
-        console.log('+++++++++++++++++++++++++++++++++++++++++++++++++');
-        
+        this.updatingProductId.set(null);        
       },
       error: (error) => {
         this.updatingProductId.set(null);
