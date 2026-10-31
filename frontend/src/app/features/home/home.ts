@@ -266,8 +266,8 @@ addToCartFromGallery(event: {
        this.selectedProduct.set(null);
     },
     error: (error) => {
-      console.error('Unable to add product to cart', error);
-      this.notificationError.show('Unable to add product to cart', 'red');
+      console.error('Unable to add product to cart', error.error.message);
+      this.notificationError.show(error.error.message, 'red');
     },
   });
 }
