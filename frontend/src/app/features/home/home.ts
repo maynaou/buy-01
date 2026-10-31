@@ -243,14 +243,13 @@ onAddToCart(product: Product, event: MouseEvent): void {
     quantity: 1,
   }).subscribe({
     next: () => {
-      console.log('Product added to cart');
-
       this.notificationError.show('Product added to cart', 'green');
 
 
     },
     error: (error) => {
-      console.error('Unable to add product to cart', error);
+      console.error('+++++++++++++', error);
+      this.notificationError.show('Unable to add product to cart', 'red');
     },
   });
 }
@@ -268,6 +267,8 @@ addToCartFromGallery(event: {
     },
     error: (error) => {
       console.error('Unable to add product to cart', error);
+      this.notificationError.show('Unable to add product to cart', 'red');
+
     },
   });
 }

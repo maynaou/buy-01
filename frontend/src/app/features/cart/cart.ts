@@ -38,14 +38,11 @@ export class CartPage {
     this.errorMessage.set('');
 
     this.cartService.getCart().subscribe({
-      next: (cartResponse) => {
-        console.log("++++++++++++++++++++", cartResponse);
-        
+      next: (cartResponse) => {        
         this.cart.set(cartResponse);
         this.loading.set(false);
       },
       error: (error) => {
-        console.log("++++++++++++++++++++++++++++++++",error);
         this.loading.set(false);
         if (error?.status === 404) {
           this.cart.set(null);
