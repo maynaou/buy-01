@@ -235,21 +235,18 @@ readonly isClient = computed(
 // Add to cart from a product card
 onAddToCart(product: Product, event: MouseEvent): void {
   event.stopPropagation();
-
- console.log('Adding product to cart:', product.id);
-
   this.cartService.addToCart({
     productId: product.id,
     quantity: 1,
   }).subscribe({
     next: () => {
       this.notificationError.show('Product added to cart', 'green');
-
-
     },
     error: (error) => {
-      console.error('+++++++++++++', error);
-      this.notificationError.show('Unable to add product to cart', 'red');
+      console.log("++++++++++++++++++++++++++++++++++");
+      
+      console.error('+++++++++++++', error.error.message);
+      this.notificationError.show(error.error.message, 'red');
     },
   });
 }
@@ -266,8 +263,9 @@ addToCartFromGallery(event: {
        this.selectedProduct.set(null);
     },
     error: (error) => {
-      console.error('Unable to add product to cart', error.error.message);
-      this.notificationError.show(error.error.message, 'red');
+      console.log("-----------------------");
+      
+      console.error('Unable to add product to cart', error);
     },
   });
 }
