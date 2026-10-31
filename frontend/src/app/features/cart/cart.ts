@@ -107,6 +107,9 @@ export class CartPage {
       next: (updatedCart) => {
         this.cart.set(updatedCart);
         this.updatingProductId.set(null);
+
+        console.log('+++++++++++++++++++++++++++++++++++++++++++++++++');
+        
       },
       error: (error) => {
         this.updatingProductId.set(null);
