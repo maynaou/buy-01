@@ -242,10 +242,7 @@ onAddToCart(product: Product, event: MouseEvent): void {
     next: () => {
       this.notificationError.show('Product added to cart', 'green');
     },
-    error: (error) => {
-      console.log("++++++++++++++++++++++++++++++++++");
-      
-      console.error('+++++++++++++', error.error.message);
+    error: (error) => {      
       this.notificationError.show(error.error.message, 'red');
     },
   });
@@ -258,14 +255,10 @@ addToCartFromGallery(event: {
 }): void {
   this.cartService.addToCart(event).subscribe({
     next: () => {
-      console.log('Product added to cart');
       this.notificationError.show('Product added to cart', 'green');
        this.selectedProduct.set(null);
     },
-    error: (error) => {
-      console.log("-----------------------",error.error.message);
-      
-      console.error('Unable to add product to cart', error);
+    error: (error) => {      
       this.notificationError.show(error.error.message, 'red');
 
     },
@@ -293,14 +286,14 @@ addToCartFromGallery(event: {
   }
 
 
-// ✅ Get the actual quantity in the customer's cart.
+// Get the actual quantity in the customer's cart.
 getCartQuantity(productId: string): number {
   const item = this.cartService.cart()?.items?.find(
     (item) => item.productId === productId
   );
   return item?.quantity ?? 0;
 }
-// ✅ Check whether the maximum available stock has been reached.
+// Check whether the maximum available stock has been reached.
 isStockReached(product: Product): boolean {
   if (product.quantity <= 0) return true;
   return this.getCartQuantity(product.id) >= product.quantity;
